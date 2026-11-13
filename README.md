@@ -2,7 +2,7 @@
 
 Machine map, operating procedures, maintenance schedules and safety list for the Goldthorne co-op wood shop (14 Goldthorne Ave, Etobicoke). Members assigned to look after a machine are its machine stewards.
 
-Status: Draft revision 2 (November 13, 2026). Draft for review, not an approved operating safety standard.
+Status: Draft revision 3 (November 13, 2026). Draft for review, not an approved operating safety standard.
 
 Live page: https://cosmojo.github.io/goldthorne-shop-safety-and-machine-care-program/
 
