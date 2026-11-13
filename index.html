@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-title" content="Woodshop">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#245d78">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<title>Goldthorne Shop Machines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a drafting-table plan of the shop floor on top, the machine record beside it, the full register below. */
+:root {
+  --bg: #eef0ee;
+  --surface: #ffffff;
+  --ink: #1b2124;
+  --muted: #5a656b;
+  --line: #cfd5d4;
+  --accent: #245d78;
+  --floor: #f7f8f6;
+  --ok: #2f8a55;
+  --warn: #c99500;
+  --crit: #c4392d;
+  --none: #98a2a6;
+  --duct: #6f8796;
+  --air: #2f7fd6;
+  --post: #e7b416;
+  --heat: #b5651d;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171a; --surface: #1b2226; --ink: #e6ebec; --muted: #9aa7ad; --line: #34424a;
+    --accent: #79b4d2; --floor: #161d21; --ok: #4fb47a; --warn: #e3b52c; --crit: #ec6a5d; --none: #6f7b80; --duct: #9fb3c0; --air: #6aaef0; --post: #e3b52c; --heat: #d98a4a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171a; --surface: #1b2226; --ink: #e6ebec; --muted: #9aa7ad; --line: #34424a;
+  --accent: #79b4d2; --floor: #161d21; --ok: #4fb47a; --warn: #e3b52c; --crit: #ec6a5d; --none: #6f7b80; --duct: #9fb3c0; --air: #6aaef0; --post: #e3b52c; --heat: #d98a4a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 24px 20px 48px; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: 30px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 600; }
+h3 { font-size: 17px; font-weight: 600; }
+.sub { color: var(--muted); max-width: 70ch; margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.strip { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 999px; padding: 6px 12px; font: 500 14px var(--body); cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chip .n { font-variant-numeric: tabular-nums; font-weight: 600; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.s-ok { background: var(--ok); } .s-warn { background: var(--warn); } .s-crit { background: var(--crit); } .s-none { background: var(--none); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.mapgrid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+@media (max-width: 980px) { .mapgrid { grid-template-columns: 1fr; } }
+.maphead { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button.b { font: 500 14px var(--body); border-radius: 6px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+button.b.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+button.b:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mapbox { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--floor); }
+svg.map { display: block; height: auto; max-width: none; font-family: var(--body); }
+.area { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.area.dashed { fill: none; stroke: var(--muted); stroke-dasharray: 7 5; stroke-width: 1.5; }
+.arealabel { font: 600 13px var(--display); fill: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.feature { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.featurelabel { font-size: 10.5px; fill: var(--muted); }
+.opening { stroke: var(--surface); stroke-width: 5; }
+.door { stroke: var(--accent); stroke-width: 5; }
+.doorlabel { font: 600 10.5px var(--body); fill: var(--accent); }
+.mach rect { stroke-width: 2; rx: 4; }
+.mach text { font-size: 11px; font-weight: 600; fill: var(--ink); pointer-events: none; }
+.mach { cursor: pointer; }
+.mach.st-ok rect.body { fill: color-mix(in srgb, var(--ok) 18%, var(--surface)); stroke: var(--ok); }
+.mach.st-warn rect.body { fill: color-mix(in srgb, var(--warn) 22%, var(--surface)); stroke: var(--warn); }
+.mach.st-crit rect.body { fill: color-mix(in srgb, var(--crit) 20%, var(--surface)); stroke: var(--crit); stroke-width: 3; }
+.mach.st-none rect.body { fill: color-mix(in srgb, var(--none) 14%, var(--surface)); stroke: var(--none); }
+.mach.above rect.body { stroke-dasharray: 5 3; }
+.mach.sel rect.body { stroke: var(--accent); stroke-width: 3.5; }
+.mach.dim { opacity: 0.25; }
+.badge circle { fill: var(--ink); }
+.badge text { fill: var(--surface); font: 600 10px var(--mono); }
+.editing .mach { cursor: grab; }
+.editing .mach:active { cursor: grabbing; }
+.panel { position: sticky; top: 12px; display: grid; gap: 12px; }
+.panel .empty { color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 600; border: 1px solid var(--line); }
+.kv { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.mono { font-family: var(--mono); font-size: 13px; }
+ul.tight { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.issue { border-left: 4px solid var(--crit); padding: 6px 10px; background: color-mix(in srgb, var(--crit) 8%, var(--surface)); border-radius: 0 6px 6px 0; font-size: 14px; }
+.issue.warn { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--surface)); }
+.tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.field input, .field select { font: 400 14px var(--body); padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); min-width: 190px; }
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 14px; }
+th { text-align: left; font: 600 12px var(--body); text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 2px solid var(--line); padding: 8px 10px; }
+td { border-bottom: 1px solid var(--line); padding: 9px 10px; vertical-align: top; }
+tr.row { cursor: pointer; }
+tr.row:hover td, tr.row.sel td { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.statuscell { display: flex; gap: 8px; align-items: flex-start; }
+.statuscell .dot { margin-top: 6px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 6px; font-size: 14px; display: none; }
+textarea.export { width: 100%; min-height: 120px; font: 12px var(--mono); background: var(--floor); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.mini { font-size: 15px; margin-bottom: 4px; }
+.chip.static { cursor: default; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--floor); }
+.toolbar[hidden] { display: none; }
+.toolbar .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 4px; }
+button.b[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent); }
+button.b.primary[aria-pressed="true"] { color: var(--surface); box-shadow: none; }
+button.b:disabled { opacity: 0.45; cursor: default; }
+button.b.danger { color: var(--crit); }
+.toolbar label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.grid2 input { min-width: 0; width: 100%; }
+.panel .field input, .panel .field select { min-width: 0; width: 100%; }
+.panel .btns { margin-top: 2px; }
+.wall { stroke: var(--ink); stroke-width: 5; stroke-linecap: square; }
+.wall.door { stroke: var(--accent); stroke-width: 7; stroke-linecap: butt; }
+.wall.opening { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 2 6; }
+.wall.dashed { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 7 5; }
+.wall.preview { opacity: 0.7; }
+.hit { stroke: transparent; stroke-width: 16; }
+.editing .hit, .editing [data-kind] { cursor: move; }
+.drawing, .drawing [data-kind] { cursor: crosshair; }
+.roomlabel { font: 600 13px var(--display); fill: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.editing .roomlabel { cursor: move; }
+.fixture rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.fixture .marker { cursor: pointer; }
+.fixture .marker { fill: color-mix(in srgb, var(--crit) 25%, transparent); stroke: var(--crit); stroke-width: 1.5; }
+.fixture text { font-size: 10.5px; fill: var(--muted); }
+.grid-minor { fill: none; stroke: color-mix(in srgb, var(--line) 55%, transparent); stroke-width: 0.6; }
+.grid-major { fill: none; stroke: var(--line); stroke-width: 1; }
+.handle { fill: var(--surface); stroke: var(--accent); stroke-width: 2; cursor: pointer; }
+.handle.rot { cursor: grab; }
+.rotglyph { fill: none; stroke: var(--accent); stroke-width: 1.5; pointer-events: none; }
+.selbox { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+.selline { stroke: var(--accent); stroke-width: 3; opacity: 0.6; pointer-events: none; }
+.selline.thin { stroke-width: 1.5; opacity: 1; }
+svg.map.editing { touch-action: none; }
+.fixture.tone-space rect { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 6 4; fill: color-mix(in srgb, var(--accent) 6%, transparent); }
+.fixture.tone-space text { fill: var(--accent); font-size: 13px; font-weight: 600; }
+.fixture.tone-duct rect { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 5; fill: none; }
+.fixture.tone-duct text { font-size: 10px; }
+.fixture.tone-safety rect { stroke: var(--crit); stroke-dasharray: none; fill: color-mix(in srgb, var(--crit) 12%, transparent); }
+.fixture.tone-safety text { fill: var(--crit); }
+
+.wall.duct { stroke: var(--duct); stroke-width: 9; stroke-linecap: round; opacity: 0.55; }
+.wall.hvac { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 1 8; opacity: 0.7; }
+.wall.air { stroke: var(--air); stroke-width: 2.5; stroke-dasharray: 9 4; }
+.wall.power { stroke: var(--warn); stroke-width: 2.5; stroke-dasharray: 3 4; }
+svg.map:not(.editing) .svc { pointer-events: none; }
+.fixture.tone-gate .gatemark { fill: var(--surface); stroke: var(--duct); stroke-width: 2.5; cursor: pointer; }
+.fixture.tone-gate.unconfirmed .gatemark { stroke-dasharray: 3 2; }
+.fixture.tone-gate .gatetext { font: 600 9px var(--mono); fill: var(--ink); pointer-events: none; }
+.fixture.tone-gate.sel .gatemark { stroke: var(--accent); stroke-width: 3.5; }
+.fixture.tone-post rect { fill: var(--post); stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: none; cursor: pointer; }
+.fixture.tone-power rect { fill: color-mix(in srgb, var(--warn) 35%, var(--surface)); stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: none; cursor: pointer; }
+.fixture.tone-air rect { fill: color-mix(in srgb, var(--air) 30%, var(--surface)); stroke: var(--air); stroke-width: 1.5; stroke-dasharray: none; cursor: pointer; }
+.fixture.tone-heater rect { fill: color-mix(in srgb, var(--heat) 25%, var(--surface)); stroke: var(--heat); stroke-width: 1.5; stroke-dasharray: none; cursor: pointer; }
+.fixture.sel rect, .fixture.sel ellipse { stroke: var(--accent) !important; stroke-width: 2.5 !important; }
+.layers { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+.layers label, .legend-item { display: inline-flex; gap: 6px; align-items: center; }
+.layers-title { font-weight: 600; color: var(--muted); }
+.legend-item { color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 10px; border-radius: 2px; flex: none; }
+.sw-duct { background: var(--duct); opacity: 0.6; height: 8px; border-radius: 4px; }
+.sw-power { background: repeating-linear-gradient(90deg, var(--warn) 0 3px, transparent 3px 6px); height: 3px; }
+.sw-air { background: repeating-linear-gradient(90deg, var(--air) 0 8px, transparent 8px 11px); height: 3px; }
+.sw-safety { background: color-mix(in srgb, var(--crit) 25%, var(--surface)); border: 1.5px solid var(--crit); width: 10px; height: 10px; border-radius: 50%; }
+.sw-post { background: var(--post); border: 1px solid var(--ink); width: 10px; height: 10px; }
+.sw-gate { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--duct); background: var(--surface); font: 600 9px var(--mono); color: var(--ink); text-align: center; line-height: 12px; }
+.zoomer { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.banner { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--warn); border-radius: 6px; background: color-mix(in srgb, var(--warn) 10%, var(--surface)); font-size: 14px; }
+.banner[hidden] { display: none; }
+
+#exportBox[hidden], [hidden] { display: none !important; }
+
+.panel { max-height: calc(100vh - 24px); overflow-y: auto; }
+a.src { display:inline-block; min-width:16px; padding:0 4px; margin-left:2px; border:1px solid var(--line); border-radius:4px; font-size:11px; line-height:16px; text-align:center; color:var(--accent); text-decoration:none; vertical-align:1px; font-weight:600; }
+a.src:hover { border-color: var(--accent); }
+details.prog { border:1px solid var(--line); border-radius:6px; padding:8px 10px; }
+details.prog summary { cursor:pointer; font-weight:600; font-size:14px; }
+details.prog h4 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:10px 0 4px; }
+.prio { display:grid; gap:8px; }
+.prio .item { display:grid; grid-template-columns: 88px 1fr; gap:10px; align-items:start; border:1px solid var(--line); border-radius:6px; padding:10px; }
+.prio .tag { font-size:12px; font-weight:700; border-radius:999px; padding:2px 8px; text-align:center; color:#fff; }
+.p1 .tag { background: var(--crit); } .p2 .tag { background: var(--warn); color:#222; } .p3 .tag { background: var(--accent); } .p4 .tag { background: var(--none); }
+.prio .item strong { display:block; margin-bottom:2px; }
+.goals { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:10px; }
+.goals .g { border:1px solid var(--line); border-radius:6px; padding:12px; display:grid; gap:6px; align-content:start; }
+.goals h3 { margin:0; font-size:15px; }
+.goals h4 { margin:4px 0 0; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+.rules { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; }
+.rules h3 { margin:0 0 4px; font-size:14px; }
+ol.srcs { margin:0; padding-left:22px; font-size:13px; display:grid; gap:4px; }
+ol.srcs a { color: var(--accent); word-break: break-word; }
+
+.mob { display: none; }
+@media (max-width: 760px) {
+  body:not(.desk) .wrap { display: none; }
+  body:not(.desk) .mob { display: block; }
+}
+.phone-only { display: none !important; }
+@media (max-width: 760px) { body.desk .phone-only { display: inline-flex !important; } }
+body.noscroll { overflow: hidden; }
+.mob { font-size: 16px; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.mtop { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px 10px; }
+.mtop h1 { font-size: 18px; margin: 0; }
+.mtop .msum { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
+.mview { padding: 12px 16px 24px; }
+.mview h2 { font-size: 18px; margin: 4px 0 8px; }
+.mview h3 { font-size: 15px; }
+.msearch { width: 100%; font: 16px var(--body); padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.mchips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 4px; scrollbar-width: none; }
+.mchips::-webkit-scrollbar { display: none; }
+.mchip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 500 14px var(--body); cursor: pointer; }
+.mchip.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.marea { font-size: 12px !important; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px !important; }
+.mlist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.mlist li + li { border-top: 1px solid var(--line); }
+.mrow { width: 100%; display: grid; grid-template-columns: 12px 1fr 12px; gap: 12px; align-items: center; padding: 12px 14px; min-height: 60px; background: none; border: 0; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.mrow .dot { width: 12px; height: 12px; }
+.mtxt { display: grid; gap: 2px; min-width: 0; }
+.mname { font-weight: 600; font-size: 16px; }
+.msub { font-size: 13px; color: var(--muted); }
+.mwhy { font-size: 13px; }
+.chev { color: var(--muted); font-size: 22px; line-height: 1; }
+.mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.mnav button { display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 58px; background: none; border: 0; color: var(--muted); font: 600 11px var(--body); cursor: pointer; }
+.mnav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mnav button[aria-current="page"] { color: var(--accent); }
+.msheet { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.mshead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 4px; padding: 6px 8px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.mback { min-height: 44px; padding: 0 10px 0 6px; border: 0; background: none; color: var(--accent); font: 600 16px var(--body); cursor: pointer; }
+.mshead .mstitle { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msbody { padding: 16px 16px 40px; display: grid; gap: 14px; }
+.msbody details.prog summary { font-size: 15px; padding: 4px 0; }
+.mmapbox { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--floor); height: calc(100vh - 250px); min-height: 320px; -webkit-overflow-scrolling: touch; }
+.mmapbox svg { display: block; height: auto; }
+.mzoom { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.mzoom button { min-width: 44px; min-height: 40px; }
+.mview .prio .item { grid-template-columns: 1fr; gap: 6px; }
+.mview .prio .tag { justify-self: start; }
+.mview .rules { grid-template-columns: 1fr; }
+.mview .goals { grid-template-columns: 1fr; }
+.mview section + section { margin-top: 22px; }
+.mlink { display: inline-flex; min-height: 44px; align-items: center; }
+
+.mcards { display: grid; gap: 10px; }
+a.mbtn { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 50px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); font: 600 16px var(--body); text-decoration: none; }
+a.mbtn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.calcard { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.calcard a.b { text-decoration: none; display: inline-flex; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Goldthorne Shop Machines</h1>
+    <button class="b phone-only" type="button" id="toPhone" style="margin:6px 0">Back to the phone view</button>
+    <p class="sub">Machine map and register from the walkthrough of November 12, 2026, at 14 Goldthorne Ave. Draft for Peter and Will to correct: room shapes and machine positions come from Cosmo's layout, checked against all 240 walkthrough photos, and are not to scale. Areas marked "to confirm" are placed from photos only.</p>
+  </header>
+
+  <section class="card" aria-labelledby="status-h">
+    <div class="strip" id="statusStrip" role="group" aria-labelledby="status-h">
+      <h2 id="status-h" style="margin-right:6px">Status</h2>
+    </div>
+    <p class="note" style="margin-top:10px">Colour rules are a proposal waiting on the managers' approval. Green: all maintenance current. Yellow: a task due within 7 days, or a minor problem reported. Red: a task overdue, or the machine broken or unsafe. Grey: no maintenance record yet.</p>
+  </section>
+
+  <section class="card" aria-labelledby="cal-h">
+    <div class="calcard"><h2 id="cal-h" style="margin-right:6px">Maintenance calendar</h2>
+      <a class="b primary" href="https://calendar.google.com/calendar/u/0?cid=Y183NmE5ZDFlNGRhMmVkNjRhZTI1ZDZlOTkxOWM5YTllZjM1MDgyZmUyNjgxYTlkMDA2MGYyOTc2YzI3Yjg0YTJkQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20" target="_blank" rel="noopener">Add the Woodshop calendar to my Google Calendar</a>
+      <a class="b" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener">Open Google Calendar</a></div>
+    <p class="note" style="margin-top:8px">Maintenance tasks and who is assigned to each. Works for the Google accounts the calendar is shared with.</p>
+  </section>
+
+  <section class="mapgrid">
+    <div class="card">
+      <div class="maphead">
+        <h2>Shop floor, top view</h2>
+        <div class="btns">
+          <button class="b" id="editBtn" type="button" aria-pressed="false">Edit layout</button>
+          <button class="b" id="copyBtn" type="button">Copy layout</button>
+          <button class="b" id="loadBtn" type="button">Load layout</button>
+          <button class="b" id="resetBtn" type="button">Reset to shared layout</button>
+        </div>
+      </div>
+      <div class="toolbar" id="toolbar" hidden role="toolbar" aria-label="Floor plan tools">
+        <button class="b" type="button" data-tool="select" aria-pressed="true">Select and move</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="b" type="button" data-tool="wall" aria-pressed="false">Draw wall</button>
+        <button class="b" type="button" data-tool="door" aria-pressed="false">Draw door</button>
+        <button class="b" type="button" data-tool="opening" aria-pressed="false">Draw opening</button>
+        <button class="b" type="button" data-tool="dashed" aria-pressed="false">Draw dashed line</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="b" type="button" data-tool="duct" aria-pressed="false">Draw duct</button>
+        <button class="b" type="button" data-tool="air" aria-pressed="false">Draw air line</button>
+        <button class="b" type="button" data-tool="power" aria-pressed="false">Draw electrical run</button>
+        <button class="b" type="button" data-tool="gate" aria-pressed="false">Add blast gate</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="b" type="button" data-tool="label" aria-pressed="false">Add label</button>
+        <button class="b" type="button" data-tool="box" aria-pressed="false">Add fixture</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="b" type="button" id="undoBtn" disabled>Undo</button>
+        <label for="snapChk"><input type="checkbox" id="snapChk" checked> Snap to grid</label>
+      </div>
+      <p class="note" style="margin-bottom:10px">Select a machine to see its record. Edit layout lets you move, resize and rotate machines, and move, draw or delete walls, doors and labels. Copy layout gives the plan as text to paste into the chat so the map can be updated for everyone.</p>
+      <div class="banner" id="restoreBanner" hidden role="status">
+        <span>This browser has layout edits saved before the photo-by-photo correction. The map now shows the corrected layout.</span>
+        <button class="b primary" type="button" id="useMineBtn">Use my saved edits</button>
+        <button class="b" type="button" id="keepNewBtn">Keep the new shared layout</button>
+      </div>
+      <div class="layers" role="group" aria-label="Map layers">
+        <span class="layers-title">Show</span>
+        <label for="ly_ducting"><input type="checkbox" id="ly_ducting" data-layer="ducting" checked><span class="sw sw-duct" aria-hidden="true"></span>Dust ducts and blast gates</label>
+        <label for="ly_power"><input type="checkbox" id="ly_power" data-layer="power" checked><span class="sw sw-power" aria-hidden="true"></span>Electrical</label>
+        <label for="ly_air"><input type="checkbox" id="ly_air" data-layer="air" checked><span class="sw sw-air" aria-hidden="true"></span>Compressed air</label>
+        <label for="ly_safety"><input type="checkbox" id="ly_safety" data-layer="safety" checked><span class="sw sw-safety" aria-hidden="true"></span>Safety and heating</label>
+        <span class="legend-item"><span class="sw sw-post" aria-hidden="true"></span>Yellow service post (power and air)</span>
+        <span class="legend-item">Red circle: extinguisher or safety item. Hover or tap any marker for its name</span>
+        <span class="legend-item"><span class="sw sw-gate" aria-hidden="true">G</span>Blast gate (dashed ring: not yet seen in photos)</span>
+      </div>
+      <div class="zoomer" role="group" aria-label="Map zoom">
+        <button class="b" type="button" id="zoomOut">Zoom out</button>
+        <button class="b" type="button" id="zoomIn">Zoom in</button>
+        <button class="b" type="button" id="zoomFit">Fit whole shop</button>
+      </div>
+      <div class="mapbox"><svg class="map" id="map" viewBox="0 0 3100 1500" role="img" aria-label="Top-view plan of the shop with each machine coloured by status"></svg></div>
+      <div id="exportBox" hidden style="margin-top:10px;display:grid;gap:6px">
+        <label class="field" for="exportText" id="exportLabel">Layout</label>
+        <textarea class="export" id="exportText"></textarea>
+        <div class="btns"><button class="b primary" type="button" id="applyBtn" hidden>Apply</button></div>
+      </div>
+    </div>
+    <aside class="card panel" id="panel" aria-live="polite"></aside>
+  </section>
+  <section class="card" aria-labelledby="gates-h">
+    <div class="maphead" style="margin-bottom:6px"><h2 id="gates-h">Blast gates</h2><span class="note" id="gateCount"></span></div>
+    <p class="note" style="margin:0 0 10px">One row per gate, numbered along the ducting. Sensor and open-hours columns fill in once gate sensors are installed; duct routes on the map are approximate, gate positions follow the photos.</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Gate</th><th>Serves</th><th>Where</th><th>Seen in photos</th><th>Sensor</th><th>Open hours, last 7 days</th></tr></thead>
+        <tbody id="gateRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="reg-h">
+    <h2 id="reg-h" style="margin-bottom:12px">Machine register</h2>
+    <div class="tools">
+      <div class="field"><label for="q">Search</label><input id="q" type="search" placeholder="Name, maker, serial"></div>
+      <div class="field"><label for="areaSel">Area</label><select id="areaSel"></select></div>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Shop no.</th><th>Machine</th><th>Maker and model</th><th>Serial and year</th><th>Power</th><th>Parts and service</th><th>Status</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2 style="margin-bottom:10px">Open issues</h2>
+      <div id="issues" style="display:grid;gap:8px"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:10px">Still to collect</h2>
+      <ul class="tight" id="todo"></ul>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="risk-h">
+    <h2 id="risk-h" style="margin-bottom:6px">Safety risks, in priority order</h2>
+    <p class="note" style="margin-bottom:10px">From the photo walkthrough. Numbers link to the source behind each line.</p>
+    <div class="prio" id="prioList"></div>
+  </section>
+
+  <section class="card" aria-labelledby="rules-h">
+    <h2 id="rules-h" style="margin-bottom:10px">Shop-wide rules (every machine)</h2>
+    <div class="rules" id="rulesBox"></div>
+    <h3 style="margin:16px 0 6px">Inspection calendar</h3>
+    <ul class="tight" id="calList"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="goals-h">
+    <h2 id="goals-h" style="margin-bottom:6px">Program goals, strategy and measures</h2>
+    <p class="note" style="margin-bottom:10px">Proposed for the co-op to adopt. Tactics and measures are recommendations, not legal requirements.</p>
+    <div class="goals" id="goalsBox"></div>
+  </section>
+
+  <section class="card" aria-labelledby="src-h">
+    <h2 id="src-h" style="margin-bottom:10px">Sources</h2>
+    <p class="note" style="margin-bottom:8px">"Similar model" means the exact manual wasn't found; use it only until the real one arrives. Rules from US sources are marked as benchmarks.</p>
+    <ol class="srcs" id="srcList"></ol>
+  </section>
+</div>
+
+<div class="mob" id="mob">
+  <div class="mtop"><h1>Goldthorne Shop</h1><p class="msum" id="mSum"></p></div>
+  <div class="mview" id="mv-machines">
+    <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
+    <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, shop number" autocomplete="off">
+    <div class="mchips" id="mChips" role="group" aria-label="Filter by status"></div>
+    <div id="mList"></div>
+  </div>
+  <div class="mview" id="mv-map" hidden>
+    <h2>Shop floor</h2>
+    <p class="note">Drag to move around, use the buttons to zoom, tap a machine for its record.</p>
+    <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button></div>
+    <div class="mmapbox" id="mMap"></div>
+  </div>
+  <div class="mview" id="mv-safety" hidden>
+    <h2>Safety risks, in priority order</h2>
+    <p class="note" style="margin-bottom:10px">From the photo walkthrough. Numbers open the source behind each line.</p>
+    <div class="prio" id="mSafety"></div>
+    <h2 style="margin-top:24px">Shop-wide rules</h2>
+    <div class="rules" id="mRules"></div>
+    <h2 style="margin-top:22px">Inspection calendar</h2>
+    <ul class="tight" id="mCal"></ul>
+  </div>
+  <div class="mview" id="mv-calendar" hidden>
+    <h2>Maintenance calendar</h2>
+    <p class="note" style="margin-bottom:12px">Shop maintenance tasks and who is assigned to each. Add it once and it shows up in the Google Calendar app on your phone, with reminders.</p>
+    <div class="mcards">
+      <a class="mbtn primary" href="https://calendar.google.com/calendar/u/0?cid=Y183NmE5ZDFlNGRhMmVkNjRhZTI1ZDZlOTkxOWM5YTllZjM1MDgyZmUyNjgxYTlkMDA2MGYyOTc2YzI3Yjg0YTJkQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20" target="_blank" rel="noopener">Add the Woodshop calendar to my Google Calendar</a>
+      <a class="mbtn" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener">Open Google Calendar</a>
+    </div>
+    <p class="note" style="margin-top:8px">Works for the Google accounts the calendar is shared with. Ask Cosmo to be added.</p>
+    <h2 style="margin-top:22px">Coming up</h2>
+    <p class="note" id="mUpcoming">No maintenance tasks are scheduled yet.</p>
+    <h2 style="margin-top:22px">Put this page on your home screen</h2>
+    <ul class="tight">
+      <li><strong>iPhone:</strong> open this page in Safari, tap the Share button, then Add to Home Screen.</li>
+      <li><strong>Android:</strong> open this page in Chrome, tap the three-dot menu, then Add to Home screen.</li>
+    </ul>
+  </div>
+  <div class="mview" id="mv-more" hidden>
+    <section><h2>Open issues</h2><div id="mIssues" style="display:grid;gap:8px"></div></section>
+    <section><h2>Program goals</h2><p class="note" style="margin-bottom:10px">Proposed for the co-op to adopt.</p><div class="goals" id="mGoals"></div></section>
+    <section><h2>Sources</h2><ol class="srcs" id="mSources"></ol></section>
+    <section><h2>Desktop version</h2><p class="note">The full page, with the layout editor, works best on a computer.</p><button class="b mlink" type="button" id="toDesk">Open the desktop version here</button></section>
+  </div>
+  <nav class="mnav" aria-label="Sections">
+    <button type="button" data-v="machines" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Machines</button>
+    <button type="button" data-v="map" aria-current="false"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Map</button>
+    <button type="button" data-v="calendar" aria-current="false"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendar</button>
+    <button type="button" data-v="safety" aria-current="false"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Safety</button>
+    <button type="button" data-v="more" aria-current="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</button>
+  </nav>
+  <div class="msheet" id="msheet" hidden role="dialog" aria-modal="true" aria-labelledby="msTitle">
+    <div class="mshead"><button class="mback" type="button" id="mBack">&lsaquo; Back</button><span class="mstitle" id="msTitle"></span></div>
+    <div class="msbody" id="msBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const PROGRAM = {"sources": [["gen", "CCOHS, Woodworking Machines – General Safety Tips (revised 2025-03-13)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/gen_safe.html"], ["tbl", "CCOHS, Woodworking Machines – Table Saws (revised 2025-06-30)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/tbl_saw.html"], ["jp", "CCOHS, Woodworking Machines – Jointers and Planers (revised 2019-07-02, confirmed current 2025-03-10)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/planer.html"], ["shp", "CCOHS, Woodworking Machines – Shapers (revised 2025-05-26)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/shaper.html"], ["lathe", "CCOHS, Woodworking Machines – Wood Turning Lathes (revised 2025-03-10)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/lathe_w.html"], ["sand", "CCOHS, Woodworking Machines – Sanders (revised 2025-05-27)", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/CCOHS_sander_b.pdf"], ["band", "CCOHS, Woodworking Machines – Band Saws", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/band_saw.html"], ["ras", "CCOHS, Woodworking Machines – Radial Arm Saws", "https://www.ccohs.ca/oshanswers/safety_haz/woodwork/rad_saw.html"], ["drill", "CCOHS, Metalworking Machines – Drill Presses", "https://www.ccohs.ca/oshanswers/safety_haz/metalworking/drillpresses.html"], ["grind", "CCOHS, Abrasive Wheels – Use of Bench and Pedestal Grinders (revised 2023-10-31)", "https://www.ccohs.ca/oshanswers/safety_haz/abrasive_wheels/safeuse2.html"], ["wcf", "Bench grinder safety poster (wheel wear and readjusting rests; cites OSHA 1910.215)", "https://wcf.com/sites/default/files/BenchGrinderPoster.pdf"], ["r851", "Ontario Reg. 851, Industrial Establishments (s.24, 25, 28, 75, 76, 81, 83, 123)", "https://www.ontario.ca/laws/regulation/900851"], ["r851q", "WSPS, selected passages of Reg. 851 (text of s.24 and s.25)", "https://www.wsps.ca/resource-hub/i/1317310/41"], ["wsn", "Workplace Safety North and Ministry of Labour, machine guarding webinar (OHSA 25(1)(b), 25(2)(a); Reg. 851 s.28, 75; most common orders)", "https://workplacesafetynorth.ca/sites/default/files/resources/Machine-Guarding-Webinar-MLTSD-WSN-2020-02-10.pdf"], ["r83", "OHS Insider, quoting Reg. 851 s.83(2) on jewellery and loose clothing", "https://ohsinsider.com/dos-donts-x-bar-workers-wearing-jewellery-risk-entanglement/?print=pdf"], ["r81", "Algonquin College eye protection procedure (cites Reg. 851 s.81)", "https://www.algonquincollege.com/safety-security-services/files/2022/02/OHS-WP-01-Eye-Protection-2020.pdf"], ["ofc", "Ontario Fire Code 6.2.1.3 and 6.2.7.2, as quoted in the University of Guelph extinguisher policy", "https://www.uoguelph.ca/hr/print/3783"], ["ofc2", "OHS Insider: Reg. 851 s.123(1) applies Fire Code extinguisher rules; Fire Code 6.2.7.1 requires NFPA 10 maintenance", "https://ohsinsider.com/ask-the-expert-inspection-of-portable-fire-extinguishers/?print=pdf"], ["georgina", "Town of Georgina, Fire Code for business owners (annual extinguisher service; records kept on premises)", "https://www.georgina.ca/home-page/living-here/fire-and-rescue-services/fire-prevention-and-education/fire-code-business"], ["eye", "ISEA, on ANSI/ISEA Z358.1 weekly activation of plumbed eyewash units", "https://safetyequipment.org/osha-highlights-importance-of-regular-maintenance-of-emergency-eyewash-stations/"], ["eye2", "Insurer summary of ANSI/ISEA Z358.1 (weekly activation, annual inspection, tepid 60–100 °F)", "https://icwgroup.safetynow.com/?p=10490"], ["oesc", "Electrical Safety Authority Flash Notice 25-01 (OESC Rules 2-308 and 2-314)", "https://esasafe.com/assets/files/esasafe/pdf/Electrical_Safety_Products/Flash_Notices/25-01-FL.pdf"], ["flam", "University of Ottawa Safety Sheet 18, flammable storage cabinets (Ontario Fire Code Part 4)", "https://www.uottawa.ca/about-us/sites/g/files/bhrskd336/files/2022-10/safety-sheet-18-flammable-storage-cabinets.pdf"], ["flam2", "St. Clair College poster, flammable liquids storage (Ontario Fire Code)", "https://st-clair.net/Data/Sites/29/media/Co-op%20Course/Health%20and%20Safety/Posters/Health%20and%20Safety%20-%20Flammable%20Liquids%20Storage.pdf"], ["dust", "OHS Insider, 12-step combustible dust game plan", "https://ohsinsider.com/?p=110220"], ["nfpa", "Combustible dust housekeeping dos and don'ts (NFPA hazardous layer as little as 1/32 in)", "https://icwgroup.safetynow.com/?p=756"], ["bcfs", "BC Forest Safety, combustible wood dust quick guide", "https://www.bcforestsafe.org/wp-content/uploads/2021/03/Combination-Contractor_Awareness-CD-Quick-Guide.pdf"], ["aviva", "Aviva Canada, wood dust explosions (insurer guidance)", "https://www.aviva.ca/en/business/news-and-insights/wood-dust-explosions/"], ["booth", "CCAB Risk Insights, spray paint booth maintenance (from the NFPA Fire Protection Handbook)", "https://www.ccab.com/tfab/wp-content/uploads/sites/2/2018/08/Risk-Insights-Spray-Paint-Booth-Maintenance.pdf"], ["booth33", "NFPA 33 s.10.4 maintenance procedures, as reproduced in a booth installation manual", "https://online.flippingbook.com/view/833882973/11/"], ["jjk", "J.J. Keller summary of US OSHA 1910.107 spray finishing (US rule, used as a benchmark)", "https://jjkellercompliancenetwork.com/institute/safety-requirements"], ["lt18", "Laguna Tools, 16HD / Resaw Master / LT18 / LT32 bandsaw user manual (2017)", "https://manualmachine.com/laguna/lt18/22654167-user-manual"], ["nova", "Teknatool, NOVA Voyager DVR Drill Press operation manual 123-0718-013 (2018)", "https://wiki.bitraf.no/w/images/9/93/NovaVoyager.pdf"], ["dw735", "DeWALT DW735 instruction manual", "https://www.bu.edu/eng/files/2022/08/Planer-Manual.pdf"], ["blum", "Blum, MINIPRESS P operating instructions BA-201/1 EN (09.25)", "https://d2.blum.com/services/BEC003/cme106235_ba_dok_bau_$sen_$aof_$v4.pdf"], ["blum3", "Blum, MINIPRESS P safety instructions (earlier edition)", "https://d2.blum.com/services/BEC003/cme106235_ba_dok_bau_$sen_$aof_$v3.pdf"], ["unisaw", "Delta Unisaw 34-801 instruction manual (2005), a similar model", "https://manualmachine.com/delta/34801/2509938-user-manual"], ["sc", "Steel City 55220 26-inch dual drum sander manual, a similar model", "https://manualmachine.com/steelcity/55220/20140663-user-manual"], ["ac", "MaintainX copy of the Atlas Copco G7FF maintenance plan", "https://www.getmaintainx.com/assets/atlas-copco/oil-injected-rotary-screw-compressor-g7ff-tm"], ["scm", "SCM Canada product pages: request the user manual from servicecanada@scmgroup.com with the serial number", "https://shop.scmgroup.com/scmwood-ca/ie/en/c/nova-f-410/p/NOVAF410_COMP2"], ["sames", "Sames Kremlin, 10C18 Airmix pump page (user manual download)", "https://www.sames.com/usa/en/product/product-10c18-paint-pump"], ["samesreg", "Sames Kremlin pressure regulator manual 573.008.212 (gun safety)", "https://xcart.wurthlac.com/skin/common_files/files/specs/Airmix-PH-fluid_regulator-582162110.pdf"], ["oneway", "Oneway Manufacturing, 1224 lathe owner's manual (contact details)", "https://manualmachine.com/oneway/1224/19577777-owners-manual"], ["osaw", "History of the DeWalt radial arm saw (rights sold to The Original Saw Company in 1990)", "https://www.sawdustmaking.com/Radial%20Arm%20Saws/radial_arm_saws.html"], ["axyz", "AXYZ, How to maintain your CNC router", "https://www.axyz.com/us/en/blog/how-to-maintain-your-cnc-router/"], ["axyz2", "AXYZ, 8 easy steps to CNC machine housekeeping (Woodworking Network)", "https://www.woodworkingnetwork.com/best-practices-guide/panel-processing/8-easy-steps-cnc-machine-housekeeping"], ["stiles", "Stiles Machinery, maintaining your edgebander glue pot", "https://stilesmachinery.com/edgebanders-maintaining-your-glue-pot/"], ["wwn", "Woodworking Network, edgebander glue pot maintenance tips", "https://www.woodworkingnetwork.com/best-practices-guide/panel-processing/4-tips-edgebander-glue-pot-maintenance"], ["photos", "Goldthorne photo walkthrough, November 12, 2026 (photos shared in this conversation)", ""], ["meeting", "Goldthorne co-op wood shop meeting transcript, November 2026", ""]], "machines": {"martin": {"manual": {"state": "request", "text": "Not found online. Ask the dealer listed under Parts and service (Taurus Craco) for the T70 operating manual.", "src": ["photos"]}, "before": [["Riving knife, guard and anti-kickback device fitted and working before any cut.", ["tbl"]], ["Blade suited to the job, sharp and set, raised only slightly above the stock.", ["tbl"]], ["Fence locked before cutting.", ["tbl"]]], "during": [["Stand to one side of the blade line.", ["tbl"]], ["Use a push stick for narrow or short pieces, and to clear offcuts from between fence and blade.", ["tbl"]], ["Support long or wide panels with extension tables or roller supports.", ["tbl"]], ["Never cut freehand, and never reach over or around a moving blade.", ["tbl"]]], "after": [["Stay until the blade has stopped. Clear dust with a brush or stick, never by hand or with compressed air.", ["tbl", "gen"]]], "sched": [["Each use|Check the guard and riving knife are in place and in good condition.", ["tbl", "gen"]], ["Before any blade change or service|Stop the saw and unplug or lock it out.", ["tbl", "r851"]], ["Maker's intervals|Pending the T70 manual.", ["photos"]]], "risks": [["Power cable lies across the walkway between the service post and the saw. Route it overhead or in the floor so it is not a trip hazard.", ["photos", "gen"]]]}, "scmsaw": {"manual": {"state": "request", "text": "SCM asks owners without a manual to email servicecanada@scmgroup.com with the machine's serial number to get the user manual (Class si 350).", "src": ["scm"]}, "before": [["Riving knife, guard and anti-kickback device fitted and working before any cut.", ["tbl"]], ["Blade suited to the job, sharp and set, raised only slightly above the stock.", ["tbl"]], ["Fence locked before cutting.", ["tbl"]]], "during": [["Stand to one side of the blade line.", ["tbl"]], ["Use a push stick for narrow or short pieces, and to clear offcuts from between fence and blade.", ["tbl"]], ["Support long or wide panels with extension tables or roller supports.", ["tbl"]], ["Never cut freehand, and never reach over or around a moving blade.", ["tbl"]]], "after": [["Stay until the blade has stopped. Clear dust with a brush or stick, never by hand or with compressed air.", ["tbl", "gen"]]], "sched": [["Each use|Check the guard and riving knife are in place and in good condition.", ["tbl", "gen"]], ["Before any blade change or service|Stop the saw and unplug or lock it out.", ["tbl", "r851"]], ["Maker's intervals|Pending the SCM manual.", ["scm"]]], "risks": []}, "planer": {"manual": {"state": "request", "text": "SCM asks owners without a manual to email servicecanada@scmgroup.com with the machine's serial number to get the user manual (S630 Class).", "src": ["scm"]}, "before": [["Knives set to the right clearance and depth, sharp, balanced and secure.", ["jp"]], ["Guard moves freely and returns over the cutterhead; fence anchored.", ["jp"]], ["Machine lubricated and parts in good working order.", ["jp"]], ["Check stock for loose knots, splits and metal or stone; don't cut it if found.", ["jp"]]], "during": [["Start and stop controls within easy reach.", ["jp"]], ["Never stand directly behind stock being planed (kickback).", ["gen"]], ["Keep hands away from the cutters; clear chips with a stick or brush, never by hand or compressed air.", ["jp"]]], "after": [["Shut off the power and wait for the cutterhead to stop before leaving.", ["jp"]]], "sched": [["Each use|Pre-start checks above.", ["jp"]], ["Before knife changes or service|Unplug or lock out.", ["gen", "r851"]], ["Maker's intervals|Pending the SCM manual.", ["scm"]]], "risks": []}, "jointer": {"manual": {"state": "request", "text": "SCM asks owners without a manual to email servicecanada@scmgroup.com with the machine's serial number to get the user manual (nova f 410).", "src": ["scm"]}, "before": [["Knives set to the right clearance and depth, sharp, balanced and secure.", ["jp"]], ["Guard moves freely and returns over the cutterhead; fence anchored.", ["jp"]], ["Machine lubricated and parts in good working order.", ["jp"]], ["Check stock for loose knots, splits and metal or stone; don't cut it if found.", ["jp"]], ["Keep at least 1 m (3 ft) clear beyond the longest stock.", ["jp"]]], "during": [["Use hold-down push blocks with steady downward and forward pressure.", ["jp"]], ["No cut deeper than about 1/16 in (0.3 cm) per pass.", ["jp"]], ["Don't joint or surface pieces that are too short or thin; never pass hands over the cutters.", ["jp"]]], "after": [["Shut off the power and wait for the cutterhead to stop before leaving.", ["jp"]]], "sched": [["Each use|Pre-start checks above.", ["jp"]], ["Before knife changes or service|Unplug or lock out.", ["gen", "r851"]], ["Maker's intervals|Pending the SCM manual.", ["scm"]]], "risks": []}, "shaper": {"manual": {"state": "request", "text": "SCM asks owners without a manual to email servicecanada@scmgroup.com with the machine's serial number to get the user manual (T130).", "src": ["scm"]}, "before": [["Only trained, experienced members run the shaper.", ["shp"]], ["Cutter and spindle speed suited to the job; cutters sharp and clean.", ["shp"]], ["Check spindle, cutters, moving parts and guards before starting; remove setup wrenches from the table.", ["shp"]], ["Lock out before any adjustment or setup change. When removing one cutter, remove all of them from the spindle.", ["shp"]]], "during": [["Don't stand in line with the stock being fed.", ["shp"]], ["Shape one piece at a time, with jigs, holders or push blocks (or the power feeder).", ["shp"]], ["Never feed against the cutter's rotation, too fast, or too deep; take extra care with cross grain and knots.", ["shp"]]], "after": [["Don't leave until the cutter has stopped.", ["shp"]]], "sched": [["Periodically|Check belts and pulleys for wear and the spindle for burrs or runout.", ["shp"]], ["Maker's intervals|Pending the SCM manual.", ["scm"]]], "risks": [["The shaper stands beside the north exit door. Keep the feed and outfeed zone clear of the exit path.", ["photos", "gen"]]]}, "laguna": {"manual": {"state": "found", "text": "Laguna's 16HD / LT18 user manual (2017). Its maintenance chapter is not visible online; ask Laguna for the full copy.", "src": ["lt18"]}, "before": [["Test the door switch, the foot brake and the stop switch. Do not use the saw if any of them fails.", ["lt18"]], ["Guards installed whenever it runs; set the upper guard just above the wood, about 3 to 6 mm (1/8 to 1/4 in).", ["lt18", "band"]], ["Blade tensioned and tracked before use; never track the blade with the saw running.", ["lt18"]], ["Both wheels enclosed, blade sitting on its track and running freely against the guides.", ["band"]]], "during": [["Keep hands either side of the blade, never in line with the cut; push stick when close.", ["band"]], ["Make relief cuts before tight curves.", ["band"]], ["If a cut binds, don't back the stock out while running. To stop mid-cut, hold the work, switch off, wait for the blade to stop.", ["band"]]], "after": [["Release blade tension when the saw won't be used for a while, such as overnight, to avoid flat spots on the tires.", ["lt18"]], ["After a blade breaks the upper wheel may still be turning; take care opening the doors.", ["lt18"]]], "sched": [["Each use|Switch tests above.", ["lt18"]], ["End of day|Release blade tension.", ["lt18"]], ["After a new belt, then periodically|Belt deflects about 3/16 in under thumb pressure.", ["lt18"]], ["Ongoing|Keep the saw oiled and serviced; lock out for maintenance or repairs.", ["band"]]], "risks": [["The door safety switch does not work; a note taped to the saw asks users to check the door is closed.", ["photos"]], ["Lock out and tag the saw until the switch is repaired: the manual says not to use it if a switch fails, and Reg. 851 requires guards and lockout.", ["lt18", "r851"]]]}, "drill": {"manual": {"state": "found", "text": "NOVA Voyager DVR operation manual (Teknatool, 2018).", "src": ["nova"]}, "before": [["Check the setup with the spindle off: turn the work by hand for clearance and confirm the speed.", ["nova"]], ["Tighten all clamp handles; remove the chuck key.", ["nova", "drill"]]], "during": [["Clamp the work or use a drill vise; never hold it by hand or put hands under it.", ["drill"]], ["Ease off as the bit breaks through.", ["drill"]], ["Make all adjustments with the power off.", ["nova"]]], "after": [["Clean the area and the press; vacuum shavings from the headstock, table and base.", ["nova"]]], "never": [["Never stop the chuck by hand.", ["drill"]], ["Don't open the switch or rear covers: parts can carry dangerous voltage even when isolated.", ["nova"]]], "sched": [["After each use|Clean and vacuum the machine.", ["nova"]], ["Monthly|Paste wax on bare cast iron; check nuts and bolts; clean the tapers.", ["nova"]], ["Every 6 months|#2 tube grease on the table elevation gear and rack and the spindle splines; a drop or two of light oil on the feed shaft teeth and quill.", ["nova"]], ["Always|Unplug before any maintenance.", ["nova"]]], "risks": []}, "blum": {"manual": {"state": "found", "text": "Blum MINIPRESS P operating instructions BA-201/1 (09.25).", "src": ["blum"]}, "before": [["Daily, before work or an operator change: check air and electrical lines, the hold-down clamp glass and the guards.", ["blum"]]], "during": [["One operator at a time; keep hands out of the work area; crush danger at the hold-down clamp.", ["blum"]]], "after": [["Before cleaning: main switch to 0, unplug, and disconnect the air supply. Wear eye protection.", ["blum"]], ["Remove chips with a microfibre cloth, never with compressed air or metal tools. No oil: runners and bearings are maintenance-free.", ["blum"]]], "sched": [["Daily|Checks above.", ["blum"]], ["Monthly|Inspect and wipe guides, ruler, stops and clamps; drain water from the air filter regulator; change drill bits, noting rotation direction.", ["blum"]], ["Repairs|Blum partner only, original Blum parts.", ["blum"]]], "risks": [["Air supply rated 5 to 7 bar (73 to 101 psi).", ["blum"]], ["Blum notes the machine is not explosion-proof and should not be set up near painting facilities.", ["blum3"]]]}, "ras": {"manual": {"state": "none", "text": "Not found. DeWalt sold its radial arm saw rights to The Original Saw Company in 1990; try them for manuals and parts.", "src": ["osaw"]}, "before": [["Guard in two parts: an upper hood over the arbour and a lower guard that rides on the stock.", ["ras"]], ["Blade at the maker's speed; only accessories designed for this saw.", ["ras"]]], "during": [["Crosscut from the handle side, pulling the head with the hand nearest the handle; the other hand never in line with the blade.", ["ras"]], ["Return the head fully to the back after every cut; clamp stock for mitre and bevel cuts.", ["ras"]]], "never": [["Never rip without the riving knife and anti-kickback devices fitted and adjusted.", ["ras"]], ["Never let go of the handle unless the head is behind the fence; no cracked or dull blades.", ["ras"]]], "after": [["Switch off and wait for a complete stop; measure only with the saw off.", ["ras"]]], "sched": [["Each use|Check the blade doesn't drift forward under its own weight or vibration.", ["ras"]], ["Before adjustments|Unplug.", ["ras"]]], "risks": []}, "edgesander": {"manual": {"state": "none", "text": "No manual found online yet. The plate gives the maker (Automac, Weston) but no model.", "src": ["photos"]}, "before": [["Dust collection on; don't run a sander without it.", ["sand"]], ["Inspect the belt; replace it if worn, frayed or worn in spots.", ["sand"]], ["Work rest adjusted close to the belt and secured; guards and fences in place.", ["sand"]]], "during": [["Keep hands away from the abrasive; hold small or thin pieces in a jig.", ["sand"]]], "after": [["Unplug before adjustments or belt changes.", ["sand"]]], "sched": [["Each use|Belt and work rest checks above.", ["sand"]], ["Belt changes|Belt the same width as the drum; tension so it runs at drum speed in the wood.", ["sand"]], ["Guarding|Nip points, drive and the unused belt on the operator side guarded.", ["sand"]]], "risks": []}, "drum": {"manual": {"state": "similar", "text": "Using the Steel City 55220 manual (a similar 26-inch dual drum sander) until the exact manual is confirmed.", "src": ["sc"]}, "before": [["Dust collector attached and running; the manual says never run without it.", ["sc"]], ["Nuts and screws tight; abrasive strips mounted properly, not loose or torn.", ["sc"]]], "during": [["Feed against drum rotation; light passes; never force the work.", ["sc"]], ["Hands away from the drums, never under the dust cover; don't adjust conveyor tracking with the drums engaged.", ["sc"]]], "after": [["Shut down, let the drums stop, and disconnect before servicing or leaving.", ["sc"]]], "sched": [["Regularly|Clean the abrasive with a cleaning stick; don't let dust build up on or in the machine.", ["sc"]], ["Regularly|Keep the table height screw shafts greased.", ["sc"]], ["After abrasive changes|Check the rear drum height.", ["sc"]]], "risks": []}, "dwplaner": {"manual": {"state": "found", "text": "DeWALT DW735 instruction manual (model to confirm on the plate).", "src": ["dw735"]}, "before": [["Dust port locked in place, connected to a 4-inch dust collector. The manual advises against a shop vac.", ["dw735"]], ["Speed setting locked before feeding; clear outfeed space.", ["dw735"]]], "during": [["Chips leave the port at speed; keep hands and face clear.", ["dw735"]]], "never": [["Never turn the cutterhead by hand or reach under the carriage; never clear clogs or change knives while plugged in.", ["dw735"]]], "after": [["Remove shavings with a brush or vacuum only after power is off and the cutterhead has stopped.", ["dw735"]]], "sched": [["Periodically|Check for damage; clean cover and shroud; wipe rollers; wax the base; check knives, depth scale and brushes.", ["dw735"]], ["Weekly|Blow dirt out of the motor vents with clean, dry air, wearing eye protection.", ["dw735"]], ["Yearly|DeWALT service centre cleans, inspects and lubricates the gear case.", ["dw735"]]], "risks": []}, "downdraft": {"manual": {"state": "none", "text": "Shop-built; no manual.", "src": ["photos"]}, "before": [["Exhaust running before sanding; it should suit the job and be well maintained.", ["sand"]]], "during": [["Wear respiratory protection where required, during sanding and clean-up.", ["sand"]]], "after": [], "sched": [], "risks": [["Reported at the November meeting as needing refurbishing.", ["meeting"]]]}, "rockwell": {"manual": {"state": "similar", "text": "Using the Delta Unisaw 34-801 manual (a similar model) until the Rockwell manual is found.", "src": ["unisaw"]}, "before": [["Guard, splitter and anti-kickback fingers on for nearly every through cut.", ["unisaw", "tbl"]], ["Blade sharp and free of rust and pitch; fence parallel to the blade.", ["unisaw"]]], "during": [["Push the work fully past the blade before letting go.", ["unisaw"]], ["Don't rip warped stock or stock without a straight edge against the fence; don't use the fence as a crosscut stop.", ["unisaw"]], ["Stand to one side; push stick for narrow pieces.", ["tbl"]]], "after": [["Switch off; once the blade stops, clear the table.", ["unisaw"]]], "sched": [["Weekly|Paste wax on the table.", ["unisaw"]], ["When slipping|Belts deflect about 1/4 in at mid-span under light finger pressure; power disconnected.", ["unisaw"]], ["Blade changes|Unplug; 10-inch blades rated for at least 4,000 rpm (similar-model spec, confirm).", ["unisaw"]]], "risks": []}, "rockwell2": {"manual": {"state": "similar", "text": "Using the Delta Unisaw 34-801 manual (a similar model) until the Rockwell manual is found.", "src": ["unisaw"]}, "before": [["Guard, splitter and anti-kickback fingers on for nearly every through cut.", ["unisaw", "tbl"]], ["Blade sharp and free of rust and pitch; fence parallel to the blade.", ["unisaw"]]], "during": [["Push the work fully past the blade before letting go.", ["unisaw"]], ["Don't rip warped stock or stock without a straight edge against the fence; don't use the fence as a crosscut stop.", ["unisaw"]], ["Stand to one side; push stick for narrow pieces.", ["tbl"]]], "after": [["Switch off; once the blade stops, clear the table.", ["unisaw"]]], "sched": [["Weekly|Paste wax on the table.", ["unisaw"]], ["When slipping|Belts deflect about 1/4 in at mid-span under light finger pressure; power disconnected.", ["unisaw"]], ["Blade changes|Unplug; 10-inch blades rated for at least 4,000 rpm (similar-model spec, confirm).", ["unisaw"]]], "risks": []}, "delta": {"manual": {"state": "none", "text": "Not confirmed. The plate reads Rockwell Manufacturing Company, Pittsburgh.", "src": ["photos"]}, "before": [["Guard set about 3 to 6 mm (1/8 to 1/4 in) above the work; wheels enclosed.", ["band"]], ["Blade sharp, tensioned, on track and running freely against the guides.", ["band"]]], "during": [["Hands either side of the blade, never in line with the cut; push stick when close.", ["band"]], ["Relief cuts before tight curves; don't back out of a binding cut while running.", ["band"]]], "after": [["Switch off and confirm the blade has stopped before leaving.", ["band"]]], "sched": [["Ongoing|Keep oiled and serviced; lock out for maintenance.", ["band"]]], "risks": [["Dust hose patched with tape along most of its length.", ["photos"]], ["Replace it: dust extraction should be efficient and well maintained.", ["gen"]]]}, "lathe": {"manual": {"state": "request", "text": "Ask Oneway (Stratford, Ontario, 1-519-271-7611) for the 2436 manual.", "src": ["oneway"]}, "before": [["Only trained, experienced members turn.", ["lathe"]], ["Clamps and fittings secure; the work turns freely before switching on; stock free of cracks and loose knots.", ["lathe"]], ["Tool rest parallel, close to the work and slightly above centre; speed suited to the job, low for roughing.", ["lathe"]]], "during": [["Face shield over safety glasses; respirator when sanding.", ["lathe"]], ["Hold tools firmly with both hands on the rest; remove the rest for sanding and polishing.", ["lathe"]]], "never": [["No gloves, loose clothing (including hood strings) or jewellery; tie back long hair.", ["lathe"]], ["Never leave it running; no improvised tools.", ["lathe"]]], "after": [["Lock out before adjustments or setup changes.", ["lathe"]]], "sched": [], "risks": []}, "grinder": {"manual": {"state": "none", "text": "No manual found online yet. Maker to confirm.", "src": ["photos"]}, "before": [["Grinder fastened to a solid surface; guards in place.", ["grind"]], ["Tool rest within 3 mm (1/8 in) of the wheel; tongue guard within 6 mm (1/4 in). Never adjust with the wheel turning.", ["grind"]], ["Wheel has blotters both sides and fits the spindle snugly.", ["grind"]]], "during": [], "never": [["Never grind on the side of a regular wheel or hold small pieces by hand.", ["grind"]]], "after": [], "sched": [["As the wheel wears|Reset the rest and tongue guard; replace the wheel when they can't be adjusted close enough.", ["wcf"]]], "risks": []}, "feeder": {"manual": {"state": "none", "text": "Model unknown. Read the plate, then find the manual.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [], "risks": [["Appears out of service. Tag it until inspected; equipment must be kept in good condition.", ["photos", "wsn"]]]}, "shopvac": {"manual": {"state": "none", "text": "Model to confirm.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [], "risks": [["Insurers advise vacuums rated for combustible dust service for wood dust clean-up.", ["aviva"]], ["DeWALT advises against using a shop vac on the DW735 planer.", ["dw735"]]]}, "italpresse": {"manual": {"state": "none", "text": "No manual found online yet.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [["Before cleaning or repair|Stop all motion and block parts that could move; lock out controls.", ["r851", "wsn"]]], "risks": [["Pinch points must be guarded to prevent access.", ["r851q"]]]}, "interwood": {"manual": {"state": "none", "text": "No manual found online yet.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [["Before cleaning or repair|Stop all motion and block parts that could move; lock out controls.", ["r851", "wsn"]]], "risks": [["Pinch points must be guarded to prevent access.", ["r851q"]]]}, "compressor": {"manual": {"state": "request", "text": "Atlas Copco instruction book: check the compressor room or ask Total Air, who serviced it.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [["Daily|Check the oil level.", ["ac"]], ["Daily|After stopping, drain condensate from the air receiver with the manual drain valve.", ["ac"]], ["Service|Last full service by Total Air on September 29, 2026, at 8,842 hours.", ["photos"]]], "risks": []}, "booth": {"manual": {"state": "none", "text": "Booth maker to confirm.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [["After each use|Inspect the overspray filters; replace clogged ones.", ["booth33"]], ["End of day|Used filters and residue to a non-combustible container in a designated spot.", ["booth33"]], ["As the maker recommends|Replace filters; take used filters out of the building or keep them in water (they can self-ignite).", ["booth"]], ["Periodically|Remove overspray residue from walls, ceiling and floor; always spray with filters in place.", ["booth"]]], "risks": [["Middle and bottom filter rows look loaded with overspray.", ["photos"]], ["No extinguisher in the finishing room. The US spray-finishing rule calls for extinguishers near spraying areas; confirm Ontario placement with a fire protection contractor.", ["photos", "jjk"]]]}, "filterwall": {"manual": {"state": "none", "text": "", "src": []}, "before": [], "during": [], "after": [], "sched": [["After each use|Inspect the overspray filters; replace clogged ones.", ["booth33"]], ["End of day|Used filters and residue to a non-combustible container in a designated spot.", ["booth33"]], ["As the maker recommends|Replace filters; take used filters out of the building or keep them in water (they can self-ignite).", ["booth"]], ["Periodically|Remove overspray residue from walls, ceiling and floor; always spray with filters in place.", ["booth"]]], "risks": [["Many frames look heavily loaded with overspray.", ["photos"]]]}, "airmix": {"manual": {"state": "found", "text": "Sames 10C18 pump user manual is on the Sames product page (confirm the pump model on the plate).", "src": ["sames"]}, "before": [], "during": [["Never point the gun at anyone; never wipe the tip with fingers.", ["samesreg"]]], "after": [["Depressurize air and hoses before servicing the gun.", ["samesreg"]]], "sched": [], "risks": [["Ground wire looked loose in the photos; reattach it and check grounding against the Sames manual.", ["photos", "sames"]]]}, "dust": {"manual": {"state": "none", "text": "Location and maker to confirm.", "src": ["photos"]}, "before": [], "during": [], "after": [], "sched": [["Scheduled|Clean floors, beams and equipment; keep a housekeeping log.", ["dust"]]], "risks": [["Confirm the collector suits combustible wood dust (explosion venting rated for combustible dust).", ["dust"]]]}, "ducts": {"manual": {"state": "none", "text": "", "src": []}, "before": [], "during": [], "after": [], "sched": [["Scheduled|Clean dust from duct tops, ledges and beams; best practice keeps layers under 1/32 in.", ["dust", "nfpa"]]], "risks": [["Taped hoses and dust on duct runs seen in photos.", ["photos"]]]}, "heaters": {"manual": {"state": "none", "text": "", "src": []}, "before": [], "during": [], "after": [], "sched": [], "risks": [["Keep wood dust off unit heaters: dust built up near a hot surface is an ignition risk.", ["bcfs"]]]}, "airlines": {"manual": {"state": "none", "text": "", "src": []}, "before": [], "during": [], "after": [], "sched": [], "risks": [["An air blow gun hangs on the finishing room FIRE board.", ["photos"]], ["Don't use compressed air to clear sawdust from machines or clothing.", ["gen"]]]}, "cnc": {"manual": {"state": "found", "text": "AXYZ binder on the shelf under the machine.", "src": ["photos"]}, "before": [], "during": [], "after": [["Posted rule (June 18, 2026): shut the machine down after every session.", ["photos"]]], "sched": [["End of every shift|Inspect rack and pinion, ball screws and linear bearings; clean chips around the sensors.", ["axyz"]], ["Every 3 to 6 months|Change collets.", ["axyz"]], ["Every 2 years|Change drive belts on machines that have them.", ["axyz2"]]], "risks": []}, "bander": {"manual": {"state": "none", "text": "Not found online. Artech is a Biesse brand; ask Biesse with the serial number.", "src": ["photos"]}, "before": [["Run the glue pot within the temperature range on the glue's spec sheet.", ["wwn"]]], "during": [["Don't leave it idle at operating temperature for more than 15 minutes.", ["wwn"]]], "after": [], "sched": [["About weekly (dealer advice)|Remove old glue from inside the pot; the manual sets the real frequency.", ["stiles"]], ["Lubrication|Inject the correct amount of grease, with the supplied grease gun if there is one.", ["stiles"]]], "risks": [["A flammable, corrosive jug sits on top of the machine beside the hot glue pot.", ["photos"]], ["Store flammables in closed containers in an approved cabinet.", ["flam"]]]}}, "safety": [{"p": 1, "title": "Laguna band saw door switch not working", "action": "Lock out and tag the saw now. Repair the switch, test it, then return it to service.", "src": ["photos", "lt18", "r851"]}, {"p": 1, "title": "No fire extinguisher in the finishing room", "action": "Install one before the next spraying session; the FIRE board holds only an air gun, with flammable pails below. Have a fire protection contractor confirm the type and spot.", "src": ["photos", "jjk", "ofc"]}, {"p": 1, "title": "Ladder blocking an extinguisher and electrical panel", "action": "Clear it. Extinguishers must be visible and accessible at all times, and panels need 1 m of clear working space that is never used for storage.", "src": ["photos", "ofc", "oesc"]}, {"p": 1, "title": "Flammable liquids outside cabinets", "action": "Move the floor pails, the jug on the edge bander and the jerry can into an approved cabinet (up to 500 L, no more than 250 L Class I), closed, away from exits.", "src": ["photos", "flam", "flam2"]}, {"p": 2, "title": "Eye wash not flushed", "action": "Run it weekly long enough to confirm flow and flush the line; log it; inspect yearly.", "src": ["photos", "eye", "eye2"]}, {"p": 2, "title": "Wood dust on ducts, ledges and heaters", "action": "Start a cleaning schedule and log; best practice keeps layers under 1/32 in; keep dust off hot surfaces. No compressed-air blow-downs.", "src": ["photos", "dust", "nfpa", "bcfs", "gen"]}, {"p": 2, "title": "Spray booth and filter wall filters loaded", "action": "Replace the filters; remove used ones from the building or keep them in water.", "src": ["photos", "booth", "booth33"]}, {"p": 2, "title": "Power cable across the floor at the Martin saw", "action": "Route it overhead or in the floor.", "src": ["photos", "gen"]}, {"p": 2, "title": "Taped dust hoses (Delta band saw and elsewhere)", "action": "Replace the hoses; extraction should be efficient and well maintained.", "src": ["photos", "gen"]}, {"p": 3, "title": "Extinguisher and Fire Code records", "action": "Inspect every extinguisher monthly, have them serviced yearly by a qualified contractor, and keep the records on site.", "src": ["ofc", "ofc2", "georgina"]}, {"p": 3, "title": "Airmix ground wire loose", "action": "Reattach and check against the Sames manual.", "src": ["photos", "sames"]}, {"p": 3, "title": "Compressor condensate", "action": "Drain the receiver daily after stopping.", "src": ["ac"]}, {"p": 3, "title": "Spare power feeder", "action": "Tag out of service until inspected and its model identified.", "src": ["photos", "wsn"]}, {"p": 3, "title": "Hallway storage", "action": "Keep the maker hallway clear, as agreed at the November meeting.", "src": ["photos", "meeting", "gen"]}, {"p": 3, "title": "Downdraft table", "action": "Refurbish so the exhaust works as designed.", "src": ["meeting", "sand"]}, {"p": 4, "title": "Crack above the exit door", "action": "Report to the landlord.", "src": ["photos"]}, {"p": 4, "title": "Roof opening by the loading door", "action": "Report to the landlord (torn insulation around the duct may mean water entry).", "src": ["photos"]}, {"p": 4, "title": "Air conditioning coil leak", "action": "Report to the landlord or HVAC contractor.", "src": ["photos"]}], "rules": {"before": [["Use only machines you've been trained and signed off on. Read the manual; ask if unsure.", ["gen"]], ["Check the guard is in place and in good condition. Reg. 851 requires guards on exposed moving parts and nip points.", ["gen", "r851q"]], ["Remove keys and wrenches; inspect stock for nails, staples and loose knots.", ["gen"]], ["Dust collection on and the blast gate open.", ["gen"]]], "ppe": [["Safety glasses or goggles, with a face shield where needed. Reg. 851 s.81 requires eye protection suited to the hazard.", ["gen", "r81"]], ["Hearing protection: if you can't hear someone speak from about 1 m (3 ft), it's too loud.", ["gen"]], ["Respirator when required.", ["gen"]], ["No loose clothing, rings or dangling jewellery near moving parts; no gloves near blades.", ["gen", "r83"]]], "during": [["Push sticks and jigs; hands out of the blade's path; clamp the work.", ["gen"]], ["Don't stand directly behind stock (kickback). Switch off before talking to anyone.", ["gen"]], ["Never free a stalled blade with the power on. No horseplay; don't startle an operator.", ["gen"]]], "after": [["Stay until the machine has completely stopped.", ["gen"]], ["Clear chips with a brush or stick, never by hand or compressed air.", ["gen"]], ["Leave the floor swept, spills cleaned and cords out of the walkways.", ["gen"]]], "lockout": [["Before cleaning, oiling, adjusting or repairing: motion stopped and moving parts blocked (Reg. 851 s.75).", ["r851", "wsn"]], ["Where a start-up could hurt someone, lock out the controls (Reg. 851 s.76). Unplug or lock out before changing blades.", ["r851", "gen"]], ["Report and tag any defect. Equipment and protective devices must be kept in good condition (OHSA 25(1)(b)).", ["wsn"]]]}, "calendar": [["Weekly|Activate the eye wash long enough to confirm flow; log it.", ["eye"]], ["Monthly|Inspect every portable extinguisher (Fire Code 6.2.7.2); keep them visible and accessible.", ["ofc"]], ["Monthly|Walk the shop for flammables outside cabinets, blocked panels and blocked exits.", ["flam", "oesc", "flam2"]], ["Scheduled|Combustible dust clean-up of floors, beams, ducts and equipment, with a log.", ["dust"]], ["Yearly|Extinguisher service by a qualified contractor; eye wash inspection against Z358.1.", ["georgina", "eye2"]], ["Always|Keep Fire Code inspection records on site for the fire department.", ["georgina"]]], "goals": [{"goal": "Safety", "why": "No injuries. Ontario inspectors most often order fixes to guarding of moving parts and nip points.", "src": ["wsn"], "tactics": ["Machine sign-off before solo use", "Pre-use checks and lockout from each drawer", "Red-tag defects and close them", "Weekly eye wash and monthly extinguisher logs"], "kpis": ["Near misses and injuries reported", "Machines with a working guard or interlock", "Red tags open more than 7 days"]}, {"goal": "Fire and dust health", "why": "Wood dust and finish residue are the shop's fire load.", "src": ["dust", "booth"], "tactics": ["Dust housekeeping schedule and log", "Flammables only in cabinets", "Booth filter routine", "No compressed-air cleaning"], "kpis": ["Housekeeping log on time", "Flammables found outside cabinets at walkthroughs"]}, {"goal": "Downtime prevention", "why": "Planned work from the manuals beats breakdowns.", "src": [], "tactics": ["Schedules in each drawer", "Spares on the shelf: blades, knives, belts, collets, filters", "Blast-gate hours drive the intervals"], "kpis": ["Tasks done on time", "Days machines are red or out of service"]}, {"goal": "Cost savings", "why": "Catch wear early; stop paying for air and dust collection nobody uses.", "src": [], "tactics": ["Track repair spend per machine", "Buy consumables in bulk", "Telemetry flags gates left open with no machine running"], "kpis": ["Repair spend per machine per year", "Collector hours with no machine running"]}, {"goal": "Shop efficiency", "why": "The next person finds the machine clean, set to neutral and working.", "src": [], "tactics": ["Reset standard after every use", "Booking for the big machines", "This map as the one place for status and procedures"], "kpis": ["Reset audits passed", "Reports of machines left dirty"]}, {"goal": "Compliance and insurance readiness", "why": "Records an inspector, fire official or insurer can check.", "src": ["georgina", "oesc"], "tactics": ["Reg. 851 and the Fire Code as the benchmark (confirm with your lawyer or insurer how they apply to the co-op)", "Records kept on site", "Panels and exits always clear"], "kpis": ["Open compliance items", "Records complete"]}, {"goal": "Machine life and capital planning", "why": "Know what to fix, rebuild or replace, and budget for it.", "src": [], "tactics": ["Condition, age and parts availability per machine", "Three-year fix / rebuild / replace list"], "kpis": ["Plan reviewed yearly"]}, {"goal": "Member skill and accountability", "why": "Fair shared use and clear ownership of tasks.", "src": [], "tactics": ["Orientation for new members", "Sign-off levels per machine", "Maintenance owners with email nudges (agents planned)"], "kpis": ["Members signed off", "Assigned tasks closed on time"]}, {"goal": "Decisions based on data", "why": "Use, not guesses, sets maintenance and purchases.", "src": [], "tactics": ["Gate sensor plus current sensor per machine", "Hours roll into the schedules"], "kpis": ["Machines reporting hours"]}]};
+</script>
+<script>
+const AREAS = {
+  machine: "Main machine room",
+  press: "Press area",
+  saw: "Table saw room",
+  finishing: "Finishing room",
+  hallway: "Maker hallway",
+  back: "Back of the shop",
+  unplaced: "Not yet located"
+};
+const MACHINES = [
+  { id:"martin", short:"Martin T70", name:"Sliding table saw", area:"machine", shopNo:"", maker:"Martin", model:"T70",
+    serial:"Not found yet", year:"", power:"",
+    service:"Taurus Craco (dealer), Brampton. 1-800-386-5222, tauruscraco.com",
+    details:["Saw speed 4,000 rpm; fence readouts set to inches", "Schneider Electric touchscreen control"],
+    maint:[], status:"none", reason:"No maintenance record yet.",
+    needed:["Serial number: try the wrench or gear icon on the touchscreen, or ask Taurus Craco", "Shop number sticker"],
+    x:250,y:330,w:260,h:90 },
+  { id:"bander", short:"Edge bander", name:"Edge bander", area:"machine", shopNo:"", maker:"Artech by Biesse Wood Division", model:"Akron 425",
+    serial:"Not found yet", year:"", power:"", service:"Biesse (Artech is Biesse's brand)",
+    details:["Edge banding roll holder at the infeed end", "Control panel at the infeed end", "Runs on compressed air; glue pot runs hot"],
+    maint:["Reset after use: clean glue from the pot area and rollers (steps to come from the maker's manual)"],
+    status:"warn", reason:"Flammable, corrosive jug stored on top of the machine, next to the hot glue pot.",
+    needed:["Nameplate", "Shop number sticker"],
+    x:330,y:445,w:320,h:50 },
+  { id:"cnc", short:"AXYZ CNC", name:"CNC router", area:"machine", shopNo:"", maker:"AXYZ International", model:"Model to confirm",
+    serial:"Not found yet", year:"", power:"", service:"AXYZ, 905-634-4940",
+    details:["AXYZ A2MC controller", "1/2 inch collet; tools changed by hand", "Vacuum hold-down not connected; parts held with fences, blocks and wedges", "Manual in the white AXYZ binder on the shelf under the machine", "Oil reservoir on the gantry", "Posted rule, June 18, 2026: shut the machine down after every session"],
+    maint:["After every session: clean chips from the rack and pinion, ball screws, linear bearings and sensors; shut the machine down", "Weekly: check the control box filter; check bearings and grease where needed; refill the gantry oil reservoir", "Monthly: lubricate bearings; delete old files from the CNC computer after backing them up; test the emergency stops", "Every 3 to 6 months: replace worn collets, cover nuts and bits (a runout check can decide)", "Every 2 years: change drive belts, if this model has them", "Air supply: clean, dry, steady above 80 psi"],
+    status:"none", reason:"No maintenance record yet. Schedule drafted from AXYZ's published guidance.",
+    needed:["Machine nameplate (end of the gantry or the base near the controller)", "Grease type and lubrication points from the binder or Peter", "Shop number sticker"],
+    x:40,y:48,w:210,h:110 },
+  { id:"vac", short:"Pump", name:"Vacuum pump for the CNC", area:"machine", shopNo:"", maker:"To confirm", model:"",
+    serial:"", year:"", power:"", service:"",
+    details:["Under the right end of the CNC", "Not in use while the vacuum hold-down is disconnected", "May be the unused blower the co-op meeting talked about selling (about $1,200)"],
+    maint:["Oil change after 20,000 hours of use (AXYZ guidance), only if it goes back into service"],
+    status:"none", reason:"Not in use.", needed:["Nameplate", "Decision: keep or sell"],
+    x:255,y:72,w:42,h:42 },
+  { id:"scmsaw", short:"SCM sliding saw", name:"Sliding table saw with scoring blade", area:"machine", shopNo:"7", maker:"SCM", model:"Class si 350",
+    serial:"Too faint to read", year:"2019", power:"Three-phase, 600 volts, 12 amps; fuse 15 amps maximum",
+    service:"SCM Group (Rimini, Italy)", details:["Separate start buttons for the main blade and the scoring blade"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:["Serial number (photo at an angle with the flash on)"],
+    x:215,y:190,w:230,h:85 },
+  { id:"planer", short:"SCM planer", name:"Thickness planer", area:"machine", shopNo:"12", maker:"SCM", model:"S630 Class",
+    serial:"AB/231502", year:"2017 (last digit faint)", power:"Three-phase, 600 volts, 18 amps",
+    service:"SCM Group (Rimini, Italy)", details:["About 24 inch (630 mm) capacity", "Digital height readout; fraction-to-decimal chart taped on", "Weight 908 kg"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:50,y:280,w:95,h:85 },
+  { id:"jointer", short:"SCM jointer", name:"Jointer", area:"machine", shopNo:"16 or 10", maker:"SCM", model:"nova f410 (type F 41)",
+    serial:"AB00012487", year:"2019", power:"Three-phase, 600 volts, 60 Hz, 18 amps",
+    service:"SCM Group (Rimini, Italy); SCM reference 123511", details:["About 16 inch (410 mm) wide", "Cutterhead 5,000 rpm", "Weight 588 kg", "Main switch and fuse cover on the front panel"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:["Confirm whether the sticker says 16 or 10"],
+    x:40,y:200,w:150,h:45 },
+  { id:"shaper", short:"SCM shaper", name:"Shaper with power feeder", area:"machine", shopNo:"5", maker:"SCM", model:"T130 (L'Invincibile range)",
+    serial:"Plate not found", year:"", power:"", service:"SCM Group; power feeder by General International, Montreal",
+    details:["Power feeder plate: model and serial left blank", "Feeder warning: main switch off before opening the back cover", "Spare band saw blades hang on the wall above it"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:600,y:345,w:80,h:70 },
+  { id:"laguna", short:"Laguna", name:"18 inch band saw", area:"machine", shopNo:"6", maker:"Laguna Tools (built in Italy by ACM)", model:"LT18",
+    serial:"L17030162", year:"2017", power:"Single-phase, 220 volts, 19.8 amps; 5 horsepower",
+    service:"Laguna Tools, Irvine, California", details:["Blade length 155 1/2 to 159 inches; width up to 1 1/4 inches"],
+    maint:[], status:"crit", reason:"Door safety switch does not work (note taped to the saw asks users to check the door is closed).",
+    needed:["Repair of the door safety switch"],
+    x:635,y:270,w:55,h:55 },
+  { id:"drill", short:"Drill", name:"Drill press", area:"machine", shopNo:"", maker:"Teknatool Nova", model:"Voyager DVR (58000)",
+    serial:"00303135", year:"January 5, 2018", power:"120 volts, 15 amps; 1.75 horsepower direct drive",
+    service:"King Canada, Dorval, Quebec (importer)", details:["Beside the fire extinguisher at the end of the Blum counter", "18 inch swing; 6 inch stroke", "No. 2 Morse taper spindle; chuck 1 to 16 mm", "Speed 50 to 3,000 rpm"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:["Shop number sticker"],
+    x:520,y:48,w:50,h:50 },
+  { id:"blum", short:"Blum", name:"Hinge boring and insertion machine", area:"machine", shopNo:"", maker:"Blum", model:"MiniPress P",
+    serial:"JR 00099", year:"2021", power:"Single-phase, 220 volts, 6.5 amps, 1.1 kilowatts",
+    service:"Julius Blum GmbH (Austria); Blum reference M53.1053*CA", details:["Runs on compressed air", "Tooling stored in the wall cabinet above it", "Weight 48 kg"],
+    maint:["Drain the water trap on its air filter"], status:"none", reason:"No maintenance record yet.", needed:["Shop number sticker"],
+    x:440,y:48,w:60,h:50 },
+  { id:"ras", short:"Radial arm saw", name:"Radial arm saw", area:"machine", shopNo:"", maker:"DeWalt Inc., Lancaster, Pennsylvania", model:"Model to confirm",
+    serial:"Motor serial: first character hidden, then 2051098", year:"Several decades old", power:"Single-phase, 3 horsepower, 115 or 230 volts, 36 or 18 amps; 3,425 rpm",
+    service:"Parts may be hard to find for a saw this age", details:["On a rolling bench with a dust hood", "Motor rated for one hour of continuous running"],
+    maint:["Give the motor breaks during long sessions"], status:"none", reason:"No maintenance record yet.", needed:["Saw's own plate (column or base)", "Shop number sticker"],
+    x:310,y:48,w:110,h:55 },
+  { id:"edgesander", short:"Edge sander", name:"Belt edge sander", area:"machine", shopNo:"11", maker:"Automac Machinery Limited, Weston, Ontario", model:"Left blank on plate",
+    serial:"Left blank on plate", year:"Older (plate lists a telex number)", power:"575 volts, 3.6 amps (handwritten)",
+    service:"Belts: standard size, easy to buy; other parts may be hard to find", details:["Belt 6 by 158 inches", "Spare belts on the shelf behind: Starcke, 60 grit"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:30,y:470,w:170,h:40 },
+  { id:"drum", short:"Drum sander", name:"26 inch double drum sander", area:"machine", shopNo:"", maker:"Steel City", model:"50-725 S3",
+    serial:"Not found yet", year:"", power:"", service:"Steel City",
+    details:["On a mobile base", "Operation manual hangs on the machine in a plastic sleeve; a copy is pinned by the lathe tools"], maint:["Maintenance schedule to come from the posted manual"], status:"none", reason:"No maintenance record yet.", needed:["Nameplate", "Shop number sticker"],
+    x:620,y:195,w:70,h:55 },
+  { id:"dwplaner", short:"Small planer", name:"Portable planer on a stand", area:"machine", shopNo:"", maker:"DeWalt", model:"Probably DW735",
+    serial:"", year:"", power:"", service:"", details:["Sanding supplies stored in the stand below"], maint:[], status:"none", reason:"No maintenance record yet.", needed:["Model confirmation"],
+    x:640,y:140,w:48,h:42 },
+  { id:"downdraft", short:"Downdraft", name:"Downdraft sanding table", area:"machine", shopNo:"", maker:"Shop-built", model:"",
+    serial:"", year:"", power:"Connected to the dust collector", service:"",
+    details:["Abranet sanding discs stored on it", "A second downdraft table is planned near the radial arm saw"],
+    maint:[], status:"warn", reason:"Reported at the November co-op meeting as needing refurbishing.", needed:[],
+    x:30,y:400,w:120,h:60 },
+  { id:"unknown", short:"?", name:"Black round machine behind the edge sander", area:"machine", shopNo:"", maker:"Unidentified", model:"Possibly a spindle sander",
+    serial:"", year:"", power:"", service:"", details:[], maint:[], status:"none", reason:"Not identified yet.", needed:["Front-on photo and nameplate"],
+    x:165,y:405,w:45,h:45 },
+  { id:"rockwell", short:"Rockwell saw", name:"Cabinet table saw", area:"saw", shopNo:"1", maker:"Rockwell International of Canada, Guelph, Ontario", model:"Looks like 34-450 (Unisaw)",
+    serial:"Too worn to read", year:"", power:"Plate appears to read 550 volts (three-phase)",
+    service:"", details:["Large outfeed table", "Dado insert and zero-clearance inserts stored on its side", "Separate push-button start and stop box"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:["Serial number (straight-on photo with the flash on)"],
+    x:1000,y:210,w:150,h:120 },
+  { id:"delta", short:"Band saw", name:"20 inch band saw", area:"saw", shopNo:"2", maker:"Rockwell Manufacturing Company, Pittsburgh (Rockwell/Delta)", model:"Series 28-3X0",
+    serial:"1576437", year:"Older", power:"", service:"", details:["Blade length 150 inches (12 feet 6 inches), per the label on the wheel cover"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:1105,y:45,w:55,h:55 },
+  { id:"lathe", short:"Lathe", name:"Wood lathe", area:"saw", shopNo:"3", maker:"Oneway Manufacturing, Stratford, Ontario", model:"2436",
+    serial:"3625", year:"2021", power:"", service:"Oneway, 1-800-565-7288, oneway.ca (sells parts directly)",
+    details:["Turning tools on the wall rack above it"], maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:915,y:110,w:50,h:170 },
+  { id:"grinder", short:"Grinder", name:"Bench grinder", area:"saw", shopNo:"", maker:"To confirm", model:"",
+    serial:"", year:"", power:"", service:"", details:["On the bench by the wall near the Rockwell saw"], maint:[], status:"none", reason:"No maintenance record yet.", needed:["Make and model"],
+    x:915,y:300,w:40,h:30 },
+  { id:"feeder", short:"Feeder", name:"Spare power feeder on a stand", area:"saw", shopNo:"", maker:"To confirm", model:"",
+    serial:"", year:"", power:"", service:"", details:["Green feeder on an orange stand, beside the Rockwell/Delta band saw", "A loose green motor unit sits on the floor beside it"], maint:[], status:"none", reason:"No maintenance record yet.", needed:["Make and model"],
+    x:1045,y:120,w:45,h:35 },
+  { id:"rockwell2", short:"Rockwell saw 2", name:"Second cabinet table saw", area:"unplaced", shopNo:"", maker:"Rockwell", model:"To confirm",
+    serial:"Not found yet", year:"", power:"", service:"",
+    details:["Reported by Cosmo on November 12, 2026; position on the floor to confirm", "May be the dark grey saw with a Canadian flag sticker seen in the first walkthrough photos"],
+    maint:[], status:"none", reason:"No maintenance record yet.", needed:["Location in the shop", "Nameplate", "Shop number sticker"],
+    x:240,y:615,w:130,h:75 },
+  { id:"shopvac", short:"Vac", name:"Shop vacuum", area:"saw", shopNo:"", maker:"Ridgid (orange, wheeled)", model:"To confirm",
+    serial:"", year:"", power:"", service:"",
+    details:["Stands between the drum sander and the lathe"], maint:["Empty the drum and check the filter"], status:"none", reason:"No maintenance record yet.", needed:["Model"],
+    x:633,y:28,w:22,h:28 },
+  { id:"italpresse", short:"Edge press", name:"Air-powered edge-gluing press", area:"press", shopNo:"", maker:"Ital Presse, Bagnatica, Italy", model:"IB",
+    serial:"Not found yet", year:"", power:"Compressed air", service:"",
+    details:["Long beam with air cylinders for gluing solid wood edging onto panels", "Pressure gauge on the control panel"],
+    maint:["Reset after use: clean glue squeeze-out from the beam, panel and wall", "Check air lines and cylinders for leaks"], status:"none", reason:"No maintenance record yet.", needed:["Nameplate"],
+    x:715,y:300,w:45,h:200 },
+  { id:"interwood", short:"Veneer press", name:"Hand-wheel veneer press", area:"press", shopNo:"", maker:"Interwood Ltd (Galt-Canadian plate)", model:"",
+    serial:"", year:"Older", power:"Manual", service:"",
+    details:["Screw press with hand wheels; platens on rolling carts", "Sits under the mezzanine; extension boards lean beside it"],
+    maint:["Grease the screws", "Check the platens"], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:715,y:40,w:170,h:75 },
+  { id:"compressor", short:"Compressor", name:"Air compressor (on the mezzanine)", area:"press", shopNo:"", maker:"Atlas Copco", model:"G7FF (screw compressor with built-in dryer)",
+    serial:"Tank: A22658", year:"Tank 2021", power:"",
+    service:"Total Air Compressor Services, 1380 Matheson Blvd E, Unit 8, Mississauga. 905-625-2313, service@totalair.ca",
+    details:["Tank rated 192 psi; Canadian registration number D5449.5C", "Running hours show on the controller screen", "Feeds the shop air lines, the Blum, the edge bander and the presses"],
+    maint:["Last service: September 29, 2026, at 8,842 hours. Full service: oil, oil filter, air filter, separator, blow-out", "Next service: interval to get from Total Air", "Drain water from the tank valve (unless it drains automatically)"],
+    status:"ok", reason:"Full service by Total Air on September 29, 2026, at 8,842 hours.", above:true,
+    needed:["Service interval from Total Air", "Whether the tank drains automatically"],
+    x:735,y:122,w:110,h:44 },
+  { id:"booth", short:"Spray booth", name:"Spray booth", area:"finishing", shopNo:"", maker:"To confirm", model:"",
+    serial:"", year:"", power:"", service:"",
+    details:["Filters behind 12 perforated metal panels; exhaust fan in the duct above", "Fan bearings have been replaced before"],
+    maint:["Every user: reset the room on leaving (the old booth protocol)", "Monthly deep clean of the back filters (offered by the heaviest users at the November meeting)", "Replace filters when loaded; tell the managers when stock runs low", "No vacuums or power tools inside: solvent fumes"],
+    status:"none", reason:"No maintenance record yet.", needed:["Booth make and filter size", "Exhaust fan nameplate", "Is the finishing room door window cracked?"],
+    x:915,y:556,w:170,h:40 },
+  { id:"airmix", short:"Sprayer", name:"Air-assisted spray system", area:"finishing", shopNo:"", maker:"Sames Kremlin", model:"Airmix",
+    serial:"", year:"", power:"Compressed air", service:"", details:["Pump on a plywood board with gauges and spray guns"],
+    maint:["Flush the pump and guns after use; clean the pump and gun filters (steps to come from the maker)"], status:"none", reason:"No maintenance record yet.", needed:["Pump model plate"],
+    x:1110,y:600,w:50,h:45 },
+  { id:"turntable", short:"Turntable", name:"Spraying turntable", area:"finishing", shopNo:"", maker:"Shop-built", model:"",
+    serial:"", year:"", power:"", service:"", details:["Heavy rolling base"], maint:[], status:"none", reason:"No maintenance record yet.", needed:[],
+    x:970,y:605,w:55,h:55 },
+  { id:"dust", short:"Dust collector", name:"Central dust collector", area:"unplaced", shopNo:"", maker:"To confirm", model:"",
+    serial:"", year:"", power:"", service:"", details:["All the overhead ducting runs to it"], maint:[], status:"none", reason:"Not located yet.",
+    needed:["Location (outside, roof or a separate room)", "Make, model, filters and collection bins"],
+    x:40,y:600,w:170,h:60 }
+];
+
+
+/* ---------- Updates from the walkthrough photos of November 12, evening ---------- */
+const U = (id, f) => { const m = MACHINES.find(x => x.id === id); if (m) f(m); };
+U("cnc", m => { m.model = "Z7"; m.details.push("Control cabinet at the end of the table: master power switch and a filtered cooling vent (the control box filter in the weekly check)", "Slotted aluminium bed with the MDF spoil board laid over most of it", "Handwritten note on the wall above the edge sander reads something like \"Cutting rail power\" (may say where its power comes from)"); m.needed = ["Serial number plate", "Grease type and lubrication points from the binder or Peter", "Shop number sticker"]; });
+U("vac", m => { m.details = ["On the floor beside the CNC bench, under the lumber rack: a round silver blower of the kind used for vacuum hold-down", "Not in use while the vacuum hold-down is disconnected", "Likely the unused blower the co-op meeting talked about selling (about $1,200)"]; });
+U("bander", m => { m.details.push("Laminated instruction sheet on its cover"); m.needed.push("Photo of the laminated instruction sheet, for its reset steps"); });
+U("italpresse", m => { m.details.push("Four air cylinders on swing arms", "Its own disconnect switch on the wall beside it", "Against the press room wall beside the opening into the table saw room"); });
+U("interwood", m => { m.details.push("The compressor sits above it on the mezzanine"); });
+U("booth", m => { m.details = ["Dry-filter booth: 12 disposable Servair cardboard filters (3 rows of 4) with Air Flow arrows", "Exhaust fan on top, ducted up through the ceiling; the switch marked FAN is just outside the sliding door", "Fan bearings have been replaced before"]; m.maint = ["Every user: fan on before spraying, off when you leave; reset the room on leaving", "Replace the cardboard filters when loaded", "Monthly deep clean (offered by the heaviest users at the November meeting)", "Tell the managers when filter stock runs low", "No vacuums or power tools inside: solvent fumes"]; m.status = "warn"; m.reason = "Middle and bottom rows of filters look loaded with overspray and due for replacement."; m.needed = ["Filter size (printed on each filter's edge)", "Booth make", "Exhaust fan nameplate"]; });
+U("airmix", m => { m.model = "Airmix 10C18 pump with Xcite spray gun"; m.details = ["Pump and regulators on a board mounted to the rolling finishing cart", "Gauges marked 15 and 30 in marker, presumably the shop's standard pressures", "Yellow and green ground wire hanging loose on the board"]; m.maint = ["Flush the pump and gun after use", "Clean the suction strainer and the gun filter", "Clip the ground wire on when spraying solvent finishes, to prevent static sparks"]; m.needed = []; });
+U("lathe", m => { m.details.push("Bostik GlideCote by the turning tools: the coating for cast-iron machine tops", "Outlet beside it labelled 1-6 by hand (a circuit label)"); });
+U("grinder", m => { m.details = ["On a wall shelf between the lathe and the saw, with eye shields, a work light and a face shield beside it"]; m.maint = ["Dress the wheels", "Check the tool rest gap"]; });
+U("feeder", m => { m.details.push("In pieces: the feed head and motor are on the floor, separate from the column and arm, with a dark stain on the floor beside the column"); m.reason = "Appears to be out of service."; });
+U("delta", m => { m.details.push("Own wall-mounted start and stop box, and a gooseneck work light", "Spare blades in a holder beside it, with a spray bottle and toothbrush for cleaning pitch", "Circle-cutting jig nearby"); m.status = "warn"; m.reason = "Dust hose is patched with tape along most of its length, probably leaking suction; replacement needed."; m.needed = ["Replacement dust hose: diameter and length"]; });
+U("rockwell", m => { m.details.push("If this is the saw with the walnut-laminate outfeed table: a zero-clearance insert is fitted, marked \"No tilts or dado\" (which Rockwell it is, to confirm)"); m.maint.push("Reset card: no tilts or dado with the zero-clearance insert fitted; close the blast gate"); });
+U("drum", m => { m.shopNo = "10?"; m.details.push("Twist-lock outlet taped 10 directly above it, beside a 220 volt outlet labelled panel 3, circuits 1 and 3", "Switch box with an emergency stop on a wall bracket", "Dust hose joints taped", "Broom and dustpan station beside it"); m.needed = ["Nameplate", "Confirm the 10 sticker is its machine number"]; });
+U("shaper", m => { m.details.push("Spindle wrench hangs on the wall by the exit door", "Its table ends at the exit door frame, so long stock can block the exit"); m.maint.push("Return the spindle wrench to its hook"); });
+U("dwplaner", m => { m.model = "DW735 (handwheel matches)"; m.needed = ["Model plate"]; });
+U("laguna", m => { m.details.push("Stands in front of the drill press; motor mounted outside the cabinet; dust hose drops from the ceiling"); });
+U("drill", m => { m.details.push("Beside the exit door with the panic bar"); });
+U("jointer", m => { m.details.push("A printed log sheet with a few handwritten entries is clipped to the yellow post near the jointer and planer (title unreadable)"); m.needed.push("Close-up of the log sheet"); });
+U("edgesander", m => { m.details.push("Runs along the end wall beside a door (where it leads, to confirm)"); });
+U("rockwell2", m => { m.area = "saw"; m.details = ["On the far wall beside the grinder (from Cosmo's layout)", "May be the dark grey saw with a Canadian flag sticker seen in the first walkthrough photos"]; m.needed = ["Nameplate", "Shop number sticker"]; });
+U("dust", m => { m.area = "back"; m.details = ["The dust main runs the length of the maker hallway to the back of the shop", "Start and stop box (green and red buttons, unlabelled) on the wall above the fibre drums"]; m.reason = "Location at the back of the shop to confirm."; m.needed = ["Photo of the collector and its control panel", "Make and model, filters or bags, collection bins"]; });
+MACHINES.push(
+  { id:"ducts", short:"Ducts", name:"Dust collection ducting and blast gates", area:"hallway", shopNo:"", maker:"Shop system", model:"", serial:"", year:"", power:"", service:"",
+    details:["Main galvanized ducts leave the machine room through the wall above the fibre drums and run down the maker hallway", "Older cream-painted run along the side wall over the workbench", "Sliding blast gate on each drop at about head height", "Many joints wrapped in tape, some dark and lifting"],
+    maint:["Every user: close your blast gate when you finish", "Yearly: check and reseal duct joints", "Yearly high clean: vacuum dust off the tops of the horizontal runs"], status:"none", reason:"No maintenance record yet.", needed:[] },
+  { id:"airlines", short:"Air drains", name:"Compressed air lines, drains and filters", area:"press", shopNo:"", maker:"Shop system", model:"", serial:"", year:"", power:"Fed by the Atlas Copco compressor", service:"",
+    details:["Drain valves at the bottom of the wall drops (by the drill press, on the saw room wall)", "Air filter-regulators with water traps: on the Blum, on the side of the spray booth, on the wall by the workbench"],
+    maint:["Monthly: open the drop drains and drain every water trap"], status:"none", reason:"No maintenance record yet.", needed:[] },
+  { id:"filterwall", short:"Air filter wall", name:"Replacement-air filter wall", area:"finishing", shopNo:"", maker:"To confirm", model:"", serial:"", year:"", power:"", service:"",
+    details:["At least 24 square framed filters on the finishing room wall, letting in replacement air for the booth exhaust"],
+    maint:["Replace loaded filters on a set schedule"], status:"warn", reason:"Many frames look heavily loaded with overspray.", needed:["Number of frames and one frame's size"] },
+  { id:"sinktrap", short:"Trap", name:"Sink solids trap", area:"press", shopNo:"", maker:"To confirm", model:"", serial:"", year:"", power:"", service:"",
+    details:["Grey box under the eye wash beside the sink; the sink drains into it", "Catches finish and sludge from rinsing spray guns before it reaches the sewer"],
+    maint:["Empty on a schedule (interval from the label on its lid)"], status:"none", reason:"No maintenance record yet.", needed:["Close-up of the lid label: type and cleaning interval"] },
+  { id:"accoil", short:"AC coil", name:"Air conditioning indoor coil", area:"back", shopNo:"", maker:"To confirm", model:"", serial:"", year:"", power:"", service:"",
+    details:["Galvanized box above the red double doors, with an oval access hatch, refrigerant line and expansion valve", "Drip pan hung underneath on metal strapping, lined with roofing membrane; rust stains on the box", "Likely the coil the co-op meeting priced at about $20,000 to repair, against about $60,000 to $65,000 for a new unit", "Its duct connection rises through the roof by the loading door, where the ceiling's insulation facing is torn"],
+    maint:["Yearly service by a licensed refrigeration contractor", "During the cooling season, check the drip pan and drain"], status:"warn", reason:"The makeshift drip pan and rust stains suggest the coil leaks.", above:true,
+    needed:["Nameplate on the side of the box (model, year, cooling capacity), for contractor quotes and rebate applications"] },
+  { id:"heaters", short:"Gas heaters", name:"Gas unit heaters (at least 4)", area:"hallway", shopNo:"", maker:"To confirm", model:"", serial:"", year:"Older units", power:"Natural gas", service:"",
+    details:["Ceiling-hung units fed by gas lines, along the hallways and in the machine room"],
+    maint:["Yearly service by a licensed gas technician", "Keep dust off them: dust on a heater is a fire risk"], status:"none", reason:"No maintenance record yet. Whether the co-op or the landlord services them is to confirm.", needed:["Nameplates: age and input rating", "Who services them, the co-op or the landlord"] }
+);
+U("ducts", m => { m.details.push("18 blast gates mapped from the walkthrough photos, numbered G1 to G18 along the ducting", "Main trunk runs from the hallway through the table saw room and down the middle of the machine room, with branches to each machine", "Planer drop: joint above the gate wrapped in foil tape"); });
+
+/* ---------- Corrections from the photo-by-photo review, November 12 evening ---------- */
+(function () { const i = MACHINES.findIndex(m => m.id === "unknown"); if (i >= 0) MACHINES.splice(i, 1); })();
+U("downdraft", m => { m.details = ["Long bench on the machine room's south wall: perforated top over foam floor mats", "FIRE board and the Y floor pickup at its east end; air filter-regulator and the Festool extractor at its west end", "Abranet sanding discs stored on it", "A second downdraft table is planned near the radial arm saw"]; });
+U("rockwell", m => { m.details = m.details.filter(d => !d.startsWith("If this is the saw with the walnut")); m.details.push("Confirmed from the photos: this is the saw with the zero-clearance insert marked \"No tilts or dado\", the walnut-laminate extension and the black panel with a yellow stripe", "Stands south of the Rockwell/Delta band saw, with the clamp racks to its east"); });
+U("rockwell2", m => { m.details = ["Stands just south of the lathe and grinder shelf, fence rail running east to west", "Nameplate and number sticker still to photograph"]; });
+U("italpresse", m => { m.details = m.details.filter(d => !d.startsWith("Against the press room wall")); m.details.push("Along the press room's north wall, just west of the doorway from the machine room"); });
+U("edgesander", m => { m.details = m.details.filter(d => !d.startsWith("Runs along the end wall")); m.details.push("Runs along the machine room's south wall at the west end; sanding belts and cubbies on the wall beside it, then a white door"); });
+U("cnc", m => { m.details.push("Along the west end wall under the overhead lumber rack, with the AXYZ Z7 end facing into the room"); });
+U("booth", m => { m.details.push("On the finishing room's south wall, facing the door; the replacement-air filter wall is on the north wall beside the door, the drying racks on the west wall"); });
+U("feeder", m => { m.details = m.details.filter(d => !d.startsWith("Green feeder on an orange stand")); m.details.unshift("Green feeder on an orange stand between the Rockwell/Delta band saw and the tall supply cabinet"); });
+const SITE_ISSUES = [
+  { level:"warn", title:"Power cable across the floor at the Martin saw", text:"The saw's power cable lies on the floor between its yellow service post and the machine, in the walkway around the saw. A trip hazard, and the cable can be run over or cut." },
+  { level:"crit", title:"Finishing room: no fire extinguisher", text:"The red FIRE board holds only an air blow gun, with four pails of flammable finish directly below it." },
+  { level:"warn", title:"Flammable finish pails", text:"Pails of flammable finish stand on the floor inside and outside the finishing room and on the cart by the sink. Where they should be stored is for the managers to decide." },
+  { level:"warn", title:"Ladder in front of an extinguisher and electrical panel", text:"In the maker hallway a ladder leans against the FIRE board, the extinguisher and an electrical panel. Panels need about a metre (3 feet) of clear space in front." },
+  { level:"warn", title:"Jerry can on the sheet rack", text:"A red jerry can sits on top of the sheet rack near the loading door. If it holds fuel, it belongs in the flammables cabinet." },
+  { level:"warn", title:"Eye wash not flushed", text:"The water in the eye wash's clear section looks brown, so it probably hasn't been run in a while." },
+  { level:"warn", title:"Crack above the exit door", text:"A horizontal crack runs across the block wall above the exit door frame by the drill press. A building matter for the landlord." },
+  { level:"warn", title:"Roof opening by the loading door", text:"The ceiling's insulation facing is torn and hanging around the duct that rises through the roof, which can mean water has come in. Raise with the landlord." },
+  { level:"warn", title:"Hallway storage", text:"Sheet goods, carts and ladders stand in the maker hallway, which the November meeting agreed to keep clear." }
+];
+
+/* ---------- Services: what feeds each machine ---------- */
+const SERVICES = {
+  martin:{ dust:"Blast gate G1: lever gate between the saw and the edge bander, flex hoses to the saw base and the overhead blade guard", power:"Yellow service post beside the saw; the power cable runs across the floor to the saw", air:"Air drop on the same post" },
+  bander:{ dust:"Blast gates G2 and G3: two drops clamped into the top hood", power:"Yellow service post at the infeed end, conduit to a box at the machine's base", air:"Same post: blow gun, and a red hose to the machine's air inlet" },
+  planer:{ dust:"Blast gate G4: drop from the ceiling with a sliding gate; joint above it wrapped in foil tape", power:"Yellow service post beside it", air:"Air drop on the same post" },
+  jointer:{ dust:"Blast gate G5", power:"Yellow service post beside it (log sheet clipped to it)", air:"Air drop on the same post" },
+  scmsaw:{ dust:"Blast gate G6" }, cnc:{ dust:"Blast gate G7 to the dust shoe", power:"Master switch on the control cabinet" }, ras:{ dust:"Blast gate G8 to the hood on its bench" },
+  laguna:{ dust:"Blast gate G9: hose drops from the ceiling", power:"220 volt single-phase" }, shaper:{ dust:"Blast gate G10: orange flex hose" },
+  dwplaner:{ dust:"Blast gate G11" }, drum:{ dust:"Blast gate G12: hose joints taped", power:"Outlet taped 10 (twist-lock) above it, beside a 220 volt outlet on panel 3, circuits 1 and 3; emergency stop box on a wall bracket" },
+  edgesander:{ dust:"Blast gate G13", power:"575 volt three-phase" }, downdraft:{ dust:"Blast gate G14: Y floor pickup at its east end, beside the FIRE board", air:"Air filter-regulator with blow gun at its west end" }, lathe:{ dust:"Blast gate G15 (to confirm)", power:"Outlet labelled 1-6 beside it" },
+  rockwell2:{ dust:"Blast gate G16 (to confirm)" }, delta:{ dust:"Blast gate G17: flex hose patched with tape", power:"Own wall-mounted start and stop box" },
+  rockwell:{ dust:"Blast gate G18: drop down the east wall between the clamp racks and the clock", power:"Separate push-button start and stop box" },
+  drill:{ power:"120 volt wall outlet", air:"Air drop with drain valve beside it" }, blum:{ air:"Own air filter-regulator" },
+  italpresse:{ power:"Disconnect switch on the wall beside it", air:"Compressed air" }, booth:{ air:"Air filter-regulator on the side of the booth" },
+  compressor:{ air:"Feeds the shop air lines" }, dust:{ power:"Start and stop box (green and red buttons) on the wall above the fibre drums" }
+};
+const LAYERS = { ducting:true, power:true, air:true, safety:true };
+const SVC_KINDS = ["duct", "hvac", "air", "power"];
+function wallLayers(w) { return w.kind === "duct" || w.kind === "hvac" ? ["ducting"] : w.kind === "air" ? ["air"] : w.kind === "power" ? ["power"] : []; }
+function fixLayers(f) {
+  const t = f.tone || (f.shape === "circle" ? "safety" : "plain");
+  return t === "gate" || t === "duct" ? ["ducting"] : t === "post" ? ["power", "air"] : t === "power" ? ["power"] : t === "air" ? ["air"] : t === "safety" || t === "heater" ? ["safety"] : [];
+}
+function shown(layers, kind, id) { return !layers.length || layers.some(l => LAYERS[l]) || isSel(kind, id); }
+const SVC_FIX = ["gate", "post", "power", "air", "heater"];
+const STATUS = {
+  ok:{label:"Green", cls:"s-ok"}, warn:{label:"Yellow", cls:"s-warn"}, crit:{label:"Red", cls:"s-crit"}, none:{label:"Grey: no record", cls:"s-none"}
+};
+const TODO = [
+  "Dust collector: a photo of it, its nameplate and its control panel (motor size decides whether it keeps up with the open gates)",
+  "Number stickers: what they mean (machine or outlet numbers), and the stickers still unmatched (4, 8, 9, and 10 or 16)",
+  "Nameplates: Martin T70 (try the touchscreen service screen), edge bander, CNC serial plate, drum sander, edge-gluing press, both Rockwell saw 2 plates, spray booth and its exhaust fan, Airmix pump, air conditioning coil, gas heaters, bench grinder",
+  "Rockwell saw 2: confirm it is the saw south of the lathe, and photograph its plate and sticker",
+  "Blast gates not yet seen in photos: G5 jointer, G6 SCM sliding saw, G7 CNC, G8 radial arm saw, G11 DeWalt planer, G13 edge sander, G15 lathe, G16 Rockwell saw 2",
+  "Hallway: are both round ducts dust ducts? Photo 143 shows a Y joining them, which suggests yes",
+  "Disconnect switch labels in the press room and the sheet goods room, to link each machine to its shut-off",
+  "Close-ups: the log sheet on the jointer's yellow post, the sink trap's lid label, the edge bander's laminated instruction sheet, the band saw blade note",
+  "Where the white door in the machine room's south wall (between the edge sander and the Festool) leads",
+  "Rooms to map: electrical corridor, the maker spaces (numbers and order), the room behind the red doors, the sheet goods room and loading door, the mezzanine",
+  "Spray booth filter size (on a filter edge) and the replacement-air filter count and size",
+  "Compressor: service interval from Total Air; whether the tank drains automatically"
+];
+
+
+/* ---------- Floor plan: walls, room labels and fixtures (all editable) ---------- */
+const DRAFT_WALLS = [{"id":"w1","kind":"wall","x1":20,"y1":20,"x2":402,"y2":20},{"id":"w30","kind":"door","x1":402,"y1":20,"x2":438,"y2":20},{"id":"w31","kind":"wall","x1":438,"y1":20,"x2":700,"y2":20},{"id":"w2","kind":"wall","x1":20,"y1":20,"x2":20,"y2":540},{"id":"w9","kind":"wall","x1":700,"y1":20,"x2":900,"y2":20},{"id":"w14","kind":"wall","x1":900,"y1":20,"x2":1180,"y2":20},{"id":"w15","kind":"wall","x1":1180,"y1":20,"x2":1180,"y2":425},{"id":"w16","kind":"wall","x1":1050,"y1":540,"x2":1180,"y2":540},{"id":"w9478","kind":"wall","x1":1045,"y1":700,"x2":900,"y2":700},{"id":"w9479","kind":"door","x1":880,"y1":700,"x2":720,"y2":700},{"id":"w9480","kind":"wall","x1":700,"y1":700,"x2":615,"y2":700},{"id":"w9481","kind":"wall","x1":595,"y1":700,"x2":595,"y2":960},{"id":"w9484","kind":"opening","x1":1180,"y1":540,"x2":1180,"y2":425},{"id":"w60","kind":"wall","x1":595,"y1":960,"x2":1045,"y2":960},{"id":"w61","kind":"wall","x1":1045,"y1":700,"x2":1045,"y2":960},{"id":"w62","kind":"wall","x1":1180,"y1":540,"x2":1180,"y2":740},{"id":"w63","kind":"wall","x1":1045,"y1":700,"x2":1180,"y2":700},{"id":"w69","kind":"dashed","x1":20,"y1":975,"x2":420,"y2":975},{"id":"w70","kind":"dashed","x1":420,"y1":975,"x2":420,"y2":1180},{"id":"w71","kind":"dashed","x1":420,"y1":1180,"x2":20,"y2":1180},{"id":"w72","kind":"dashed","x1":20,"y1":1180,"x2":20,"y2":975},{"id":"w73","kind":"wall","x1":1180,"y1":225,"x2":2585,"y2":225},{"id":"w74","kind":"wall","x1":1180,"y1":740,"x2":2585,"y2":740},{"id":"w75","kind":"wall","x1":2585,"y1":225,"x2":2585,"y2":430},{"id":"w76","kind":"door","x1":2585,"y1":430,"x2":2585,"y2":535},{"id":"w77","kind":"wall","x1":2585,"y1":535,"x2":2585,"y2":740},{"id":"w78","kind":"wall","x1":2585,"y1":225,"x2":2905,"y2":225},{"id":"w79","kind":"wall","x1":2905,"y1":225,"x2":2905,"y2":300},{"id":"w80","kind":"door","x1":2905,"y1":300,"x2":2905,"y2":420},{"id":"w81","kind":"wall","x1":2905,"y1":420,"x2":2905,"y2":740},{"id":"w82","kind":"wall","x1":2585,"y1":740,"x2":2800,"y2":740},{"id":"w83","kind":"opening","x1":2800,"y1":740,"x2":2850,"y2":740},{"id":"w84","kind":"wall","x1":2850,"y1":740,"x2":2905,"y2":740},{"id":"d1","kind":"duct","x1":1180,"y1":480,"x2":2775,"y2":480},{"id":"d2","kind":"duct","x1":2775,"y1":480,"x2":2775,"y2":560},{"id":"d3","kind":"duct","x1":1000,"y1":480,"x2":1180,"y2":480},{"id":"d4","kind":"duct","x1":1000,"y1":280,"x2":1000,"y2":480},{"id":"d5","kind":"duct","x1":150,"y1":280,"x2":1000,"y2":280},{"id":"d6","kind":"duct","x1":1000,"y1":160,"x2":1000,"y2":280},{"id":"d7","kind":"duct","x1":740,"y1":160,"x2":1172,"y2":160},{"id":"d7a","kind":"duct","x1":740,"y1":160,"x2":740,"y2":114},{"id":"d7b","kind":"duct","x1":1057,"y1":160,"x2":1057,"y2":92},{"id":"d7c","kind":"duct","x1":1172,"y1":160,"x2":1172,"y2":238},{"id":"d8","kind":"duct","x1":500,"y1":160,"x2":500,"y2":280},{"id":"d9","kind":"duct","x1":372,"y1":160,"x2":605,"y2":160},{"id":"d9a","kind":"duct","x1":480,"y1":160,"x2":480,"y2":124},{"id":"d9b","kind":"duct","x1":549,"y1":160,"x2":549,"y2":104},{"id":"d9c","kind":"duct","x1":605,"y1":160,"x2":605,"y2":116},{"id":"d10","kind":"duct","x1":150,"y1":150,"x2":150,"y2":280},{"id":"d11","kind":"duct","x1":104,"y1":150,"x2":150,"y2":150},{"id":"d12","kind":"duct","x1":150,"y1":280,"x2":150,"y2":292},{"id":"d13","kind":"duct","x1":330,"y1":262,"x2":330,"y2":280},{"id":"d14","kind":"duct","x1":540,"y1":236,"x2":540,"y2":280},{"id":"d15","kind":"duct","x1":590,"y1":236,"x2":590,"y2":280},{"id":"d16","kind":"duct","x1":437,"y1":280,"x2":437,"y2":298},{"id":"d17","kind":"duct","x1":690,"y1":280,"x2":690,"y2":290},{"id":"d18","kind":"duct","x1":430,"y1":280,"x2":430,"y2":480},{"id":"d19","kind":"duct","x1":240,"y1":480,"x2":430,"y2":480},{"id":"d20","kind":"duct","x1":805,"y1":532,"x2":1180,"y2":532},{"id":"d21","kind":"duct","x1":1180,"y1":480,"x2":1180,"y2":532},{"id":"h1","kind":"hvac","x1":1185,"y1":522,"x2":2545,"y2":522},{"id":"w3a","kind":"wall","x1":20,"y1":540,"x2":455,"y2":540},{"id":"w3b","kind":"door","x1":455,"y1":540,"x2":492,"y2":540},{"id":"w3c","kind":"wall","x1":492,"y1":540,"x2":960,"y2":540},{"id":"w3d","kind":"opening","x1":960,"y1":540,"x2":1030,"y2":540},{"id":"w3e","kind":"wall","x1":1030,"y1":540,"x2":1050,"y2":540},{"id":"w91","kind":"dashed","x1":450,"y1":545,"x2":450,"y2":700},{"id":"w92","kind":"dashed","x1":450,"y1":700,"x2":553,"y2":700},{"id":"w93","kind":"door","x1":553,"y1":700,"x2":590,"y2":700},{"id":"w94","kind":"wall","x1":590,"y1":700,"x2":615,"y2":700},{"id":"w67","kind":"dashed","x1":450,"y1":705,"x2":450,"y2":960},{"id":"w68","kind":"dashed","x1":450,"y1":960,"x2":595,"y2":960}];
+
+const DRAFT_LABELS = [{"id":"l1","text":"Main machine room","x":30,"y":530},{"id":"l2","text":"Press room","x":620,"y":660},{"id":"l3","text":"Table saw room","x":910,"y":510},{"id":"l4","text":"Finishing room","x":632,"y":880},{"id":"l5","text":"Not yet located","x":30,"y":1172},{"id":"l7","text":"Exit","x":404,"y":15},{"id":"l20","text":"Maker hallway","x":1195,"y":538},{"id":"l21","text":"Sheet goods room","x":2595,"y":732},{"id":"l23","text":"Electrical","x":458,"y":780},{"id":"l24","text":"Red doors","x":2530,"y":420},{"id":"l25","text":"Loading door","x":2912,"y":362},{"id":"l26","text":"Back of the shop (to confirm)","x":2595,"y":215},{"id":"l30","text":"Door: leads where?","x":340,"y":556},{"id":"l31","text":"corridor","x":458,"y":797}];
+
+const DRAFT_FIXTURES = [{"id":"f1","label":"Lumber rack overhead","shape":"rect","x":-295,"y":115,"w":640,"h":16,"r":270},{"id":"f2","label":"Mezzanine","shape":"rect","x":1050,"y":550,"w":125,"h":150,"r":0},{"id":"f3","label":"Stairs to the mezzanine","shape":"rect","x":1010,"y":550,"w":32,"h":118,"r":0},{"id":"f4","label":"Sprinkler valve, keep clear (position approximate)","shape":"circle","x":1000,"y":556,"w":16,"h":16,"r":0},{"id":"f5","label":"Clamp racks","shape":"rect","x":1165,"y":65,"w":10,"h":155,"r":0},{"id":"f6","label":"Dust drums","shape":"rect","x":1110,"y":340,"w":100,"h":15,"r":90},{"id":"f7","label":"Extinguisher","shape":"circle","x":284,"y":26,"w":14,"h":14,"r":0},{"id":"f9483","label":"New fixture","shape":"rect","x":450,"y":610,"w":50,"h":40,"r":270},{"id":"s1","label":"Space 1","shape":"rect","x":1185,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s2","label":"Space 2","shape":"rect","x":1385,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s3","label":"Space 3","shape":"rect","x":1585,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s4","label":"Space 4","shape":"rect","x":1785,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s5","label":"Space 5","shape":"rect","x":1985,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s6","label":"Space 6","shape":"rect","x":2185,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s7","label":"Space 7","shape":"rect","x":2385,"y":230,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s8","label":"Space 8","shape":"rect","x":2385,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s9","label":"Space 9","shape":"rect","x":2185,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s10","label":"Space 10","shape":"rect","x":1985,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s11","label":"Space 11","shape":"rect","x":1785,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s12","label":"Space 12","shape":"rect","x":1585,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s13","label":"Space 13","shape":"rect","x":1385,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"s14","label":"Space 14","shape":"rect","x":1185,"y":550,"w":195,"h":185,"r":0,"tone":"space"},{"id":"f22","label":"Electrical panel","shape":"rect","x":2150,"y":532,"w":30,"h":12,"r":0,"tone":"safety"},{"id":"f23","label":"Extinguisher","shape":"circle","x":2195,"y":530,"w":14,"h":14,"r":0},{"id":"f24","label":"Extinguisher","shape":"circle","x":2440,"y":530,"w":14,"h":14,"r":0},{"id":"f25","label":"Injury poster","shape":"rect","x":2556,"y":536,"w":16,"h":10,"r":0,"tone":"safety"},{"id":"f26","label":"Sheet goods racks","shape":"rect","x":2600,"y":235,"w":280,"h":40,"r":0},{"id":"f27","label":"Disconnect switches","shape":"rect","x":2650,"y":726,"w":120,"h":10,"r":0,"tone":"safety"},{"id":"f28","label":"Extinguisher","shape":"circle","x":2780,"y":718,"w":14,"h":14,"r":0},{"id":"f29","label":"Gas can","shape":"rect","x":2862,"y":282,"w":16,"h":16,"r":0,"tone":"safety"},{"id":"f30","label":"Duct to roof","shape":"rect","x":2780,"y":320,"w":90,"h":40,"r":0},{"id":"f31","label":"Disconnect switch board","shape":"rect","x":618,"y":684,"w":48,"h":14,"r":0,"tone":"safety"},{"id":"f32","label":"Extinguisher","shape":"circle","x":672,"y":686,"w":14,"h":14,"r":0},{"id":"f33","label":"First aid kit","shape":"rect","x":886,"y":686,"w":30,"h":12,"r":0,"tone":"safety"},{"id":"f34","label":"Sink and eye wash","shape":"rect","x":456,"y":672,"w":68,"h":26,"r":0,"tone":"safety"},{"id":"f35","label":"FIRE board, no extinguisher","shape":"circle","x":708,"y":706,"w":14,"h":14,"r":0},{"id":"f36","label":"Finish pails","shape":"rect","x":690,"y":722,"w":24,"h":18,"r":0,"tone":"safety"},{"id":"f37","label":"Drying racks","shape":"rect","x":602,"y":740,"w":14,"h":195,"r":0},{"id":"f38","label":"Extinguisher on FIRE board","shape":"circle","x":765,"y":514,"w":14,"h":14,"r":0},{"id":"f39","label":"Dust collector start and stop (green and red buttons, unlabelled)","shape":"rect","x":1158,"y":402,"w":14,"h":18,"r":0,"tone":"power"},{"id":"g1","label":"Blast gate G1","shape":"circle","x":681.0,"y":281.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G1","serves":"martin","confirmed":true,"note":"Drop with a lever gate between the saw and the edge bander; flex hoses go to the saw base and to the overhead blade guard"},{"id":"g2","label":"Blast gate G2","shape":"circle","x":531.0,"y":227.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G2","serves":"bander","confirmed":true,"note":"First of two drops clamped into the top hood"},{"id":"g3","label":"Blast gate G3","shape":"circle","x":581.0,"y":227.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G3","serves":"bander","confirmed":true,"note":"Second drop clamped into the top hood"},{"id":"g4","label":"Blast gate G4","shape":"circle","x":428.0,"y":289.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G4","serves":"planer","confirmed":true,"note":"Drop from the ceiling with a sliding gate at the bottom; the joint above the gate is wrapped in foil tape"},{"id":"g5","label":"Blast gate G5","shape":"circle","x":421.0,"y":433.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G5","serves":"jointer","confirmed":false,"note":"Drop beside the jointer"},{"id":"g6","label":"Blast gate G6","shape":"circle","x":321.0,"y":253.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G6","serves":"scmsaw","confirmed":false,"note":"Drop to the saw and its overhead guard"},{"id":"g7","label":"Blast gate G7","shape":"circle","x":141.0,"y":283.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G7","serves":"cnc","confirmed":false,"note":"Drop to the dust shoe"},{"id":"g8","label":"Blast gate G8","shape":"circle","x":95.0,"y":141.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G8","serves":"ras","confirmed":false,"note":"Drop to the dust hood on its bench"},{"id":"g9","label":"Blast gate G9","shape":"circle","x":363.0,"y":151.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G9","serves":"laguna","confirmed":true,"note":"Dust hose drops from the ceiling"},{"id":"g10","label":"Blast gate G10","shape":"circle","x":471.0,"y":115.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G10","serves":"shaper","confirmed":true,"note":"Drop with orange flex hose"},{"id":"g11","label":"Blast gate G11","shape":"circle","x":540.0,"y":95.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G11","serves":"dwplaner","confirmed":false,"note":"Drop to the portable planer"},{"id":"g12","label":"Blast gate G12","shape":"circle","x":596.0,"y":107.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G12","serves":"drum","confirmed":true,"note":"Drop with taped hose joints"},{"id":"g13","label":"Blast gate G13","shape":"circle","x":231.0,"y":471.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G13","serves":"edgesander","confirmed":false,"note":"Drop to the edge sander"},{"id":"g15","label":"Blast gate G14","shape":"circle","x":796.0,"y":523.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G14","serves":"downdraft","confirmed":true,"note":"Y floor pickup at the east end of the downdraft bench, beside the FIRE board, fed by the duct along the brick wall"},{"id":"g16","label":"Blast gate G15","shape":"circle","x":731.0,"y":105.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G15","serves":"lathe","confirmed":false,"note":"Drop on the back wall near the grinder"},{"id":"g17","label":"Blast gate G16","shape":"circle","x":911.0,"y":151.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G16","serves":"rockwell2","confirmed":false,"note":"Drop to the second Rockwell saw"},{"id":"g18","label":"Blast gate G17","shape":"circle","x":1048.0,"y":83.0,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G17","serves":"delta","confirmed":true,"note":"Drop on the back wall; the flex hose is patched with tape"},{"id":"g19","label":"Blast gate G18","shape":"circle","x":1163,"y":229,"w":18,"h":18,"r":0,"tone":"gate","mini":true,"gate":"G18","serves":"rockwell","confirmed":true,"note":"Drop down the east wall between the clamp racks and the clock, gate at head height"},{"id":"p1","label":"Service post: power and air","shape":"rect","x":489.0,"y":328.0,"w":12,"h":12,"r":0,"tone":"post","mini":true,"serves":"planer","note":"Yellow steel post beside the thickness planer carrying an electrical conduit, an air drop with a blow gun and a coiled hose"},{"id":"p2","label":"Service post: power and air","shape":"rect","x":438.0,"y":398.0,"w":12,"h":12,"r":0,"tone":"post","mini":true,"serves":"jointer","note":"Yellow steel post beside the jointer; the printed log sheet is clipped to it"},{"id":"p3","label":"Service post: power and air","shape":"rect","x":634.0,"y":226.0,"w":12,"h":12,"r":0,"tone":"post","mini":true,"serves":"bander","note":"Yellow steel post at the edge bander: conduit to a box at the machine's base, a blow gun, and a red hose to the machine's air inlet"},{"id":"p4","label":"Service post: power and air","shape":"rect","x":569.0,"y":280.0,"w":12,"h":12,"r":0,"tone":"post","mini":true,"serves":"martin","note":"Yellow steel post beside the Martin saw; the saw's power cable runs across the floor from here"},{"id":"e1","label":"Retractable cord reel (ceiling)","shape":"rect","x":714.0,"y":256.0,"w":12,"h":12,"r":0,"tone":"power","mini":true},{"id":"e2","label":"Outlet taped 10 (twist-lock) and 220 volt outlet, panel 3, circuits 1 and 3","shape":"rect","x":585.0,"y":21.0,"w":14,"h":10,"r":0,"tone":"power","mini":true,"serves":"drum"},{"id":"e3","label":"Outlet labelled 1-6 by hand","shape":"rect","x":693.0,"y":21.0,"w":14,"h":10,"r":0,"tone":"power","mini":true,"serves":"lathe"},{"id":"e4","label":"Band saw start and stop box (wall)","shape":"rect","x":1018,"y":30,"w":10,"h":12,"r":0,"tone":"power","mini":true,"serves":"delta"},{"id":"e5","label":"Edge-gluing press disconnect switch","shape":"rect","x":600,"y":548,"w":12,"h":12,"r":0,"tone":"power","mini":true,"serves":"italpresse"},{"id":"a1","label":"Air drop with drain valve","shape":"rect","x":376.0,"y":22.0,"w":10,"h":10,"r":0,"tone":"air","mini":true,"serves":"drill"},{"id":"a2","label":"Air drop with drain valve","shape":"rect","x":1162.0,"y":250.0,"w":10,"h":10,"r":0,"tone":"air","mini":true},{"id":"a3","label":"Air filter-regulator with blow gun","shape":"rect","x":570,"y":524,"w":10,"h":10,"r":0,"tone":"air","mini":true},{"id":"a4","label":"Air filter-regulator (Blum)","shape":"rect","x":227.0,"y":26.0,"w":10,"h":10,"r":0,"tone":"air","mini":true,"serves":"blum"},{"id":"a5","label":"Air filter-regulator (spray booth)","shape":"rect","x":902,"y":930,"w":10,"h":10,"r":0,"tone":"air","mini":true,"serves":"booth"},{"id":"t1","label":"Gas unit heater (wall, above the workbench)","shape":"rect","x":666,"y":526,"w":34,"h":10,"r":0,"tone":"heater","mini":true},{"id":"t2","label":"Gas unit heater (ceiling)","shape":"rect","x":1583.0,"y":419.0,"w":34,"h":10,"r":0,"tone":"heater","mini":true},{"id":"t3","label":"Gas unit heater (ceiling)","shape":"rect","x":2183.0,"y":419.0,"w":34,"h":10,"r":0,"tone":"heater","mini":true},{"id":"x1","label":"Blum counter (white cabinets)","shape":"rect","x":108,"y":22,"w":175,"h":38,"r":0},{"id":"x2","label":"Jig and sled storage wall","shape":"rect","x":872,"y":22,"w":150,"h":16,"r":0},{"id":"x3","label":"Supply cabinet","note":"Tall maple cabinet holding saw blades, dado sets, band saw blades, mitre gauges and maintenance supplies (belt dressing, dry graphite, oil)","shape":"rect","x":1124,"y":22,"w":52,"h":44,"r":0},{"id":"x4","label":"Assembly table","note":"Walnut-laminate assembly table between the two Rockwell saws","shape":"rect","x":900,"y":158,"w":130,"h":92,"r":0},{"id":"x5","label":"Sanding belts and cubbies","shape":"rect","x":338,"y":524,"w":110,"h":14,"r":0},{"id":"x6","label":"Festool extractor (owner to confirm)","shape":"rect","x":520,"y":512,"w":30,"h":22,"r":0},{"id":"x7","label":"Scrap bins and blue rolling bin","shape":"rect","x":26,"y":22,"w":78,"h":30,"r":0},{"id":"t4","label":"Gas unit heater (wall, position approximate)","shape":"rect","x":410,"y":526,"w":34,"h":10,"r":0,"tone":"heater","mini":true},{"id":"t5","label":"Gas unit heater (ceiling, west end, position approximate)","shape":"rect","x":200,"y":130,"w":34,"h":10,"r":0,"tone":"heater","mini":true}];
+const REMOVED_IDS = ["f20","f21","b1","g14","w64","w65","w66","l22","w3","w9485"];
+const NEW_IDS = ["w60","w61","w62","w63","w64","w65","w66","w67","w68","w69","w70","w71","w72","w73","w74","w75","w76","w77","w78","w79","w80","w81","w82","w83","w84","l20","l21","l22","l23","l24","l25","l26","s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","s12","s13","s14","f20","f21","f22","f23","f24","f25","f26","f27","f28","f29","f30","f31","f32","f33","f34","f35","f36","f37","f38","f39","d1","d2","d3","d4","d5","d6","d7","d7a","d7b","d7c","d8","d9","d9a","d9b","d9c","d10","d11","d12","d13","d14","d15","d16","d17","d18","d19","d20","d21","h1","g1","g2","g3","g4","g5","g6","g7","g8","g9","g10","g11","g12","g13","g14","g15","g16","g17","g18","g19","p1","p2","p3","p4","e1","e2","e3","e4","e5","a1","a2","a3","a4","a5","t1","t2","t3","b1","w3a","w3b","w3c","w3d","w3e","w91","w92","w93","w94","w67","w68","l30","x1","x2","x3","x4","x5","x6","x7","t4","t5","l31"];
+
+/* Shared layout: Cosmo's edit of November 12, 5:38 pm */
+const SHARED_MACHINES = {"martin":[560,295,260,90,0],"bander":[455,195,175,55,0],"cnc":[-15,315,210,110,90],"vac":[40,215,42,42,0],"scmsaw":[170,165,230,85,0],"planer":[390,295,95,85,0],"jointer":[275,420,150,45,0],"shaper":[440,50,80,70,0],"laguna":[345,100,55,55,0],"drill":[320,40,50,50,0],"blum":[165,35,60,50,0],"ras":[15,125,110,55,270],"edgesander":[155,490,170,40,0],"drum":[570,50,70,55,270],"dwplaner":[525,55,48,42,270],"downdraft":[585,488,170,46,0],"rockwell":[1040,262,115,85,0],"delta":[1030,30,55,55,0],"lathe":[715,0,50,170,270],"grinder":[832,26,36,26,0],"feeder":[1088,28,32,30,0],"rockwell2":[855,65,130,75,0],"shopvac":[633,28,22,28,0],"italpresse":[615,550,340,44,0],"interwood":[1035,605,115,65,90],"compressor":[1090,610,110,44,90],"booth":[720,904,180,40,0],"airmix":[910,888,48,44,0],"turntable":[792,790,55,55,0],"dust":[2700,560,150,60,0],"ducts":[1195,428,60,24,0],"airlines":[905,600,50,28,0],"filterwall":[600,703,105,14,0],"sinktrap":[527,676,24,22,0],"accoil":[2545,440,80,90,0],"heaters":[1265,428,90,24,0]};
+MACHINES.forEach(m => { const a = SHARED_MACHINES[m.id]; if (a) [m.x, m.y, m.w, m.h, m.r] = a; });
+
+const MIN_W = 1200, MIN_H = 1100;
+let W = MIN_W, H = MIN_H, zoom = 0.75;
+const KEY = "goldthorne-shop-plan-v5", PREV_KEY = "goldthorne-shop-plan-v4";
+const draftMachines = {};
+MACHINES.forEach(m => { m.r = m.r || 0; draftMachines[m.id] = [m.x, m.y, m.w, m.h, m.r]; });
+
+let plan = { walls: clone(DRAFT_WALLS), labels: clone(DRAFT_LABELS), fixtures: clone(DRAFT_FIXTURES) };
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+function exportState() {
+  const machines = {};
+  MACHINES.forEach(m => machines[m.id] = [Math.round(m.x), Math.round(m.y), Math.round(m.w), Math.round(m.h), Math.round(m.r)]);
+  return { v:2, walls:plan.walls, labels:plan.labels, fixtures:plan.fixtures, machines };
+}
+function applyState(st) {
+  if (!st || st.v !== 2) throw new Error("Not a layout from this page");
+  plan = { walls: st.walls || [], labels: st.labels || [], fixtures: st.fixtures || [] };
+  MACHINES.forEach(m => { const a = st.machines && st.machines[m.id]; if (a) [m.x, m.y, m.w, m.h, m.r] = [a[0], a[1], a[2], a[3], a[4] || 0]; });
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(exportState())); } catch (e) {} if (typeof renderGates === "function" && document.getElementById("gateRows")) renderGates(); }
+function mergeNew() {
+  ["walls", "labels", "fixtures"].forEach(k => plan[k] = plan[k].filter(x => !REMOVED_IDS.includes(x.id)));
+  const shared = { walls: DRAFT_WALLS, labels: DRAFT_LABELS, fixtures: DRAFT_FIXTURES };
+  ["walls", "labels", "fixtures"].forEach(k => {
+    const have = new Set(plan[k].map(x => x.id));
+    shared[k].forEach(x => { if (NEW_IDS.includes(x.id) && !have.has(x.id)) plan[k].push(clone(x)); });
+  });
+}
+let prevSaved = null;
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (s) { applyState(s); mergeNew(); return; }
+    prevSaved = JSON.parse(localStorage.getItem(PREV_KEY) || "null");
+  } catch (e) {}
+}
+load();
+
+/* ---------- Undo ---------- */
+const undoStack = [];
+function snapshot() { return JSON.stringify(exportState()); }
+function pushUndo(snap) { undoStack.push(snap); if (undoStack.length > 60) undoStack.shift(); updateUndoBtn(); }
+function undo() {
+  if (!undoStack.length) return;
+  applyState(JSON.parse(undoStack.pop()));
+  if (sel && !findItem(sel)) sel = null;
+  save(); render(); renderInspector(); updateUndoBtn();
+}
+function updateUndoBtn() { const b = document.getElementById("undoBtn"); if (b) b.disabled = !undoStack.length; }
+
+/* ---------- Geometry helpers ---------- */
+const rad = d => d * Math.PI / 180;
+function rot(v, deg) { const c = Math.cos(rad(deg)), s = Math.sin(rad(deg)); return { x: v.x * c - v.y * s, y: v.x * s + v.y * c }; }
+function center(b) { return { x: b.x + b.w / 2, y: b.y + b.h / 2 }; }
+function cornerWorld(b, sx, sy) { const c = center(b), v = rot({ x: sx * b.w / 2, y: sy * b.h / 2 }, b.r || 0); return { x: c.x + v.x, y: c.y + v.y }; }
+let snapOn = true;
+const snap = v => snapOn ? Math.round(v / 5) * 5 : Math.round(v);
+const clampX = v => Math.max(0, Math.min(W, v)), clampY = v => Math.max(0, Math.min(H, v));
+function len(w) { return Math.round(Math.hypot(w.x2 - w.x1, w.y2 - w.y1)); }
+
+/* ---------- Selection and lookup ---------- */
+let sel = null;      // { kind: "machine"|"fixture"|"wall"|"label", id }
+let tool = "select"; // select | wall | door | opening | dashed | label | box
+function findItem(s) {
+  if (!s) return null;
+  const list = s.kind === "machine" ? MACHINES : s.kind === "fixture" ? plan.fixtures : s.kind === "wall" ? plan.walls : plan.labels;
+  return list.find(x => x.id === s.id) || null;
+}
+let nextId = Date.now() % 100000;
+const newId = p => p + (nextId++);
+
+/* ---------- Rendering ---------- */
+const svg = document.getElementById("map");
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+function fitCanvas() {
+  let maxY = 0, maxX = 0;
+  plan.walls.forEach(w => { maxY = Math.max(maxY, w.y1, w.y2); maxX = Math.max(maxX, w.x1, w.x2); });
+  plan.labels.forEach(l => { maxY = Math.max(maxY, l.y); maxX = Math.max(maxX, l.x + 120); });
+  plan.fixtures.concat(MACHINES).forEach(b => { const straight = ((b.r || 0) % 180) === 0; maxY = Math.max(maxY, b.y + (straight ? b.h : Math.max(b.w, b.h))); maxX = Math.max(maxX, b.x + (straight ? b.w : Math.max(b.w, b.h))); });
+  H = Math.max(MIN_H, Math.ceil((maxY + 300) / 50) * 50);
+  W = Math.max(MIN_W, Math.ceil((maxX + 200) / 50) * 50);
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.style.width = Math.round(W * zoom) + "px";
+}
+function render() {
+  if (!drag && !drawing) fitCanvas();
+  svg.innerHTML = "";
+  svg.classList.toggle("editing", editing);
+  svg.classList.toggle("drawing", editing && tool !== "select");
+  if (editing) {
+    const defs = el("defs", {}, svg);
+    const p1 = el("pattern", { id:"gMinor", width:10, height:10, patternUnits:"userSpaceOnUse" }, defs);
+    el("path", { d:"M10 0H0V10", class:"grid-minor" }, p1);
+    const p2 = el("pattern", { id:"gMajor", width:50, height:50, patternUnits:"userSpaceOnUse" }, defs);
+    el("rect", { width:50, height:50, fill:"url(#gMinor)" }, p2);
+    el("path", { d:"M50 0H0V50", class:"grid-major" }, p2);
+    el("rect", { x:0, y:0, width:W, height:H, fill:"url(#gMajor)" }, svg);
+  }
+  const drawWall = (w, parent, svcLine) => {
+    const g = el("g", { class:svcLine ? "svc" : "", "data-kind":"wall", "data-id":w.id, "data-role":"body" }, parent);
+    el("line", { x1:w.x1, y1:w.y1, x2:w.x2, y2:w.y2, class:"wall " + w.kind }, g);
+    if (editing) el("line", { x1:w.x1, y1:w.y1, x2:w.x2, y2:w.y2, class:"hit" }, g);
+  };
+  const gw = el("g", {}, svg);
+  plan.walls.filter(w => !SVC_KINDS.includes(w.kind)).forEach(w => drawWall(w, gw, false));
+  plan.fixtures.filter(f => !SVC_FIX.includes(f.tone) && shown(fixLayers(f), "fixture", f.id)).forEach(f => drawFixture(f));
+  plan.labels.forEach(l => {
+    const t = el("text", { x:l.x, y:l.y, class:"roomlabel", "data-kind":"label", "data-id":l.id, "data-role":"body" }, svg);
+    t.textContent = l.text;
+  });
+  MACHINES.forEach(m => drawMachine(m));
+  const gs = el("g", {}, svg);
+  plan.walls.filter(w => SVC_KINDS.includes(w.kind) && shown(wallLayers(w), "wall", w.id)).forEach(w => drawWall(w, gs, true));
+  plan.fixtures.filter(f => SVC_FIX.includes(f.tone) && shown(fixLayers(f), "fixture", f.id)).forEach(f => drawFixture(f));
+  if (editing && sel) drawHandles();
+  if (drawing) el("line", { x1:drawing.x1, y1:drawing.y1, x2:drawing.x2, y2:drawing.y2, class:"wall " + drawing.kind + " preview" }, svg);
+}
+
+function boxText(g, b, text, cls) {
+  const c = center(b);
+  let tr = (b.r || 0);
+  if (b.h > b.w * 1.6) tr -= 90;
+  let n = ((tr % 360) + 360) % 360;
+  if (n > 90 && n < 270) tr += 180;
+  const t = el("text", { x:c.x, y:c.y + 4, "text-anchor":"middle", class:cls, transform:"rotate(" + tr + " " + c.x + " " + c.y + ")" }, g);
+  t.textContent = text;
+  return t;
+}
+
+function drawFixture(f) {
+  const c = center(f);
+  const g = el("g", { class:"fixture tone-" + (f.tone || (f.shape === "circle" ? "safety" : "plain")) + (isSel("fixture", f.id) || (!editing && infoFixture === f.id) ? " sel" : "") + (f.tone === "gate" && f.confirmed === false ? " unconfirmed" : ""), "data-kind":"fixture", "data-id":f.id, "data-role":"body" }, svg);
+  const tt = el("title", {}, g); tt.textContent = f.label + (f.note ? ". " + f.note : "");
+  if (f.tone === "gate") {
+    const label = f.gate || "G";
+    el("circle", { cx:c.x, cy:c.y, r:label.length > 2 ? 12 : 10.5, class:"gatemark" }, g);
+    const t = el("text", { x:c.x, y:c.y + 3, "text-anchor":"middle", class:"gatetext" }, g); t.textContent = label;
+    return;
+  }
+  if (f.mini) {
+    if (f.shape === "circle") el("ellipse", { cx:c.x, cy:c.y, rx:f.w / 2, ry:f.h / 2, class:"marker" }, g);
+    else el("rect", { x:f.x, y:f.y, width:f.w, height:f.h, rx:f.tone === "post" ? 1 : 2, transform:"rotate(" + (f.r || 0) + " " + c.x + " " + c.y + ")" }, g);
+    return;
+  }
+  if (f.shape === "circle") {
+    el("ellipse", { cx:c.x, cy:c.y, rx:f.w / 2, ry:f.h / 2, class:"marker" }, g);
+    return;
+  }
+  el("rect", { x:f.x, y:f.y, width:f.w, height:f.h, transform:"rotate(" + (f.r || 0) + " " + c.x + " " + c.y + ")" }, g);
+  const longSide = Math.max(f.w, f.h), shortSide = Math.min(f.w, f.h);
+  const fs = f.tone === "space" ? 7.4 : 6.1;
+  if (shortSide >= 10 && f.label.length * fs <= longSide - 6) boxText(g, f, f.label, "");
+}
+
+function isSel(kind, id) { return sel && sel.kind === kind && sel.id === id; }
+
+function drawMachine(m) {
+  const c = center(m);
+  const cls = "mach st-" + m.status + (m.above ? " above" : "") + ((isSel("machine", m.id) || (!editing && recordId === m.id)) ? " sel" : "") + (filterStatus && filterStatus !== m.status ? " dim" : "");
+  const g = el("g", { class:cls, "data-kind":"machine", "data-id":m.id, "data-role":"body", tabindex:"0", role:"button",
+    "aria-label":m.name + (m.shopNo ? ", shop number " + m.shopNo : "") + ", status " + STATUS[m.status].label }, svg);
+  el("rect", { class:"body", x:m.x, y:m.y, width:m.w, height:m.h, transform:"rotate(" + (m.r || 0) + " " + c.x + " " + c.y + ")" }, g);
+  boxText(g, m, m.short, "");
+  if (m.shopNo) {
+    const p = cornerWorld(m, -1, -1);
+    const b = el("g", { class:"badge" }, g);
+    const lbl = m.shopNo.includes("or") ? "16?" : m.shopNo;
+    el("circle", { cx:p.x, cy:p.y, r:lbl.length > 1 ? 10 : 8 }, b);
+    const bt = el("text", { x:p.x, y:p.y + 3.5, "text-anchor":"middle" }, b); bt.textContent = lbl;
+  }
+}
+
+function drawHandles() {
+  const it = findItem(sel); if (!it) return;
+  const g = el("g", { class:"handles" }, svg);
+  if (sel.kind === "wall") {
+    el("line", { x1:it.x1, y1:it.y1, x2:it.x2, y2:it.y2, class:"selline" }, g);
+    [["h-p1", it.x1, it.y1], ["h-p2", it.x2, it.y2]].forEach(h =>
+      el("circle", { cx:h[1], cy:h[2], r:8, class:"handle", "data-kind":"wall", "data-id":it.id, "data-role":h[0] }, g));
+    return;
+  }
+  if (sel.kind === "label") {
+    const t = svg.querySelector('[data-kind="label"][data-id="' + it.id + '"]');
+    if (t) { const bb = t.getBBox(); el("rect", { x:bb.x - 4, y:bb.y - 3, width:bb.width + 8, height:bb.height + 6, class:"selbox" }, g); }
+    return;
+  }
+  const r = it.r || 0, c = center(it);
+  el("rect", { x:it.x, y:it.y, width:it.w, height:it.h, class:"selbox", transform:"rotate(" + r + " " + c.x + " " + c.y + ")" }, g);
+  [[-1,-1,"h-nw"],[1,-1,"h-ne"],[-1,1,"h-sw"],[1,1,"h-se"]].forEach(h => {
+    const p = cornerWorld(it, h[0], h[1]);
+    el("rect", { x:p.x - 7, y:p.y - 7, width:14, height:14, class:"handle", "data-kind":sel.kind, "data-id":it.id, "data-role":h[2],
+      transform:"rotate(" + r + " " + p.x + " " + p.y + ")" }, g);
+  });
+  const top = cornerWorld(it, 0, -1), knob = (() => { const v = rot({ x:0, y:-it.h / 2 - 26 }, r); return { x:c.x + v.x, y:c.y + v.y }; })();
+  el("line", { x1:top.x, y1:top.y, x2:knob.x, y2:knob.y, class:"selline thin" }, g);
+  el("circle", { cx:knob.x, cy:knob.y, r:9, class:"handle rot", "data-kind":sel.kind, "data-id":it.id, "data-role":"h-rot" }, g);
+  const ar = el("path", { d:"M" + (knob.x - 4) + " " + (knob.y + 1) + " a4 4 0 1 1 4 4", class:"rotglyph" }, g);
+}
+
+/* ---------- Pointer interaction ---------- */
+let drag = null, drawing = null;
+function svgPoint(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+
+function snapEndpoint(p, wall, which) {
+  const other = which === "h-p1" ? { x:wall.x2, y:wall.y2 } : { x:wall.x1, y:wall.y1 };
+  let best = null, bd = 12;
+  plan.walls.forEach(w => { if (w.id === wall.id) return; [[w.x1, w.y1], [w.x2, w.y2]].forEach(q => { const d = Math.hypot(q[0] - p.x, q[1] - p.y); if (d < bd) { bd = d; best = { x:q[0], y:q[1] }; } }); });
+  if (best) return best;
+  let x = snap(p.x), y = snap(p.y);
+  if (Math.abs(x - other.x) < 10) x = other.x;
+  if (Math.abs(y - other.y) < 10) y = other.y;
+  return { x:clampX(x), y:clampY(y) };
+}
+function snapFree(p) {
+  let best = null, bd = 12;
+  plan.walls.forEach(w => [[w.x1, w.y1], [w.x2, w.y2]].forEach(q => { const d = Math.hypot(q[0] - p.x, q[1] - p.y); if (d < bd) { bd = d; best = { x:q[0], y:q[1] }; } }));
+  return best || { x:clampX(snap(p.x)), y:clampY(snap(p.y)) };
+}
+
+svg.addEventListener("pointerdown", e => {
+  const t = e.target.closest("[data-role]");
+  if (!editing) {
+    if (t && t.dataset.kind === "machine") showRecord(t.dataset.id);
+    else if (t && t.dataset.kind === "fixture") showFixture(t.dataset.id);
+    return;
+  }
+  e.preventDefault();
+  const p = svgPoint(e);
+  const onHandle = t && t.dataset.role.startsWith("h-");
+  if (tool !== "select" && !onHandle) {
+    if (["wall", "door", "opening", "dashed", "duct", "air", "power"].includes(tool)) {
+      const s = snapFree(p);
+      drawing = { kind:tool, x1:s.x, y1:s.y, x2:s.x, y2:s.y };
+      svg.setPointerCapture(e.pointerId);
+    } else if (tool === "label") {
+      pushUndo(snapshot());
+      const l = { id:newId("l"), text:"New label", x:snap(p.x), y:snap(p.y) };
+      plan.labels.push(l); sel = { kind:"label", id:l.id }; setTool("select"); save(); render(); renderInspector(true);
+    } else if (tool === "gate") {
+      pushUndo(snapshot());
+      const nums = plan.fixtures.filter(x => x.tone === "gate").map(x => parseInt((x.gate || "G0").slice(1)) || 0);
+      const n = (nums.length ? Math.max.apply(null, nums) : 0) + 1;
+      const f = { id:newId("g"), label:"Blast gate G" + n, shape:"circle", tone:"gate", mini:true, gate:"G" + n, serves:"", confirmed:false, note:"", x:snap(p.x) - 9, y:snap(p.y) - 9, w:18, h:18, r:0 };
+      plan.fixtures.push(f); sel = { kind:"fixture", id:f.id }; setTool("select"); save(); render(); renderInspector(); renderGates();
+    } else if (tool === "box") {
+      pushUndo(snapshot());
+      const f = { id:newId("f"), label:"New fixture", shape:"rect", x:snap(p.x - 50), y:snap(p.y - 20), w:100, h:40, r:0 };
+      plan.fixtures.push(f); sel = { kind:"fixture", id:f.id }; setTool("select"); save(); render(); renderInspector(true);
+    }
+    render();
+    return;
+  }
+  if (!t) { sel = null; render(); renderInspector(); return; }
+  sel = { kind:t.dataset.kind, id:t.dataset.id };
+  const it = findItem(sel);
+  drag = { role:t.dataset.role, start:p, orig:clone(it), before:snapshot() };
+  svg.setPointerCapture(e.pointerId);
+  render(); renderInspector();
+});
+
+svg.addEventListener("pointermove", e => {
+  if (!editing) return;
+  const p = svgPoint(e);
+  if (drawing) {
+    let x = snap(p.x), y = snap(p.y);
+    if (Math.abs(x - drawing.x1) < 10) x = drawing.x1;
+    if (Math.abs(y - drawing.y1) < 10) y = drawing.y1;
+    plan.walls.forEach(w => [[w.x1, w.y1], [w.x2, w.y2]].forEach(q => { if (Math.hypot(q[0] - p.x, q[1] - p.y) < 12) { x = q[0]; y = q[1]; } }));
+    drawing.x2 = clampX(x); drawing.y2 = clampY(y);
+    render(); return;
+  }
+  if (!drag) return;
+  const it = findItem(sel), o = drag.orig, dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+  if (sel.kind === "wall") {
+    if (drag.role === "body") { const ddx = snap(dx), ddy = snap(dy); it.x1 = o.x1 + ddx; it.y1 = o.y1 + ddy; it.x2 = o.x2 + ddx; it.y2 = o.y2 + ddy; }
+    else { const q = snapEndpoint(p, it, drag.role); if (drag.role === "h-p1") { it.x1 = q.x; it.y1 = q.y; } else { it.x2 = q.x; it.y2 = q.y; } }
+  } else if (sel.kind === "label") {
+    it.x = clampX(snap(o.x + dx)); it.y = clampY(snap(o.y + dy));
+  } else {
+    if (drag.role === "body") { it.x = snap(o.x + dx); it.y = snap(o.y + dy); }
+    else if (drag.role === "h-rot") {
+      const c = center(o); let a = Math.atan2(p.y - c.y, p.x - c.x) * 180 / Math.PI + 90;
+      a = Math.round(a / 5) * 5; a = ((a % 360) + 360) % 360; it.r = a;
+    } else {
+      const sx = drag.role.endsWith("e") ? 1 : -1, sy = drag.role.startsWith("h-s") ? 1 : -1;
+      const A = cornerWorld(o, -sx, -sy);
+      const d = rot({ x:p.x - A.x, y:p.y - A.y }, -(o.r || 0));
+      const nw = Math.max(8, snap(sx * d.x)), nh = Math.max(8, snap(sy * d.y));
+      const v = rot({ x:sx * nw / 2, y:sy * nh / 2 }, o.r || 0);
+      const c = { x:A.x + v.x, y:A.y + v.y };
+      it.w = nw; it.h = nh; it.x = c.x - nw / 2; it.y = c.y - nh / 2;
+    }
+  }
+  render(); renderInspector();
+});
+
+function endPointer() {
+  if (drawing) {
+    if (Math.hypot(drawing.x2 - drawing.x1, drawing.y2 - drawing.y1) >= 6) {
+      pushUndo(snapshot());
+      const w = { id:newId("w"), kind:drawing.kind, x1:drawing.x1, y1:drawing.y1, x2:drawing.x2, y2:drawing.y2 };
+      plan.walls.push(w); sel = { kind:"wall", id:w.id }; save();
+    }
+    drawing = null; render(); renderInspector(); return;
+  }
+  if (drag) { if (snapshot() !== drag.before) { pushUndo(drag.before); save(); } drag = null; render(); renderInspector(); }
+}
+svg.addEventListener("pointerup", endPointer);
+svg.addEventListener("pointercancel", endPointer);
+
+/* ---------- Keyboard ---------- */
+document.addEventListener("keydown", e => {
+  if (!editing) return;
+  const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); undo(); return; }
+  if (typing) return;
+  if (e.key === "Escape") { setTool("select"); sel = null; render(); renderInspector(); return; }
+  if (!sel) return;
+  const it = findItem(sel); if (!it) return;
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSel(); return; }
+  if ((e.key === "r" || e.key === "R") && sel.kind !== "wall" && sel.kind !== "label") { turn90(); return; }
+  const step = e.shiftKey ? 1 : 5, mv = { ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step] }[e.key];
+  if (mv) {
+    e.preventDefault(); pushUndo(snapshot());
+    if (sel.kind === "wall") { it.x1 += mv[0]; it.x2 += mv[0]; it.y1 += mv[1]; it.y2 += mv[1]; } else { it.x += mv[0]; it.y += mv[1]; }
+    save(); render(); renderInspector();
+  }
+});
+
+function turn90() { const it = findItem(sel); if (!it) return; pushUndo(snapshot()); it.r = (((it.r || 0) + 90) % 360); save(); render(); renderInspector(); }
+function deleteSel() {
+  if (!sel || sel.kind === "machine") { toast("Machines stay on the register. Drag one into the Not yet located area instead."); return; }
+  pushUndo(snapshot());
+  const key = sel.kind === "fixture" ? "fixtures" : sel.kind === "wall" ? "walls" : "labels";
+  plan[key] = plan[key].filter(x => x.id !== sel.id); sel = null; save(); render(); renderInspector();
+}
+
+/* ---------- Tools ---------- */
+let editing = false;
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll("[data-tool]").forEach(b => b.setAttribute("aria-pressed", b.dataset.tool === t ? "true" : "false"));
+  render();
+}
+
+
+/* ---------- Side panel: machine record (view) or inspector (edit) ---------- */
+let recordId = "laguna", filterStatus = null, infoFixture = null;
+const panel = document.getElementById("panel");
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[c]); }
+
+function showFixture(id) {
+  infoFixture = id;
+  render(); renderInspector();
+  document.querySelectorAll("tr.grow").forEach(r => r.classList.toggle("sel", r.dataset.id === id));
+}
+const LAYER_NAMES = { ducting:"Dust collection", power:"Electrical", air:"Compressed air", safety:"Safety and heating" };
+function fixtureHTML(f) {
+  const m = f.serves ? MACHINES.find(x => x.id === f.serves) : null;
+  let h = '<div style="display:grid;gap:6px"><h3>' + esc(f.label) + '</h3>';
+  const ls = fixLayers(f).map(l => LAYER_NAMES[l]).join(" and ");
+  if (ls) h += '<p class="note">' + esc(ls) + '</p>';
+  h += '</div>';
+  const rows = [];
+  if (f.tone === "gate") {
+    rows.push(["Serves", m ? m.name : "Not assigned"]);
+    rows.push(["Seen in photos", f.confirmed === false ? "Not yet: position assumed" : "Yes"]);
+    rows.push(["Sensor", "None yet"], ["Open hours, last 7 days", "No data yet"]);
+  } else if (m) rows.push(["Serves", m.name]);
+  if (rows.length) h += '<dl class="kv">' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join("") + '</dl>';
+  if (f.note) h += '<p style="margin:0;font-size:14px">' + esc(f.note) + '</p>';
+  if (m) h += '<div class="btns"><button class="b" type="button" id="openMachine" data-id="' + m.id + '">Open the ' + esc(m.short) + ' record</button></div>';
+  return h;
+}
+function showRecord(id) {
+  infoFixture = null;
+  recordId = id;
+  render(); renderInspector();
+  document.querySelectorAll("tr.row").forEach(r => r.classList.toggle("sel", r.dataset.id === id));
+}
+
+
+const SRC = {}; PROGRAM.sources.forEach((x, i) => { SRC[x[0]] = { n: i + 1, t: x[1], u: x[2] }; });
+function cite(list) {
+  return (list || []).map(id => { const x = SRC[id]; if (!x) return "";
+    return x.u ? '<a class="src" href="' + x.u + '" target="_blank" rel="noopener" title="' + esc(x.t) + '">' + x.n + '</a>'
+               : '<a class="src" href="#src-' + x.n + '" title="' + esc(x.t) + '">' + x.n + '</a>'; }).join("");
+}
+function lineLI(l) { return '<li>' + esc(l[0]) + ' ' + cite(l[1]) + '</li>'; }
+function schedLI(l) { const i = l[0].indexOf("|"); return '<li><strong>' + esc(l[0].slice(0, i)) + ':</strong> ' + esc(l[0].slice(i + 1)) + ' ' + cite(l[1]) + '</li>'; }
+function programHTML(m) {
+  const p = PROGRAM.machines[m.id]; if (!p) return "";
+  let h = "";
+  const label = { found: "Manual", similar: "Manual (similar model)", request: "Manual: request it", none: "Manual" };
+  if (p.manual && p.manual.text) h += '<div><h3 class="mini">' + label[p.manual.state] + '</h3><p class="note">' + esc(p.manual.text) + ' ' + cite(p.manual.src) + '</p></div>';
+  const groups = [["before", "Before use"], ["during", "While running"], ["never", "Never"], ["after", "Reset after use"]].filter(g => p[g[0]] && p[g[0]].length);
+  if (groups.length) h += '<details class="prog" open><summary>Operating procedure</summary>' + groups.map(g => '<h4>' + g[1] + '</h4><ul class="tight">' + p[g[0]].map(lineLI).join("") + '</ul>').join("") + '<p class="note" style="margin-top:6px">Plus the shop-wide rules below the map.</p></details>';
+  if (p.sched && p.sched.length) h += '<details class="prog" open><summary>Maintenance schedule</summary><ul class="tight">' + p.sched.map(schedLI).join("") + '</ul></details>';
+  if (p.risks && p.risks.length) h += '<div><h3 class="mini">Risks and notes</h3><ul class="tight">' + p.risks.map(lineLI).join("") + '</ul></div>';
+  return h;
+}
+function renderProgram() {
+  const lab = { 1: "Fix now", 2: "This week", 3: "This month", 4: "Landlord" };
+  document.getElementById("prioList").innerHTML = PROGRAM.safety.map((r, i) =>
+    '<div class="item p' + r.p + '"><span class="tag">' + lab[r.p] + '</span><div><strong>' + (i + 1) + '. ' + esc(r.title) + '</strong><span>' + esc(r.action) + ' ' + cite(r.src) + '</span></div></div>').join("");
+  const rg = [["before", "Before use"], ["ppe", "Protective equipment"], ["during", "While running"], ["after", "Reset after use"], ["lockout", "Lockout and defects"]];
+  document.getElementById("rulesBox").innerHTML = rg.map(g => '<div><h3>' + g[1] + '</h3><ul class="tight">' + PROGRAM.rules[g[0]].map(lineLI).join("") + '</ul></div>').join("");
+  document.getElementById("calList").innerHTML = PROGRAM.calendar.map(schedLI).join("");
+  document.getElementById("goalsBox").innerHTML = PROGRAM.goals.map(g => '<div class="g"><h3>' + esc(g.goal) + '</h3><p class="note">' + esc(g.why) + ' ' + cite(g.src) + '</p><h4>Tactics</h4><ul class="tight">' + g.tactics.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul><h4>Measures</h4><ul class="tight">' + g.kpis.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul></div>').join("");
+  document.getElementById("srcList").innerHTML = PROGRAM.sources.map((x, i) => '<li id="src-' + (i + 1) + '">' + esc(x[1]) + (x[2] ? ' <a href="' + x[2] + '" target="_blank" rel="noopener">' + esc(x[2].replace(/^https?:\/\//, "").slice(0, 70)) + (x[2].length > 78 ? "…" : "") + '</a>' : "") + '</li>').join("");
+}
+
+function recordHTML(m) {
+  const st = STATUS[m.status];
+  const rows = [["Shop number", m.shopNo || "Not found yet"], ["Area", AREAS[m.area]], ["Maker", m.maker], ["Model", m.model],
+    ["Serial", m.serial], ["Year", m.year], ["Power", m.power], ["Parts and service", m.service]].filter(r => r[1]);
+  let h = '<div style="display:grid;gap:6px"><h3>' + esc(m.name) + '</h3><span class="pill"><span class="dot ' + st.cls + '"></span>' + esc(st.label) + '</span><p class="note">' + esc(m.reason) + '</p></div>';
+  h += '<dl class="kv">' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd' + (r[0] === "Serial" ? ' class="mono"' : '') + '>' + esc(r[1]) + '</dd>').join("") + '</dl>';
+  if (m.details.length) h += '<div><h3 class="mini">Details ' + cite(["photos"]) + '</h3><ul class="tight">'  + m.details.map(d => '<li>' + esc(d) + '</li>').join("") + '</ul></div>';
+  const P = PROGRAM.machines[m.id];
+  if (!(P && P.sched && P.sched.length)) h += m.maint.length ? '<div><h3 class="mini">Maintenance (draft, to verify)</h3><ul class="tight">' + m.maint.map(d => '<li>' + esc(d) + '</li>').join("") + '</ul></div>'
+    : '<p class="note">Maintenance schedule to come from the maker\'s manual.</p>';
+  const sv = SERVICES[m.id] || {};
+  const gates = plan.fixtures.filter(f => f.tone === "gate" && f.serves === m.id).map(f => f.gate);
+  const conn = [["Dust", sv.dust || (gates.length ? "Blast gate " + gates.join(", ") : "")], ["Power", sv.power], ["Air", sv.air]].filter(r => r[1]);
+  if (conn.length) h += '<div><h3 class="mini">Connections</h3><dl class="kv">' + conn.map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join("") + '</dl></div>';
+  h += programHTML(m);
+  if (m.needed.length) h += '<div><h3 class="mini">Still needed</h3><ul class="tight">' + m.needed.map(d => '<li>' + esc(d) + '</li>').join("") + '</ul></div>';
+  return h;
+}
+
+function numField(id, label, val, extra) {
+  return '<div class="field"><label for="' + id + '">' + label + '</label><input id="' + id + '" type="number" step="1" value="' + Math.round(val) + '"' + (extra || "") + '></div>';
+}
+
+function renderInspector(focusFirst) {
+  if (!editing) {
+    const f = infoFixture && plan.fixtures.find(x => x.id === infoFixture);
+    if (f) {
+      panel.innerHTML = fixtureHTML(f);
+      const b = document.getElementById("openMachine"); if (b) b.addEventListener("click", () => showRecord(b.dataset.id));
+      return;
+    }
+    const m = MACHINES.find(x => x.id === recordId);
+    panel.innerHTML = m ? recordHTML(m) : '<p class="empty">Select a machine on the map or in the register below.</p>';
+    return;
+  }
+  const it = findItem(sel);
+  if (!it) {
+    panel.innerHTML = '<h3>Editing the floor plan</h3><ul class="tight">' +
+      '<li><strong>Select</strong>: tap a machine, fixture, wall or room label. Drag it to move it.</li>' +
+      '<li>Drag a <strong>corner square</strong> to resize; drag the <strong>round knob</strong> above to rotate (5 degree steps).</li>' +
+      '<li>Drag a <strong>wall end</strong> to move that end; it snaps to other wall ends and to straight lines.</li>' +
+      '<li><strong>Draw wall, door, opening or dashed line</strong>: drag on the plan to draw one.</li>' +
+      '<li><strong>Add label</strong> or <strong>Add fixture</strong>: tap where it goes.</li>' +
+      '<li>Keys: arrows nudge (Shift for 1 unit), R turns 90 degrees, Delete removes, Ctrl or Cmd+Z undoes, Esc cancels.</li></ul>' +
+      '<p class="note">Changes are kept in this browser. Use Copy layout and paste the text into the chat to update the map for everyone.</p>';
+    return;
+  }
+  let h = "";
+  if (sel.kind === "wall") {
+    h += '<h3>' + ({ wall:"Wall", door:"Door", opening:"Opening", dashed:"Dashed line", duct:"Dust duct", hvac:"Air conditioning duct", air:"Compressed air line", power:"Electrical run" })[it.kind] + '</h3>';
+    h += '<div class="field"><label for="i_kind">Type</label><select id="i_kind">' + [["wall","Wall"],["door","Door"],["opening","Opening (no wall)"],["dashed","Dashed line (unconfirmed)"],["duct","Dust duct"],["hvac","Air conditioning duct"],["air","Compressed air line"],["power","Electrical run"]]
+      .map(o => '<option value="' + o[0] + '"' + (o[0] === it.kind ? " selected" : "") + '>' + o[1] + '</option>').join("") + '</select></div>';
+    h += '<div class="grid2">' + numField("i_x1", "Start across", it.x1) + numField("i_y1", "Start down", it.y1) + numField("i_x2", "End across", it.x2) + numField("i_y2", "End down", it.y2) + '</div>';
+    h += '<p class="note">Length: ' + len(it) + ' units (plan is not to scale yet)</p>';
+    h += '<div class="btns"><button class="b danger" type="button" id="i_del">Delete line</button></div>';
+  } else if (sel.kind === "label") {
+    h += '<h3>Room label</h3><div class="field"><label for="i_text">Text</label><input id="i_text" type="text" value="' + esc(it.text) + '"></div>';
+    h += '<div class="grid2">' + numField("i_x", "Across", it.x) + numField("i_y", "Down", it.y) + '</div>';
+    h += '<div class="btns"><button class="b danger" type="button" id="i_del">Delete label</button></div>';
+  } else {
+    const isM = sel.kind === "machine";
+    h += '<h3>' + esc(isM ? it.name : it.label) + '</h3>';
+    if (!isM) {
+      h += '<div class="field"><label for="i_text">Label</label><input id="i_text" type="text" value="' + esc(it.label) + '"></div>';
+      const tones = [["plain","Fixture"],["space","Maker space"],["gate","Blast gate"],["post","Service post (power and air)"],["power","Electrical"],["air","Compressed air"],["heater","Heater"],["safety","Safety"],["duct","Duct (box)"]];
+      h += '<div class="field"><label for="i_tone">Type</label><select id="i_tone">' + tones.map(o => '<option value="' + o[0] + '"' + ((it.tone || "plain") === o[0] ? " selected" : "") + '>' + o[1] + '</option>').join("") + '</select></div>';
+      if (it.tone === "gate") {
+        h += '<div class="grid2"><div class="field"><label for="i_gate">Gate number</label><input id="i_gate" type="text" value="' + esc(it.gate || "") + '"></div>';
+        h += '<div class="field"><label for="i_conf">Seen in photos</label><select id="i_conf"><option value="yes"' + (it.confirmed !== false ? " selected" : "") + '>Yes</option><option value="no"' + (it.confirmed === false ? " selected" : "") + '>Not yet</option></select></div></div>';
+      }
+      if (["gate","post","power","air"].includes(it.tone)) {
+        h += '<div class="field"><label for="i_serves">Serves</label><select id="i_serves"><option value="">Nothing assigned</option>' + MACHINES.slice().sort((a, b) => a.name.localeCompare(b.name)).map(m => '<option value="' + m.id + '"' + (it.serves === m.id ? " selected" : "") + '>' + esc(m.name) + '</option>').join("") + '</select></div>';
+      }
+    }
+    h += '<div class="grid2">' + numField("i_x", "Across", it.x) + numField("i_y", "Down", it.y) + numField("i_w", "Width", it.w, ' min="8"') + numField("i_h", "Depth", it.h, ' min="8"') + numField("i_r", "Rotation (degrees)", it.r || 0) + '</div>';
+    h += '<div class="btns"><button class="b" type="button" id="i_turn">Turn 90 degrees</button>' + (isM ? '' : '<button class="b danger" type="button" id="i_del">Delete fixture</button>') + '</div>';
+    if (isM) h += '<p class="note">Machines stay on the register. If one is in the wrong room, drag it there.</p>';
+  }
+  panel.innerHTML = h;
+  const bind = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener("change", () => { pushUndo(snapshot()); fn(e.value); save(); render(); renderInspector(); }); };
+  bind("i_kind", v => it.kind = v);
+  ["x1","y1","x2","y2"].forEach(k => bind("i_" + k, v => it[k] = Number(v) || 0));
+  bind("i_text", v => { if (sel.kind === "label") it.text = v || "Label"; else it.label = v || "Fixture"; });
+  bind("i_tone", v => { it.tone = v; it.mini = ["gate","post","power","air","heater"].includes(v); if (v === "gate") { it.shape = "circle"; if (!it.gate) it.gate = "G" + (plan.fixtures.filter(x => x.tone === "gate").length); } renderGates(); });
+  bind("i_gate", v => { it.gate = v.toUpperCase().startsWith("G") ? v.toUpperCase() : "G" + v; it.label = "Blast gate " + it.gate; renderGates(); });
+  bind("i_conf", v => { it.confirmed = v === "yes"; renderGates(); });
+  bind("i_serves", v => { it.serves = v; renderGates(); });
+  bind("i_x", v => it.x = Number(v) || 0); bind("i_y", v => it.y = Number(v) || 0);
+  bind("i_w", v => { const c = center(it); it.w = Math.max(8, Number(v) || 8); it.x = c.x - it.w / 2; });
+  bind("i_h", v => { const c = center(it); it.h = Math.max(8, Number(v) || 8); it.y = c.y - it.h / 2; });
+  bind("i_r", v => it.r = (((Number(v) || 0) % 360) + 360) % 360);
+  const t = document.getElementById("i_turn"); if (t) t.addEventListener("click", turn90);
+  const d = document.getElementById("i_del"); if (d) d.addEventListener("click", deleteSel);
+  if (focusFirst) { const f = document.getElementById("i_text"); if (f) { f.focus(); f.select(); } }
+}
+
+/* ---------- Status strip, register, issues ---------- */
+function buildStrip() {
+  const strip = document.getElementById("statusStrip");
+  strip.querySelectorAll(".chip").forEach(c => c.remove());
+  ["crit", "warn", "ok", "none"].forEach(s => {
+    const n = MACHINES.filter(m => m.status === s).length;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", filterStatus === s ? "true" : "false");
+    b.innerHTML = '<span class="dot ' + STATUS[s].cls + '"></span>' + esc(STATUS[s].label) + ' <span class="n">' + n + '</span>';
+    b.addEventListener("click", () => { filterStatus = filterStatus === s ? null : s; buildStrip(); render(); renderRows(); });
+    strip.appendChild(b);
+  });
+  const total = document.createElement("span"); total.className = "chip static";
+  total.innerHTML = 'On the list <span class="n">' + MACHINES.length + '</span>';
+  strip.appendChild(total);
+}
+
+function renderRows() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const area = document.getElementById("areaSel").value;
+  const sorted = MACHINES.slice().sort((a, b) => (parseInt(a.shopNo) || 999) - (parseInt(b.shopNo) || 999) || a.area.localeCompare(b.area) || a.name.localeCompare(b.name));
+  const rows = sorted.filter(m => (!area || m.area === area) && (!filterStatus || m.status === filterStatus) &&
+    (!q || [m.name, m.short, m.maker, m.model, m.serial, m.shopNo].join(" ").toLowerCase().includes(q)));
+  document.getElementById("rows").innerHTML = rows.map(m => {
+    const st = STATUS[m.status];
+    return '<tr class="row' + (recordId === m.id ? ' sel' : '') + '" data-id="' + m.id + '" tabindex="0">' +
+      '<td class="num">' + esc(m.shopNo || "–") + '</td>' +
+      '<td><strong>' + esc(m.name) + '</strong><br><span class="note">' + esc(AREAS[m.area]) + '</span></td>' +
+      '<td>' + esc(m.maker) + (m.model ? '<br><span class="note">' + esc(m.model) + '</span>' : '') + '</td>' +
+      '<td><span class="mono">' + esc(m.serial || "–") + '</span>' + (m.year ? '<br><span class="note">' + esc(m.year) + '</span>' : '') + '</td>' +
+      '<td>' + esc(m.power || "–") + '</td><td>' + esc(m.service || "–") + '</td>' +
+      '<td><div class="statuscell"><span class="dot ' + st.cls + '"></span><span>' + esc(m.reason) + '</span></div></td></tr>';
+  }).join("");
+  document.querySelectorAll("tr.row").forEach(r => {
+    const go = () => { if (editing) toggleEdit(); showRecord(r.dataset.id); document.querySelector(".mapbox").scrollIntoView({ behavior:"smooth", block:"center" }); };
+    r.addEventListener("click", go);
+    r.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  });
+}
+
+function renderIssues() {
+  const list = MACHINES.filter(m => m.status === "crit" || m.status === "warn");
+  const site = SITE_ISSUES.slice().sort((a, b) => (a.level === "crit" ? 0 : 1) - (b.level === "crit" ? 0 : 1));
+  const crit = site.filter(i => i.level === "crit").concat(list.filter(m => m.status === "crit").map(m => ({ level:"crit", title:m.name + (m.shopNo ? " (no. " + m.shopNo + ")" : ""), text:m.reason })));
+  const warn = list.filter(m => m.status === "warn").map(m => ({ level:"warn", title:m.name + (m.shopNo ? " (no. " + m.shopNo + ")" : ""), text:m.reason })).concat(site.filter(i => i.level === "warn"));
+  document.getElementById("issues").innerHTML = crit.concat(warn).map(i =>
+    '<div class="issue' + (i.level === "warn" ? " warn" : "") + '"><strong>' + esc(i.title) + '</strong><br>' + esc(i.text) + '</div>').join("");
+  document.getElementById("todo").innerHTML = TODO.map(t => '<li>' + esc(t) + '</li>').join("");
+}
+
+/* ---------- Buttons ---------- */
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 2600); }
+function toggleEdit() {
+  editing = !editing; sel = null; drawing = null; drag = null;
+  const b = document.getElementById("editBtn");
+  b.setAttribute("aria-pressed", editing); b.classList.toggle("primary", editing); b.textContent = editing ? "Done editing" : "Edit layout";
+  document.getElementById("toolbar").hidden = !editing;
+  setTool("select"); renderInspector();
+}
+document.getElementById("editBtn").addEventListener("click", toggleEdit);
+document.querySelectorAll("[data-tool]").forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
+document.getElementById("undoBtn").addEventListener("click", undo);
+document.getElementById("snapChk").addEventListener("change", e => snapOn = e.target.checked);
+
+const exportBox = document.getElementById("exportBox"), exportText = document.getElementById("exportText"), applyBtn = document.getElementById("applyBtn"), exportLabel = document.getElementById("exportLabel");
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = JSON.stringify(exportState());
+  exportText.value = text; exportText.readOnly = true; applyBtn.hidden = true; exportLabel.textContent = "Layout (copy this text into the chat)";
+  try { navigator.clipboard.writeText(text).then(() => toast("Layout copied. Paste it into the chat."), () => { exportBox.hidden = false; exportText.select(); }); }
+  catch (err) { exportBox.hidden = false; exportText.select(); }
+});
+document.getElementById("loadBtn").addEventListener("click", () => {
+  exportBox.hidden = false; exportText.readOnly = false; exportText.value = ""; applyBtn.hidden = false;
+  exportLabel.textContent = "Paste a copied layout here, then Apply"; exportText.focus();
+});
+applyBtn.addEventListener("click", () => {
+  try { const before = snapshot(); applyState(JSON.parse(exportText.value)); pushUndo(before); save(); sel = null; render(); renderInspector(); exportBox.hidden = true; toast("Layout loaded."); }
+  catch (e) { toast("That text isn't a layout copied from this page."); }
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  pushUndo(snapshot());
+  plan = { walls: clone(DRAFT_WALLS), labels: clone(DRAFT_LABELS), fixtures: clone(DRAFT_FIXTURES) };
+  MACHINES.forEach(m => [m.x, m.y, m.w, m.h, m.r] = draftMachines[m.id]);
+  save(); sel = null; render(); renderInspector(); toast("Back to the shared layout. Undo brings your edits back.");
+});
+
+svg.addEventListener("keydown", e => {
+  const t = e.target.closest && e.target.closest('[data-kind="machine"]');
+  if (!editing && t && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showRecord(t.dataset.id); }
+});
+
+const areaSel = document.getElementById("areaSel");
+areaSel.innerHTML = '<option value="">All areas</option>' + Object.keys(AREAS).map(k => '<option value="' + k + '">' + esc(AREAS[k]) + '</option>').join("");
+areaSel.addEventListener("change", renderRows);
+document.getElementById("q").addEventListener("input", renderRows);
+
+render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateUndoBtn(); renderProgram();
+
+/* ---------- Phone version ---------- */
+(function () {
+  const mob = document.getElementById("mob"); if (!mob) return;
+  const SEV = { crit: 0, warn: 1, none: 2, ok: 3 };
+  const $ = id => document.getElementById(id);
+  let filter = "all", query = "", zoom = 1600, current = "machines";
+  const isPhone = () => window.matchMedia("(max-width: 760px)").matches && !document.body.classList.contains("desk");
+  function counts() { const c = { all: MACHINES.length, crit: 0, warn: 0, ok: 0, none: 0 }; MACHINES.forEach(m => { c[m.status] = (c[m.status] || 0) + 1; }); return c; }
+  function renderSum() { const c = counts(); $("mSum").textContent = c.crit + " red, " + c.warn + " yellow, " + c.ok + " green, " + c.none + " with no record yet"; }
+  function renderChips() {
+    const c = counts(), defs = [["all", "All"], ["crit", "Red"], ["warn", "Yellow"], ["ok", "Green"], ["none", "No record"]];
+    $("mChips").innerHTML = defs.map(d => '<button type="button" class="mchip' + (filter === d[0] ? " on" : "") + '" data-f="' + d[0] + '" aria-pressed="' + (filter === d[0]) + '">' + (d[0] !== "all" ? '<span class="dot ' + STATUS[d[0]].cls + '"></span>' : "") + d[1] + " <b>" + c[d[0]] + "</b></button>").join("");
+  }
+  function renderList() {
+    const q = query.trim().toLowerCase();
+    const list = MACHINES.filter(m => (filter === "all" || m.status === filter) && (!q || [m.name, m.short, m.maker, m.model, m.serial, m.shopNo].join(" ").toLowerCase().includes(q)));
+    let h = "";
+    Object.keys(AREAS).forEach(a => {
+      const ms = list.filter(m => m.area === a).sort((x, y) => (SEV[x.status] - SEV[y.status]) || x.name.localeCompare(y.name));
+      if (!ms.length) return;
+      h += '<h2 class="marea">' + esc(AREAS[a]) + '</h2><ul class="mlist">' + ms.map(m => {
+        const sub = [m.maker, m.model].filter(Boolean).join(", ") + (m.shopNo ? " · No. " + m.shopNo : "");
+        return '<li><button type="button" class="mrow" data-id="' + m.id + '"><span class="dot ' + STATUS[m.status].cls + '" role="img" aria-label="' + esc(STATUS[m.status].label) + '"></span><span class="mtxt"><span class="mname">' + esc(m.name) + '</span>' + (sub ? '<span class="msub">' + esc(sub) + '</span>' : "") + ((m.status === "crit" || m.status === "warn") && m.reason ? '<span class="mwhy">' + esc(m.reason) + '</span>' : "") + '</span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+      }).join("") + "</ul>";
+    });
+    $("mList").innerHTML = h || '<p class="note" style="margin-top:12px">No machines match.</p>';
+  }
+  function hashId() { const m = (location.hash || "").match(/^#m=([\w-]+)/); return m ? m[1] : null; }
+  function openSheet(id, push) {
+    const m = MACHINES.find(x => x.id === id); if (!m) return;
+    $("msTitle").textContent = m.name;
+    $("msBody").innerHTML = recordHTML(m);
+    const sh = $("msheet"); sh.hidden = false; sh.scrollTop = 0; document.body.classList.add("noscroll");
+    if (push !== false) { try { history.pushState({ m: id }, "", "#m=" + id); } catch (e) {} }
+    $("mBack").focus();
+  }
+  function closeSheet(fromPop) {
+    const sh = $("msheet"); if (sh.hidden) return;
+    sh.hidden = true; document.body.classList.remove("noscroll");
+    if (!fromPop) { try { if (history.state && history.state.m) history.back(); else history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+  }
+  function renderMap() {
+    const src = $("map"); if (!src) return;
+    let h = src.outerHTML.replace('id="map"', 'id="mMapSvg"').replace(/id="g(Minor|Major)"/g, 'id="mg$1"').replace(/url\(#g(Minor|Major)\)/g, "url(#mg$1)");
+    $("mMap").innerHTML = h;
+    const svg = $("mMap").querySelector("svg"); svg.style.width = zoom + "px"; svg.setAttribute("aria-label", "Shop floor plan; tap a machine to open its record");
+  }
+  function show(v) {
+    current = v;
+    mob.querySelectorAll(".mview").forEach(x => { x.hidden = x.id !== "mv-" + v; });
+    mob.querySelectorAll(".mnav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
+    if (v === "map") renderMap();
+    window.scrollTo(0, 0);
+  }
+  function copyStatic() {
+    const strip = h => h.replace(/ id="src-/g, ' id="msrc-');
+    $("mSafety").innerHTML = $("prioList").innerHTML;
+    $("mRules").innerHTML = $("rulesBox").innerHTML;
+    $("mCal").innerHTML = $("calList").innerHTML;
+    $("mGoals").innerHTML = $("goalsBox").innerHTML;
+    $("mSources").innerHTML = strip($("srcList").innerHTML);
+    $("mIssues").innerHTML = $("issues").innerHTML;
+  }
+  mob.addEventListener("click", e => {
+    const row = e.target.closest(".mrow"); if (row) { openSheet(row.dataset.id); return; }
+    const chip = e.target.closest(".mchip"); if (chip) { filter = chip.dataset.f; renderChips(); renderList(); return; }
+    const nav = e.target.closest(".mnav button"); if (nav) { closeSheet(); show(nav.dataset.v); return; }
+    const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openSheet(mach.dataset.id); return; }
+    const a = e.target.closest('a.src[href^="#src-"]');
+    if (a) { e.preventDefault(); closeSheet(); show("more"); const t = document.getElementById("m" + a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ block: "center" }); }
+  });
+  $("mSearch").addEventListener("input", e => { query = e.target.value; renderList(); });
+  $("mBack").addEventListener("click", () => closeSheet());
+  $("mZoomIn").addEventListener("click", () => { zoom = Math.min(4000, Math.round(zoom * 1.4)); renderMap(); });
+  $("mZoomOut").addEventListener("click", () => { zoom = Math.max(700, Math.round(zoom / 1.4)); renderMap(); });
+  $("toDesk").addEventListener("click", () => { document.body.classList.add("desk"); window.scrollTo(0, 0); });
+  $("toPhone").addEventListener("click", () => { document.body.classList.remove("desk"); window.scrollTo(0, 0); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("msheet").hidden) closeSheet(); });
+  window.addEventListener("popstate", () => { const id = hashId(); if (isPhone()) { if (id) openSheet(id, false); else closeSheet(true); } else if (id) showRecord(id); });
+  renderSum(); renderChips(); renderList(); copyStatic();
+  const start = hashId();
+  if (start) { if (isPhone()) openSheet(start, false); else { showRecord(start); const mg = document.querySelector(".mapgrid"); if (mg) mg.scrollIntoView(); } }
+})();
+
+
+
+function setZoom(z) { zoom = Math.max(0.2, Math.min(2, z)); fitCanvas(); }
+document.getElementById("zoomIn").addEventListener("click", () => setZoom(zoom * 1.25));
+document.getElementById("zoomOut").addEventListener("click", () => setZoom(zoom / 1.25));
+document.getElementById("zoomFit").addEventListener("click", () => { fitCanvas(); setZoom((document.querySelector(".mapbox").clientWidth - 2) / W); });
+if (prevSaved) {
+  const banner = document.getElementById("restoreBanner");
+  banner.hidden = false;
+  document.getElementById("useMineBtn").addEventListener("click", () => {
+    try { const before = snapshot(); applyState(prevSaved); mergeNew(); pushUndo(before); save(); render(); renderInspector(); toast("Your saved edits are back, with the new areas added."); } catch (e) { toast("Those saved edits couldn't be read."); }
+    banner.hidden = true;
+  });
+  document.getElementById("keepNewBtn").addEventListener("click", () => { save(); banner.hidden = true; });
+}
+
+function renderGates() {
+  const list = plan.fixtures.filter(f => f.tone === "gate").sort((a, b) => (parseInt((a.gate || "G0").slice(1)) || 0) - (parseInt((b.gate || "G0").slice(1)) || 0));
+  document.getElementById("gateCount").textContent = list.length + " gates, " + list.filter(f => f.confirmed !== false).length + " seen in photos";
+  document.getElementById("gateRows").innerHTML = list.map(f => {
+    const m = f.serves ? MACHINES.find(x => x.id === f.serves) : null;
+    return '<tr class="row grow' + (infoFixture === f.id ? ' sel' : '') + '" data-id="' + f.id + '" tabindex="0"><td class="num">' + esc(f.gate || "–") + '</td><td>' + esc(m ? m.name : "Not assigned") + '</td><td>' + esc(f.note || "") + '</td><td>' + (f.confirmed === false ? "Not yet" : "Yes") + '</td><td>None yet</td><td class="num">–</td></tr>';
+  }).join("");
+  document.querySelectorAll("tr.grow").forEach(r => {
+    const go = () => { if (editing) toggleEdit(); showFixture(r.dataset.id); document.querySelector(".mapbox").scrollIntoView({ behavior:"smooth", block:"center" }); };
+    r.addEventListener("click", go); r.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  });
+}
+document.querySelectorAll("[data-layer]").forEach(cb => cb.addEventListener("change", () => { LAYERS[cb.dataset.layer] = cb.checked; render(); }));
+renderGates();
+</script>
+</body>
+</html>
