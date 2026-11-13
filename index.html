@@ -352,7 +352,7 @@ button.mask span.note { display:block; font-size:12.5px; }
 .ailog { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px; }
 .aimsg { margin:10px 0; padding:9px 12px; border-radius:12px; max-width:92%; font-size:15px; line-height:1.45; }
 .aimsg p { margin:0 0 7px; } .aimsg p:last-child { margin:0; }
-.aimsg ul { margin:4px 0 7px; padding-left:20px; }
+.aimsg ul, .aimsg ol { margin:4px 0 7px; padding-left:22px; } .aimsg li { margin:0 0 4px; } .aimsg h4 { margin:10px 0 5px; font-size:15px; } .aimsg h4:first-child { margin-top:0; }
 .aiq { background:color-mix(in srgb, var(--accent) 14%, var(--surface)); margin-left:auto; border-bottom-right-radius:4px; }
 .aia { background:var(--surface); border:1px solid var(--line); border-bottom-left-radius:4px; }
 .aia .from { color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); padding-top:5px; margin-top:7px; }
@@ -1762,15 +1762,19 @@ renderGates();
   };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   function render(t){
-    let html = '', list = false, from = '';
+    let html = '', list = '', from = '';
+    const fmt = x => esc(x).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    const close = () => { if (list) { html += '</' + list + '>'; list = ''; } };
     for (const raw of String(t).split(/\n/)) {
-      const l = raw.trim();
+      const l = raw.trim(); let m;
+      if (!l) continue;
       if (/^from:/i.test(l)) { from = l; continue; }
-      if (/^[-•*] /.test(l)) { if (!list) { html += '<ul>'; list = true; } html += '<li>' + esc(l.slice(2)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + '</li>'; continue; }
-      if (list) { html += '</ul>'; list = false; }
-      if (l) html += '<p>' + esc(l).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + '</p>';
+      if ((m = l.match(/^#{1,4}\s+(.*)$/))) { close(); html += '<h4>' + fmt(m[1]) + '</h4>'; continue; }
+      if ((m = l.match(/^(\d+)[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); html += '<ol start="' + m[1] + '">'; list = 'ol'; } html += '<li>' + fmt(m[2]) + '</li>'; continue; }
+      if ((m = l.match(/^[-•*]\s+(.*)$/))) { if (list !== 'ul') { close(); html += '<ul>'; list = 'ul'; } html += '<li>' + fmt(m[1]) + '</li>'; continue; }
+      close(); html += '<p>' + fmt(l) + '</p>';
     }
-    if (list) html += '</ul>';
+    close();
     if (from) html += '<div class="from">' + esc(from) + '</div>';
     return html;
   }
@@ -1808,14 +1812,39 @@ renderGates();
     q = String(q || '').trim(); if (!q) return;
     const chips = log.querySelector('.aichips'); if (chips) chips.remove();
     add('aiq', '<p>' + esc(q) + '</p>'); text.value = ''; send.disabled = true;
-    const w = add('aia aiwait', 'Looking through the program records…');
+    const w = add('aia aiwait', 'Reading the program records…');
+    let el = null, buf = '', end = null, queued = false;
+    const paint = () => { queued = false; if (!el) { w.remove(); el = add('aia', ''); } el.innerHTML = render(buf); log.scrollTop = log.scrollHeight; };
+    const finish = d => {
+      if (!d || d.error) { if (!el) w.remove(); add('aierr', '<p>' + esc((d && d.error) || 'The connection dropped. Please try again.') + '</p>'); }
+      else {
+        if (!el || buf !== d.answer) { buf = d.answer || buf; paint(); }
+        docs(d.manuals);
+        if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-6);
+      }
+      if (d) setLeft(d.left);
+    };
     try {
-      const d = await call('/api/ask', { question: q, history: turns });
-      w.remove();
-      if (d.error) add('aierr', '<p>' + esc(d.error) + '</p>');
-      else { add('aia', render(d.answer)); docs(d.manuals); if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-3); }
-      setLeft(d.left);
-    } catch (e) { w.remove(); if (e.message !== 'signin') add('aierr', '<p>The connection dropped. Please try again.</p>'); }
+      const r = await fetch(API + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify({ question: q, history: turns, stream: true }) });
+      if (r.status === 401) { store.clear(); showSignin(); throw new Error('signin'); }
+      if (!(r.headers.get('content-type') || '').includes('ndjson') || !r.body) finish(await r.json());
+      else {
+        const reader = r.body.getReader(), dec = new TextDecoder(); let rest = '';
+        for (;;) {
+          const part = await reader.read(); if (part.done) break;
+          rest += dec.decode(part.value, { stream: true }); let i;
+          while ((i = rest.indexOf('\n')) >= 0) {
+            const line = rest.slice(0, i); rest = rest.slice(i + 1); if (!line.trim()) continue;
+            let ev; try { ev = JSON.parse(line); } catch (e) { continue; }
+            if (ev.type === 'delta') { buf += ev.text; if (!queued) { queued = true; requestAnimationFrame(paint); } }
+            else if (ev.type === 'status') { if (!el) w.textContent = ev.text; }
+            else if (ev.type === 'start') setLeft(ev.left);
+            else if (ev.type === 'done' || ev.type === 'error') end = ev;
+          }
+        }
+        finish(end || (buf ? { answer: buf, on_topic: true, manuals: [] } : null));
+      }
+    } catch (e) { if (e.message !== 'signin') { if (!el) w.remove(); add('aierr', '<p>The connection dropped. Please try again.</p>'); } }
     send.disabled = false;
   }
   function open(){
