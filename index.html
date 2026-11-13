@@ -332,11 +332,41 @@ details.steward .sd { display:grid; gap:10px; margin-top:8px; }
 details.steward h4 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 4px; }
 #changeList .chh, #mChanges .chh { list-style:none; margin:10px 0 2px -18px; font-weight:700; }
 
-.askcard { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
 .testtag { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:#fff4e5; color:#8a5300; border:1px solid #f0c27b; vertical-align:middle; }
-.mask { display:block; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); text-decoration:none; color:inherit; }
-.mask strong { display:block; font-size:16px; color:var(--accent, #1f5f8b); margin-bottom:2px; }
-.mask span.note { display:block; font-size:12.5px; }
+.askcard { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+button.mask { display:block; width:100%; text-align:left; font:inherit; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); cursor:pointer; }
+button.mask strong { display:block; font-size:16px; color:var(--accent); margin-bottom:2px; }
+button.mask span.note { display:block; font-size:12.5px; }
+.aidlg { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.35); display:flex; justify-content:flex-end; }
+.aidlg[hidden] { display:none; }
+.aipanel { background:var(--bg); color:var(--ink); width:100%; height:100%; display:flex; flex-direction:column; }
+@media (min-width: 900px) { .aipanel { width:460px; border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.15); } }
+.aihead { display:flex; align-items:flex-start; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 14px 10px; background:var(--surface); border-bottom:1px solid var(--line); }
+.aihead > div { flex:1; }
+.aititle { font-weight:700; font-size:17px; }
+.aisub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+.aiclose { font:inherit; font-size:22px; line-height:1; background:none; border:0; color:var(--muted); padding:4px 8px; cursor:pointer; }
+.aisos { background:#fdecea; color:#b3261e; font-weight:600; font-size:13.5px; padding:7px 14px; border-bottom:1px solid #f5c6c2; }
+.ailog { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px; }
+.aimsg { margin:10px 0; padding:9px 12px; border-radius:12px; max-width:92%; font-size:15px; line-height:1.45; }
+.aimsg p { margin:0 0 7px; } .aimsg p:last-child { margin:0; }
+.aimsg ul { margin:4px 0 7px; padding-left:20px; }
+.aiq { background:color-mix(in srgb, var(--accent) 14%, var(--surface)); margin-left:auto; border-bottom-right-radius:4px; }
+.aia { background:var(--surface); border:1px solid var(--line); border-bottom-left-radius:4px; }
+.aia .from { color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); padding-top:5px; margin-top:7px; }
+.aierr { background:#fff4e5; border:1px solid #f0c27b; color:#5c3a00; }
+.aiwait { color:var(--muted); font-style:italic; }
+.aichips { display:flex; flex-wrap:wrap; gap:7px; margin:4px 0 8px; }
+.aichip { font:inherit; font-size:13.5px; border:1px solid var(--line); background:var(--surface); color:var(--accent); border-radius:16px; padding:6px 11px; cursor:pointer; text-align:left; }
+.aisignin { padding:16px 14px; }
+.aisignin p { margin:0 0 10px; font-size:14.5px; }
+.aiform { display:flex; gap:8px; padding:10px 12px 4px; background:var(--surface); border-top:1px solid var(--line); }
+.aiform textarea { flex:1; font:inherit; font-size:16px; border:1px solid var(--line); border-radius:10px; padding:8px 10px; resize:none; height:44px; background:var(--bg); color:var(--ink); }
+.aiform button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:0 16px; cursor:pointer; }
+.aiform button:disabled { opacity:.5; }
+.aimeta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); padding:4px 14px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); }
+.ailink { font:inherit; font-size:12px; background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; padding:0; }
+.aibtn { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:10px 16px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -364,9 +394,9 @@ details.steward h4 { font-size:12px; text-transform:uppercase; letter-spacing:.0
   </section>
 
   <section class="card" aria-labelledby="ask-h">
-    <div class="askcard"><h2 id="ask-h" style="margin-right:6px">Ask about the program <span class="testtag">Test</span></h2>
-      <a class="b primary" href="https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev/" target="_blank" rel="noopener">Ask a question</a></div>
-    <p class="note" style="margin-top:8px">Testing with a small group of members. Answers come only from this program's records, and the question service never gives permission to use a machine. If you're not in the test group, the sign-in page won't send you a code yet. Members sign in with a code sent to their email.</p>
+    <div class="askcard"><h2 id="ask-h" style="margin-right:6px">AI Assistant <span class="testtag">Test</span></h2>
+      <button class="b primary" type="button" data-ai-open>Ask the AI Assistant</button></div>
+    <p class="note" style="margin-top:8px">Testing with a small group of members. Answers come only from this program's records, and the AI Assistant never gives permission to use a machine. Members sign in once with a code sent to their email; if you're not in the test group, no code is sent yet.</p>
   </section>
 
   <section class="mapgrid">
@@ -513,7 +543,7 @@ details.steward h4 { font-size:12px; text-transform:uppercase; letter-spacing:.0
   <div class="mtop"><h1>Goldthorne Shop Safety and Machine Care Program</h1><p class="mdraft">Draft for review. Not an approved operating safety standard. <button type="button" class="mlinkbtn" data-go="more">Details</button></p><p class="msum" id="mSum"></p></div>
   <div class="mview" id="mv-machines">
     <div class="malert" id="mAlert"></div>
-    <a class="mask" href="https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev/" target="_blank" rel="noopener"><strong>Ask about the program <span class="testtag">Test</span></strong><span class="note">Testing with a small group of members. Answers come only from this program's records, and the question service never gives permission to use a machine. If you're not in the test group, the sign-in page won't send you a code yet.</span></a>
+    <button class="mask" type="button" data-ai-open><strong>AI Assistant <span class="testtag">Test</span></strong><span class="note">Testing with a small group of members. Answers come only from this program's records, and the AI Assistant never gives permission to use a machine. Tap to ask a question.</span></button>
     <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
     <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, shop number" autocomplete="off">
     <div class="mchips" id="mChips" role="group" aria-label="Filter by status"></div>
@@ -1661,6 +1691,108 @@ function renderGates() {
 }
 document.querySelectorAll("[data-layer]").forEach(cb => cb.addEventListener("change", () => { LAYERS[cb.dataset.layer] = cb.checked; render(); }));
 renderGates();
+</script>
+
+<div class="aidlg" id="aiDlg" hidden>
+  <div class="aipanel" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+    <div class="aihead"><div><div class="aititle" id="aiTitle">AI Assistant <span class="testtag">Test</span></div>
+      <div class="aisub">Answers only from this program's records, which are a draft for review. It never gives permission to use a machine.</div></div>
+      <button class="aiclose" type="button" id="aiClose" aria-label="Close the AI Assistant">&times;</button></div>
+    <div class="aisos">Someone hurt, or a fire? Call 911 first.</div>
+    <div class="aisignin" id="aiSignin" hidden>
+      <p><strong>Sign in once to use the AI Assistant.</strong> You'll enter your email, get a code by email, and come straight back here. You stay signed in for 7 days.</p>
+      <p class="note">The AI Assistant is being tested with a small group of members. If you're not in the test group, no code will be sent yet.</p>
+      <button class="aibtn" type="button" id="aiSigninBtn">Sign in with my email</button>
+    </div>
+    <div class="ailog" id="aiLog"></div>
+    <form class="aiform" id="aiForm" hidden>
+      <textarea id="aiText" maxlength="500" placeholder="Ask a question" aria-label="Your question"></textarea>
+      <button type="submit" id="aiSend">Ask</button>
+    </form>
+    <div class="aimeta" id="aiMeta" hidden><span id="aiLeft"></span><span>Questions are logged. <button class="ailink" type="button" id="aiOut">Sign out</button></span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const GATE = 'https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev', API = 'https://assistant.goldthorne-shop-safety-and-machine-care-program.workers.dev';
+  const $ = id => document.getElementById(id);
+  const dlg = $('aiDlg'), log = $('aiLog'), form = $('aiForm'), text = $('aiText'), send = $('aiSend');
+  const signin = $('aiSignin'), meta = $('aiMeta'), leftEl = $('aiLeft');
+  let turns = [], LIMIT = 20, started = false;
+  const store = {
+    get(){ try { return localStorage.getItem('aiSession'); } catch(e){ return null; } },
+    set(v){ try { localStorage.setItem('aiSession', v); } catch(e){} },
+    clear(){ try { localStorage.removeItem('aiSession'); } catch(e){} }
+  };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function render(t){
+    let html = '', list = false, from = '';
+    for (const raw of String(t).split(/\n/)) {
+      const l = raw.trim();
+      if (/^from:/i.test(l)) { from = l; continue; }
+      if (/^[-•*] /.test(l)) { if (!list) { html += '<ul>'; list = true; } html += '<li>' + esc(l.slice(2)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + '</li>'; continue; }
+      if (list) { html += '</ul>'; list = false; }
+      if (l) html += '<p>' + esc(l).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + '</p>';
+    }
+    if (list) html += '</ul>';
+    if (from) html += '<div class="from">' + esc(from) + '</div>';
+    return html;
+  }
+  function add(cls, html){ const d = document.createElement('div'); d.className = 'aimsg ' + cls; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+  function showSignin(){ signin.hidden = false; form.hidden = true; meta.hidden = true; log.innerHTML = ''; started = false; }
+  function showChat(){
+    signin.hidden = true; form.hidden = false; meta.hidden = false;
+    if (!started) {
+      started = true; log.innerHTML = '';
+      add('aia', '<p>Ask me about the shop\'s machines, pre-use checks, problems, schedules and rules. I answer only from the program\'s records.</p>');
+      const chips = document.createElement('div'); chips.className = 'aichips';
+      ['Which machines are out of service?', 'What do I check before using the jointer?', 'How do I report a problem with a machine?']
+        .forEach(q => { const b = document.createElement('button'); b.type = 'button'; b.className = 'aichip'; b.textContent = q; b.onclick = () => ask(q); chips.appendChild(b); });
+      log.appendChild(chips);
+    }
+  }
+  function setLeft(n){ if (typeof n === 'number') leftEl.textContent = n + ' of ' + LIMIT + ' questions left today'; }
+  async function call(path, body){
+    const tok = store.get();
+    const r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok }, body: body ? JSON.stringify(body) : undefined });
+    if (r.status === 401) { store.clear(); showSignin(); throw new Error('signin'); }
+    return r.json();
+  }
+  async function refresh(){
+    try { const m = await call('/api/me'); LIMIT = m.limit || LIMIT; setLeft(m.left); }
+    catch (e) { if (e.message !== 'signin') add('aierr', '<p>The AI Assistant can\'t be reached from this copy of the map. Open the public map to use it.</p>'); }
+  }
+  async function ask(q){
+    q = String(q || '').trim(); if (!q) return;
+    const chips = log.querySelector('.aichips'); if (chips) chips.remove();
+    add('aiq', '<p>' + esc(q) + '</p>'); text.value = ''; send.disabled = true;
+    const w = add('aia aiwait', 'Looking through the program records…');
+    try {
+      const d = await call('/api/ask', { question: q, history: turns });
+      w.remove();
+      if (d.error) add('aierr', '<p>' + esc(d.error) + '</p>');
+      else { add('aia', render(d.answer)); if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-3); }
+      setLeft(d.left);
+    } catch (e) { w.remove(); if (e.message !== 'signin') add('aierr', '<p>The connection dropped. Please try again.</p>'); }
+    send.disabled = false;
+  }
+  function open(){
+    dlg.hidden = false; document.documentElement.style.overflow = 'hidden';
+    if (store.get()) { showChat(); refresh(); setTimeout(() => text.focus(), 50); } else showSignin();
+  }
+  function close(){ dlg.hidden = true; document.documentElement.style.overflow = ''; }
+  $('aiClose').onclick = close;
+  dlg.addEventListener('click', e => { if (e.target === dlg) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dlg.hidden) close(); });
+  $('aiSigninBtn').onclick = () => { location.href = GATE + '/signin?return=' + encodeURIComponent(location.href.split('#')[0]); };
+  $('aiOut').onclick = async () => { try { await call('/api/signout', {}); } catch (e) {} store.clear(); turns = []; showSignin(); };
+  form.addEventListener('submit', e => { e.preventDefault(); ask(text.value); });
+  text.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(text.value); } });
+  document.querySelectorAll('[data-ai-open]').forEach(b => b.addEventListener('click', open));
+  const m = location.hash.match(/^#ai-session=([a-f0-9]{64})$/);
+  if (m) { store.set(m[1]); try { window.history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; } open(); }
+})();
 </script>
 </body>
 </html>
