@@ -1,6 +1,6 @@
-# woodshop
+# Goldthorne Shop Safety and Machine Care Program
 
-Machine map and maintenance program for the Goldthorne co-op wood shop (14 Goldthorne Ave, Etobicoke).
+Machine map, operating procedures, maintenance schedules and safety list for the Goldthorne co-op wood shop (14 Goldthorne Ave, Etobicoke). Members assigned to look after a machine are its machine stewards.
 
 Live page: https://cosmojo.github.io/woodshop/
 
