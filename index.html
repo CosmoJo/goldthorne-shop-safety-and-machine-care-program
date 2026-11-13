@@ -356,6 +356,8 @@ button.mask span.note { display:block; font-size:12.5px; }
 .aia .from { color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); padding-top:5px; margin-top:7px; }
 .aierr { background:#fff4e5; border:1px solid #f0c27b; color:#5c3a00; }
 .aiwait { color:var(--muted); font-style:italic; }
+.aidocs { margin:-4px 0 10px; font-size:12.5px; color:var(--muted); }
+.aidocs a { display:inline-block; margin:4px 6px 0 0; padding:5px 10px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--accent); text-decoration:none; }
 .aichips { display:flex; flex-wrap:wrap; gap:7px; margin:4px 0 8px; }
 .aichip { font:inherit; font-size:13.5px; border:1px solid var(--line); background:var(--surface); color:var(--accent); border-radius:16px; padding:6px 11px; cursor:pointer; text-align:left; }
 .aisignin { padding:16px 14px; }
@@ -367,6 +369,12 @@ button.mask span.note { display:block; font-size:12.5px; }
 .aimeta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); padding:4px 14px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); }
 .ailink { font:inherit; font-size:12px; background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; padding:0; }
 .aibtn { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:10px 16px; cursor:pointer; }
+
+.manblock { border:1px solid var(--line); border-radius:10px; padding:9px 12px; background:var(--surface); }
+.manblock h4 { margin:0 0 4px; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+.manblock .manbtns { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 6px; }
+.manblock a.manbtn { display:inline-block; padding:6px 11px; border-radius:14px; border:1px solid var(--accent); color:var(--accent); text-decoration:none; font-size:13.5px; font-weight:600; }
+.manblock p { margin:0; }
 </style>
 </head>
 <body>
@@ -396,7 +404,7 @@ button.mask span.note { display:block; font-size:12.5px; }
   <section class="card" aria-labelledby="ask-h">
     <div class="askcard"><h2 id="ask-h" style="margin-right:6px">AI Assistant <span class="testtag">Test</span></h2>
       <button class="b primary" type="button" data-ai-open>Ask the AI Assistant</button></div>
-    <p class="note" style="margin-top:8px">Testing with a small group of members. Answers come only from this program's records, and the AI Assistant never gives permission to use a machine. Members sign in once with a code sent to their email; if you're not in the test group, no code is sent yet.</p>
+    <p class="note" style="margin-top:8px">Testing with a small group of members. It answers from this program's records and the makers' manuals, labels anything that is general advice, helps stewards troubleshoot, and never gives permission to use a machine. Members sign in once with a code sent to their email; if you're not in the test group, no code is sent yet.</p>
   </section>
 
   <section class="mapgrid">
@@ -543,7 +551,7 @@ button.mask span.note { display:block; font-size:12.5px; }
   <div class="mtop"><h1>Goldthorne Shop Safety and Machine Care Program</h1><p class="mdraft">Draft for review. Not an approved operating safety standard. <button type="button" class="mlinkbtn" data-go="more">Details</button></p><p class="msum" id="mSum"></p></div>
   <div class="mview" id="mv-machines">
     <div class="malert" id="mAlert"></div>
-    <button class="mask" type="button" data-ai-open><strong>AI Assistant <span class="testtag">Test</span></strong><span class="note">Testing with a small group of members. Answers come only from this program's records, and the AI Assistant never gives permission to use a machine. Tap to ask a question.</span></button>
+    <button class="mask" type="button" data-ai-open><strong>AI Assistant <span class="testtag">Test</span></strong><span class="note">Testing with a small group of members. It answers from this program's records and the makers' manuals, labels anything that is general advice, helps stewards troubleshoot, and never gives permission to use a machine. Tap to ask a question.</span></button>
     <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
     <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, shop number" autocomplete="off">
     <div class="mchips" id="mChips" role="group" aria-label="Filter by status"></div>
@@ -1378,11 +1386,34 @@ function renderProgram() {
   $i("srcList").innerHTML = P.sources.map((x, i) => '<li id="src-' + (i + 1) + '">' + esc(x[1]) + ' <span class="srckind">[' + esc(P.sourceKinds[x[3]]) + ']</span>' + (x[2] ? ' <a href="' + x[2] + '" target="_blank" rel="noopener">' + esc(x[2].replace(/^https?:\/\//, "").slice(0, 70)) + (x[2].length > 78 ? "…" : "") + '</a>' : "") + '</li>').join("");
 }
 
+
+const MANUAL_LABEL = { lt18: "Laguna band saw manual", nova: "NOVA drill press manual", dw735: "DeWALT DW735 planer manual",
+  blum: "Blum MINIPRESS P manual (international edition)", blumus: "Blum MINIPRESS P manual (US edition)",
+  oneway: "Oneway lathe manual", atlas: "Atlas Copco compressor manual", samesman: "Sames Airmix pump manual",
+  xcite: "Sames Xcite gun manual", samesgen: "Sames general safety information",
+  rw34450: "Rockwell 34-450 table saw manual (scan)", rw28340: "Rockwell 28-340 band saw manual (scan)" };
+const MANUAL_EXTRA = { lathe: [["Oneway large lathe manual", "https://oneway.ca/pdf/Large%20Lathe%20Manual%20Rev%201.pdf"]] };
+function manualBlock(m) {
+  const P = PROGRAM.machines[m.id]; if (!P || !P.manual) return "";
+  const man = P.manual;
+  const links = (man.src || []).filter(id => MANUAL_LABEL[id] && SRC[id] && SRC[id].u).map(id => [MANUAL_LABEL[id], SRC[id].u]).concat(MANUAL_EXTRA[m.id] || []);
+  let h = '<div class="manblock"><h4>Maker\'s manual</h4>';
+  if (links.length) {
+    h += '<div class="manbtns">' + links.map(l => '<a class="manbtn" href="' + l[1] + '" target="_blank" rel="noopener">Open: ' + esc(l[0]) + ' (PDF)</a>').join("") + '</div>';
+    h += '<p class="note">' + (man.state === "found" ? "" : "A candidate manual: its fit to this exact machine isn't confirmed yet. Check the machine's plate, and ask a shop manager if anything doesn't match. ") + 'The AI Assistant can answer from it and links the pages it used.</p>';
+  } else if (man.state === "found") {
+    h += '<p class="note">' + esc(man.text) + '</p>';
+  } else {
+    h += '<p class="note">No manual on file yet. ' + esc(man.text || "") + '</p>';
+  }
+  return h + '</div>';
+}
 function recordHTML(m) {
   const rows = [["Shop number", m.shopNo || "Not found yet"], ["Area", AREAS[m.area]], ["Maker", m.maker], ["Model", m.model],
     ["Serial", m.serial], ["Year", m.year], ["Power", m.power], ["Parts and service", m.service]].filter(r => r[1]);
   const note = /^No maintenance record yet\.?$/.test(m.reason || "") ? "" : '<p class="note">Record note: ' + esc(m.reason) + '</p>';
   let h = '<div style="display:grid;gap:6px"><h3>' + esc(m.name) + '</h3>' + statusBlock(m) + note + '</div>';
+  h += manualBlock(m);
   h += programHTML(m);
   let d = '<dl class="kv">' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd' + (r[0] === "Serial" ? ' class="mono"' : '') + '>' + esc(r[1]) + '</dd>').join("") + '</dl>';
   if (m.details.length) d += '<div><h4>Details from the walkthrough ' + cite(["photos"]) + '</h4><ul class="tight">' + m.details.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul></div>';
@@ -1696,7 +1727,7 @@ renderGates();
 <div class="aidlg" id="aiDlg" hidden>
   <div class="aipanel" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
     <div class="aihead"><div><div class="aititle" id="aiTitle">AI Assistant <span class="testtag">Test</span></div>
-      <div class="aisub">Answers only from this program's records, which are a draft for review. It never gives permission to use a machine.</div></div>
+      <div class="aisub">Answers from this program's records and the makers' manuals, both still being reviewed. It never gives permission to use a machine.</div></div>
       <button class="aiclose" type="button" id="aiClose" aria-label="Close the AI Assistant">&times;</button></div>
     <div class="aisos">Someone hurt, or a fire? Call 911 first.</div>
     <div class="aisignin" id="aiSignin" hidden>
@@ -1740,12 +1771,18 @@ renderGates();
     return html;
   }
   function add(cls, html){ const d = document.createElement('div'); d.className = 'aimsg ' + cls; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+  function docs(list){
+    if (!list || !list.length) return;
+    const d = document.createElement('div'); d.className = 'aidocs';
+    d.innerHTML = 'Open the manual: ' + list.map(m => m.pages.map(p => '<a href="' + esc(m.url) + '#page=' + p + '" target="_blank" rel="noopener">' + esc(m.label) + ', page ' + p + '</a>').join('')).join('');
+    log.appendChild(d); log.scrollTop = log.scrollHeight;
+  }
   function showSignin(){ signin.hidden = false; form.hidden = true; meta.hidden = true; log.innerHTML = ''; started = false; }
   function showChat(){
     signin.hidden = true; form.hidden = false; meta.hidden = false;
     if (!started) {
       started = true; log.innerHTML = '';
-      add('aia', '<p>Ask me about the shop\'s machines, pre-use checks, problems, schedules and rules. I answer only from the program\'s records.</p>');
+      add('aia', '<p>Ask me about the shop\'s machines: checks, setup, problems, schedules and rules. I answer from the program\'s records and the makers\' manuals, and I label anything that\'s general advice.</p>');
       const chips = document.createElement('div'); chips.className = 'aichips';
       ['Which machines are out of service?', 'What do I check before using the jointer?', 'How do I report a problem with a machine?']
         .forEach(q => { const b = document.createElement('button'); b.type = 'button'; b.className = 'aichip'; b.textContent = q; b.onclick = () => ask(q); chips.appendChild(b); });
@@ -1772,7 +1809,7 @@ renderGates();
       const d = await call('/api/ask', { question: q, history: turns });
       w.remove();
       if (d.error) add('aierr', '<p>' + esc(d.error) + '</p>');
-      else { add('aia', render(d.answer)); if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-3); }
+      else { add('aia', render(d.answer)); docs(d.manuals); if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-3); }
       setLeft(d.left);
     } catch (e) { w.remove(); if (e.message !== 'signin') add('aierr', '<p>The connection dropped. Please try again.</p>'); }
     send.disabled = false;
