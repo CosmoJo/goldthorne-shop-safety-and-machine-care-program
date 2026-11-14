@@ -1841,7 +1841,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   function openPage(key) { const p = PAGES[key]; if (p) push({ title: p[0], hash: "#p=" + key, html: p[2] }); }
   function renderShop() {
     $("mShopSafety").innerHTML = ["rules", "issues", "inspections", "safeguards", "process"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("");
-    $("mShopAbout").innerHTML = ["about", "goals", "changes", "sources", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor");
+    $("mShopAbout").innerHTML = ["about", "goals", "changes", "sources", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor") + (window.ME_ADMIN ? menuRow('data-handover="1"', "Handover note", "Admins only: where everything lives, and what moves if the admin changes") : "");
   }
 
   // ----- Home: may I use it? -----
@@ -1903,6 +1903,8 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     const row = e.target.closest(".mrow[data-id]"); if (row) { openMachine(row.dataset.id); return; }
     const tp = e.target.closest("[data-topic]"); if (tp) { openTopic(tp.dataset.topic); return; }
     const pg = e.target.closest("[data-page]"); if (pg) { openPage(pg.dataset.page); return; }
+    // The handover note is served only to signed-in admins, by the AI Assistant, not by this public page.
+    if (e.target.closest("[data-handover]")) { window.open("https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev/admin/handover", "_blank", "noopener"); return; }
     if (e.target.closest("[data-desk]")) { clearSheets(); document.body.classList.add("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); return; }
     const go = e.target.closest("[data-go]"); if (go) { show(go.dataset.go); return; }
     const sg = e.target.closest(".mseg button"); if (sg) { setMode(sg.dataset.mode); return; }
@@ -2230,6 +2232,7 @@ renderGates();
     if (!window.aiApi.signedIn()) { box.innerHTML = '<p class="note" style="margin-bottom:8px">Sign in to the AI Assistant to see the jobs assigned to you.</p><button type="button" class="b" data-go="ask">Sign in</button>'; return; }
     window.aiApi.me().then(me => {
       window.MEMBER_REPORTS = (me && me.reports) || [];
+      window.ME_ADMIN = !!(me && me.admin);
       if (window.mob) window.mob.refresh();
       const jobs = (me && me.jobs) || [];
       if (!jobs.length) { box.innerHTML = '<p class="note">You have no jobs open.</p>'; if (note) note.hidden = true; return; }
