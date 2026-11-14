@@ -544,7 +544,7 @@ button.mask span.note { display:block; font-size:12.5px; }
     <h1>Goldthorne Shop Safety and Machine Care Program</h1>
     <button type="button" class="sosdesk" data-sos="1">Emergency: what to do</button><button type="button" class="closedesk" data-extra="checkin">Working alone: check in</button><button type="button" class="closedesk" data-extra="closing">Last one out: closing checklist</button><button type="button" class="closedesk" data-extra="feedback">Suggest a change to the app</button>
     <button class="b phone-only" type="button" id="toPhone" style="margin:6px 0">Back to the phone view</button>
-    <p class="sub">Machine map and register from the walkthrough of November 12, 2026, at 14 Goldthorne Ave. Draft for Peter and Will to correct: room shapes and machine positions come from Cosmo's layout, checked against all 240 walkthrough photos, and are not to scale. Areas marked "to confirm" are placed from photos only.</p>
+    <p class="sub">Machine map and register from the walkthrough of November 12, 2026, at 14 Goldthorne Ave. Draft for Peter and William to correct. The main machine room is drawn to scale from Cosmo's measurements of November 14, 2026; the other rooms still come from his layout, checked against all 240 walkthrough photos, and aren't to scale yet. Areas marked "to confirm" are placed from photos only.</p>
   </header>
 
   <section class="card banner" id="readiness" aria-label="Readiness of this program"></section>
@@ -1732,7 +1732,7 @@ function renderInspector(focusFirst) {
     h += '<div class="field"><label for="i_kind">Type</label><select id="i_kind">' + [["wall","Wall"],["door","Door"],["opening","Opening (no wall)"],["dashed","Dashed line (unconfirmed)"],["duct","Dust duct"],["hvac","Air conditioning duct"],["air","Compressed air line"],["power","Electrical run"]]
       .map(o => '<option value="' + o[0] + '"' + (o[0] === it.kind ? " selected" : "") + '>' + o[1] + '</option>').join("") + '</select></div>';
     h += '<div class="grid2">' + numField("i_x1", "Start across", it.x1) + numField("i_y1", "Start down", it.y1) + numField("i_x2", "End across", it.x2) + numField("i_y2", "End down", it.y2) + '</div>';
-    h += '<p class="note">Length: ' + len(it) + ' units (plan is not to scale yet)</p>';
+    { const inch = Math.round(len(it) / 1.3131); h += '<p class="note">Length: ' + len(it) + ' units, about ' + Math.floor(inch / 12) + ' ft ' + (inch % 12) + ' in at the main machine room\'s scale (the other rooms aren\'t to scale yet)</p>'; }
     h += '<div class="btns"><button class="b danger" type="button" id="i_del">Delete line</button></div>';
   } else if (sel.kind === "label") {
     h += '<h3>Room label</h3><div class="field"><label for="i_text">Text</label><input id="i_text" type="text" value="' + esc(it.text) + '"></div>';
