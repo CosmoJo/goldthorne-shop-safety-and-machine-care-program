@@ -2424,7 +2424,7 @@ renderGates();
       '<h3>Where to go for treatment</h3><p class="note">' + esc(E.careNote) + '</p><ul class="carelist">' + E.care.map(c => '<li><strong>' + esc(c[0]) + '</strong><br>' + esc(c[1]) + (c[2] ? '<br><a href="tel:' + c[2].replace(/\D/g, "") + '">' + esc(c[2]) + '</a>' : '') + ' ' + cite([c[3]]) + '</li>').join("") + '</ul>' +
       '<p class="note">From the Canadian Red Cross first aid guide and Montréal public health\'s first aid sheet on amputation, plus the co-op meeting of November 12, 2026. It is not a first aid course. ' + cite(E.src) + '</p>';
   }
-  function open() { document.getElementById("sosBody").innerHTML = body(); dlg.hidden = false; document.documentElement.style.overflow = "hidden"; document.getElementById("sosClose").focus(); if (window.alertBox && window.alertBox.open) window.alertBox.open(); }
+  function open() { document.getElementById("sosBody").innerHTML = body(); dlg.hidden = false; document.documentElement.style.overflow = "hidden"; document.getElementById("sosClose").focus(); if (window.sosAlertBox && window.sosAlertBox.open) window.sosAlertBox.open(); }
   function close() { dlg.hidden = true; document.documentElement.style.overflow = ""; }
   window.openSOS = open;
   document.addEventListener("click", e => {
@@ -2684,7 +2684,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
     if (!window.aiApi && document.readyState === "loading") { const el = box(); if (el) el.innerHTML = '<h3>Alert the managers and first aiders</h3><p class="note">Loading…</p>'; document.addEventListener("DOMContentLoaded", () => { render(); load(); }, { once: true }); return; }
     render(); load();
   }
-  window.alertBox = { open, home };
+  window.sosAlertBox = { open, home };
   // The Emergency page may have opened before this script ran (the map opened at #p=alert).
   const boot = () => { if (dlgOpen()) open(); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
@@ -3057,7 +3057,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
       window.ME_ADMIN = !!(me && me.admin);
       window.ME_BOOTH = (me && me.booth) || null;
       window.ME_QUICK = (me && me.quick) || null;
-      if (window.alertBox && window.alertBox.home) window.alertBox.home(me && me.alert);
+      if (window.sosAlertBox && window.sosAlertBox.home) window.sosAlertBox.home(me && me.alert);
       window.ME_CLOSING = (me && me.closing) || null;
       if (me && me.checkin && window.checkinBox) window.checkinBox.home(me.checkin);
       if (window.closingList) window.closingList.refresh();
