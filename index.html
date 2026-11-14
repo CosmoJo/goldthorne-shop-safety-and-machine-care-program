@@ -234,7 +234,28 @@ ol.srcs a { color: var(--accent); word-break: break-word; }
 .phone-only { display: none !important; }
 @media (max-width: 760px) { body.desk .phone-only { display: inline-flex !important; } }
 body.noscroll { overflow: hidden; }
-.mob { font-size: 16px; padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+.mob { font-size: 16px; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.mhead { padding: 4px 0 12px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.mhead h1 { font-size: 17px; line-height: 1.3; margin: 0; }
+h1.mtitle { font-size: 24px; margin: 4px 0 12px; }
+h2.mq { font-size: 22px !important; margin: 0 0 4px !important; }
+.mbig { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: 16px 0 8px; border: 0; border-radius: 12px; background: var(--accent); color: var(--surface); font: 600 17px var(--body); cursor: pointer; }
+.mnote911 { text-align: center; }
+.mjobsnote { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); padding: 10px 12px; margin-bottom: 14px; }
+.mjobsnote .b { min-height: 40px; flex: none; }
+.mseg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 0 0 12px; }
+.mseg button { min-height: 42px; border: 0; background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; }
+.mseg button + button { border-left: 1px solid var(--line); }
+.mseg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.mlist.menu .mrow { grid-template-columns: 1fr 12px; min-height: 56px; }
+.mlist.menu .mrow.dotted { grid-template-columns: 12px 1fr 12px; }
+.mrest { margin-top: 12px; }
+#mv-ask { padding: 0; }
+#mv-ask .aipanel { position: fixed; top: 0; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); height: auto; width: auto; z-index: 4; }
+#mv-ask .aiclose { display: none; }
+#mv-ask .aimeta { padding-bottom: 8px; }
+.msbody > .rules, .msbody > .goals { grid-template-columns: 1fr; }
+.msbody .prio .item { grid-template-columns: 1fr; gap: 6px; }
 .mtop { background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px 8px; }
 .mtop h1 { font-size: 16px; margin: 0; line-height: 1.3; }
 .mob .note { font-size: 14px; }
@@ -589,41 +610,36 @@ button.mask span.note { display:block; font-size:12.5px; }
 </div>
 
 <div class="mob" id="mob">
-  <div class="mtop"><h1>Goldthorne Shop Safety and Machine Care Program</h1><p class="mdraft">Draft for review, not an approved safety standard. <button type="button" class="mlinkbtn" data-go="more">Details</button></p></div>
-  <div class="mview" id="mv-machines">
-    <div id="mJobs" hidden></div>
+  <div class="mview" id="mv-home">
+    <div class="mhead"><h1>Goldthorne Shop Safety and Machine Care Program</h1><p class="mdraft">Draft for review, not an approved safety standard. <button type="button" class="mlinkbtn" data-page="about">Details</button></p></div>
+    <div id="mJobsNote" hidden></div>
+    <h2 class="mq">May I use it?</h2>
     <div class="malert" id="mAlert"></div>
-    <div class="maskcard">
-      <div class="maskhead"><strong>AI Assistant</strong><span class="note">Being tested with a small group of members. Ask anything about the shop's machines, or report a problem.</span></div>
-      <div class="mexamples">
-        <button type="button" data-ask="What should I check before using the jointer?">What should I check before using the jointer?</button>
-        <button type="button" data-ask="What maintenance does the drum sander need?">What maintenance does the drum sander need?</button>
-        <button type="button" data-ask="I want to report a problem with a machine.">Report a problem with a machine</button>
-      </div>
+    <p class="note mrest" id="mRest"></p>
+    <button class="mbig" type="button" data-ai-prefill="I want to report a problem: ">Report a problem</button>
+    <p class="note mnote911">Someone hurt, or a fire? Call 911 first.</p>
+  </div>
+  <div class="mview" id="mv-machines" hidden>
+    <h1 class="mtitle">Machines</h1>
+    <div class="mseg" role="group" aria-label="Show machines as"><button type="button" data-mode="list" aria-pressed="true">List</button><button type="button" data-mode="map" aria-pressed="false">Floor map</button></div>
+    <div id="mListMode">
+      <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
+      <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, shop number" autocomplete="off">
+      <div id="mList"></div>
     </div>
-    <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
-    <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, shop number" autocomplete="off">
-    <div class="mchips" id="mChips" role="group" aria-label="Filter by status"></div>
-    <div id="mList"></div>
+    <div id="mMapMode" hidden>
+      <p class="note">Drag to move around, use the buttons to zoom, and tap a machine for its page.</p>
+      <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button></div>
+      <div class="mmapbox" id="mMap"></div>
+    </div>
   </div>
-  <div class="mview" id="mv-map" hidden>
-    <h2>Shop floor</h2>
-    <p class="note">Drag to move around, use the buttons to zoom, tap a machine for its record.</p>
-    <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button></div>
-    <div class="mmapbox" id="mMap"></div>
-  </div>
-  <div class="mview" id="mv-safety" hidden>
-    <h2>Issue register</h2>
-    <p class="note" style="margin-bottom:10px">What's wrong, what to do now, whether use is permitted, owner, due date and closure evidence. Owners and dates are recommendations awaiting adoption.</p>
-    <div class="isslist" id="mIssueList"></div>
-    <h2 style="margin-top:24px">Shop-wide rules <span class="badge b-draft">Draft</span></h2>
-    <div class="rules" id="mRules"></div>
-    <h2 style="margin-top:22px">Inspection calendar</h2>
-    <ul class="tight" id="mCal"></ul>
-  </div>
-  <div class="mview" id="mv-calendar" hidden>
-    <h2>Maintenance and repair jobs</h2>
-    <p class="note" style="margin-bottom:10px">Jobs the admin has assigned. The person doing the work and a different person who checks it get emails and reminders. If a job is yours, tell the AI Assistant when it's done.</p>
+  <div class="mview" id="mv-ask" hidden><div id="mAskHost"></div></div>
+  <div class="mview" id="mv-jobs" hidden>
+    <h1 class="mtitle">Jobs</h1>
+    <h2>Your jobs</h2>
+    <div id="mJobs"><p class="note">Loading…</p></div>
+    <h2 style="margin-top:22px">All open jobs</h2>
+    <p class="note" style="margin-bottom:10px">Maintenance and repair jobs the admin has assigned. The person doing the work and a different person who checks it get emails and reminders.</p>
     <div id="mUpcoming"><p class="note">Loading the jobs…</p></div>
     <h2 style="margin-top:22px">In your own calendar</h2>
     <p class="note" style="margin-bottom:10px">The same jobs are on the program's Google Calendar, with reminders. It opens only for Google accounts it's shared with: ask Cosmo to be added.</p>
@@ -632,31 +648,19 @@ button.mask span.note { display:block; font-size:12.5px; }
       <a class="mbtn" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener">Open Google Calendar</a>
     </div>
   </div>
-  <div class="mview" id="mv-more" hidden>
-    <section id="mReadiness"></section>
-    <section><h2>Reporting a problem, repairs and release</h2><div id="mProcess"></div></section>
-    <section><h2>Shared safeguards</h2><div class="sg" id="mSafeguards"></div></section>
-    <section><h2>Program goals</h2><p class="note" style="margin-bottom:10px"><span class="badge b-rec" style="margin-left:0">Recommendation awaiting adoption</span></p><div class="goals" id="mGoals"></div></section>
-    <section><h2>Changes in this revision</h2><ul class="tight" id="mChanges"></ul></section>
-    <section><h2>Sources</h2><ol class="srcs" id="mSources"></ol></section>
-    <section><h2>Put this page on your home screen</h2>
-      <ul class="tight">
-        <li><strong>iPhone:</strong> open this page in Safari, tap the Share button, then Add to Home Screen.</li>
-        <li><strong>Android:</strong> open this page in Chrome, tap the three-dot menu, then Add to Home screen.</li>
-      </ul></section>
-    <section><h2>Machine stickers</h2><p class="note">A sticker for each machine with a code to scan: it opens that machine's page, with its status and buttons to ask about it or report a problem. <a href="stickers.html" target="_blank" rel="noopener">Open the sticker sheet to print</a>.</p></section>
-    <section><h2>Desktop version</h2><p class="note">The full page, with the layout editor, works best on a computer.</p><button class="b mlink" type="button" id="toDesk">Open the desktop version here</button></section>
+  <div class="mview" id="mv-shop" hidden>
+    <h1 class="mtitle">Shop</h1>
+    <h2 class="marea">Safety</h2>
+    <ul class="mlist menu" id="mShopSafety"></ul>
+    <h2 class="marea">About the program</h2>
+    <ul class="mlist menu" id="mShopAbout"></ul>
   </div>
-  <form class="maskbar" id="mAskBar" autocomplete="off">
-    <input id="mAskText" type="text" maxlength="500" placeholder="Ask a question or report a problem" aria-label="Ask the AI Assistant a question or report a problem">
-    <button type="submit">Ask</button>
-  </form>
   <nav class="mnav" aria-label="Sections">
-    <button type="button" data-v="machines" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Machines</button>
-    <button type="button" data-v="map" aria-current="false"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Map</button>
-    <button type="button" data-v="calendar" aria-current="false"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendar</button>
-    <button type="button" data-v="safety" aria-current="false"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Safety</button>
-    <button type="button" data-v="more" aria-current="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</button>
+    <button type="button" data-v="home" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Home</button>
+    <button type="button" data-v="machines" aria-current="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Machines</button>
+    <button type="button" data-v="ask" aria-current="false"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Ask</button>
+    <button type="button" data-v="jobs" aria-current="false"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></svg>Jobs</button>
+    <button type="button" data-v="shop" aria-current="false"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>Shop</button>
   </nav>
   <div class="msheet" id="msheet" hidden role="dialog" aria-modal="true" aria-labelledby="msTitle">
     <div class="mshead"><button class="mback" type="button" id="mBack">&lsaquo; Back</button><span class="mstitle" id="msTitle"></span></div>
@@ -1683,104 +1687,199 @@ document.getElementById("q").addEventListener("input", renderRows);
 
 render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateUndoBtn(); renderProgram();
 
-/* ---------- Phone version ---------- */
+/* ---------- Phone version ----------
+   Five tabs, one job each: Home (may I use it?), Machines (find one), Ask (the AI Assistant),
+   Jobs, and Shop (rules, issues and the program). Every topic opens on its own screen. */
 (function () {
   const mob = document.getElementById("mob"); if (!mob) return;
   const SEV = { crit: 0, hold: 1, warn: 2, none: 3, ok: 4 };
   const $ = id => document.getElementById(id);
-  let filter = "all", query = "", zoom = 1600, current = "machines";
+  let query = "", zoom = 1600, current = "home", mode = "list";
   const isPhone = () => window.matchMedia("(max-width: 760px)").matches && !document.body.classList.contains("desk");
-  function counts() { const c = { all: MACHINES.length, crit: 0, hold: 0, warn: 0, ok: 0, none: 0 }; MACHINES.forEach(m => { c[m.status] = (c[m.status] || 0) + 1; }); return c; }
-  function renderSum() {}
-  function renderChips() {
-    const c = counts(), defs = [["all", "All"], ["crit", "Out of service"], ["hold", "Recommended out of service"], ["warn", "Restricted"], ["ok", "Released"], ["none", "Not assessed"]];
-    $("mChips").innerHTML = defs.map(d => '<button type="button" class="mchip' + (filter === d[0] ? " on" : "") + '" data-f="' + d[0] + '" aria-pressed="' + (filter === d[0]) + '">' + (d[0] !== "all" ? '<span class="dot ' + STATUS[d[0]].cls + '"></span>' : "") + d[1] + " <b>" + c[d[0]] + "</b></button>").join("");
+  const count = (n, one, many) => n + " " + (n === 1 ? one : (many || one + "s"));
+  const ul = (lines, fn) => '<ul class="tight">' + lines.map(fn || lineLI).join("") + '</ul>';
+  const menuRow = (attr, title, hint, dot) => '<li><button type="button" class="mrow' + (dot ? ' dotted' : '') + '" ' + attr + '>' + (dot ? '<span class="dot ' + dot + '"></span>' : '') + '<span class="mtxt"><span class="mname">' + esc(title) + '</span>' + (hint ? '<span class="msub">' + esc(hint) + '</span>' : '') + '</span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+
+  // ----- screens that open over the tabs, one topic each, with Back -----
+  const stack = [];
+  function paintSheet() {
+    const sh = $("msheet"), top = stack[stack.length - 1];
+    if (!top) { sh.hidden = true; document.body.classList.remove("noscroll"); return; }
+    $("msTitle").textContent = top.title;
+    $("msBody").innerHTML = top.html();
+    sh.hidden = false; document.body.classList.add("noscroll");
   }
+  function push(page, root) {
+    stack.push(page);
+    try { history[root ? "replaceState" : "pushState"]({ depth: stack.length }, "", page.hash || location.pathname + location.search); } catch (e) {}
+    page.root = !!root;
+    paintSheet(); $("msheet").scrollTop = 0; $("mBack").focus();
+  }
+  function back() {
+    const top = stack[stack.length - 1];
+    if (top && top.root && stack.length === 1) { stack.pop(); try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} paintSheet(); return; }
+    if (history.state && history.state.depth) history.back(); else { stack.pop(); paintSheet(); }
+  }
+  function clearSheets() { if (!stack.length) return; stack.length = 0; try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} paintSheet(); }
+
+  // ----- a machine's page: status first, then one row per topic -----
+  function machineTopics(m) {
+    const p = PROGRAM.machines[m.id] || {}, MB = PROGRAM.member;
+    const run = (p.during || []).concat(p.never || []);
+    const stops = (p.stop || []).concat(MB.stopGeneral || []);
+    const T = [];
+    T.push(["status", "Status in detail", "Use authorization, maintenance and verification", () => statusBlock(m)]);
+    T.push(["auth", "Am I authorized?", "Who may use it", () => '<p>' + esc(MB.auth) + '</p>']);
+    if (p.before && p.before.length) T.push(["before", "Before you start", count(p.before.length, "check"), () => '<p>' + badge("draft") + '</p>' + ul(p.before)]);
+    if (run.length) T.push(["running", "While it's running", count(run.length, "rule"), () => '<p>' + badge("draft") + '</p>' + ul(run)]);
+    T.push(["stop", "When to stop", count(stops.length, "reason"), () => ul(stops, obsLI)]);
+    if (p.after && p.after.length) T.push(["after", "Shutting down and resetting", count(p.after.length, "step"), () => '<p>' + badge("draft") + '</p>' + ul(p.after, obsLI)]);
+    const hist = p.history || [];
+    if ((p.sched && p.sched.length) || hist.length || m.maint.length) T.push(["maint", "Maintenance and history", [p.sched && p.sched.length ? count(p.sched.length, "scheduled task") : "", hist.length ? count(hist.length, "history entry", "history entries") : ""].filter(Boolean).join(", ") || "Notes from the walkthrough", () => {
+      let h = '<p class="note">' + esc(PROGRAM.maintLabels[p.maint || "unknown"]) + '. ' + esc(p.maintNote || "No maintenance record found.") + '</p>';
+      if (p.sched && p.sched.length) h += '<h3>Schedule ' + badge("draft") + '</h3><ul class="tight">' + p.sched.map(schedLI).join("") + '</ul>';
+      else if (m.maint.length) h += '<h3>Notes from the walkthrough (to verify)</h3><ul class="tight">' + m.maint.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul>';
+      if (hist.length) h += '<h3>History</h3><ul class="tight">' + hist.map(obsLI).join("") + '</ul>';
+      return h;
+    }]);
+    if (p.manual) T.push(["manual", "Maker's manual", p.manual.state === "found" ? "On file" : p.manual.state === "candidate" ? "A candidate manual, fit to confirm" : "Not on file yet", () => manualBlock(m) + (p.docNext ? '<p class="note">Next step: ' + esc(p.docNext[0]) + ' ' + cite(p.docNext[1]) + '</p>' : '')]);
+    const open = (p.open || []), risks = (p.risks || []);
+    if (open.length || risks.length) T.push(["open", "Open items and risks", count(open.length + risks.length, "item"), () => (open.length ? '<h3>To verify or decide before release ' + badge("open") + '</h3>' + ul(open) : '') + (risks.length ? '<h3>Risks and notes</h3>' + ul(risks, obsLI) : '') + (p.identity ? '<h3>Identity on record</h3><p class="note">' + esc(p.identity) + '</p>' : '')]);
+    T.push(["details", "Machine details", "Maker, serial, power and connections", () => machineDetails(m)]);
+    return T;
+  }
+  function machineDetails(m) {
+    const rows = [["Shop number", m.shopNo || "Not found yet"], ["Area", AREAS[m.area]], ["Maker", m.maker], ["Model", m.model], ["Serial", m.serial], ["Year", m.year], ["Power", m.power], ["Parts and service", m.service]].filter(r => r[1]);
+    let d = '<dl class="kv">' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd' + (r[0] === "Serial" ? ' class="mono"' : '') + '>' + esc(r[1]) + '</dd>').join("") + '</dl>';
+    if (m.details.length) d += '<h3>From the walkthrough ' + cite(["photos"]) + '</h3><ul class="tight">' + m.details.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul>';
+    const sv = SERVICES[m.id] || {};
+    const gates = plan.fixtures.filter(f => f.tone === "gate" && f.serves === m.id).map(f => f.gate);
+    const conn = [["Dust", sv.dust || (gates.length ? "Blast gate " + gates.join(", ") : "")], ["Power", sv.power], ["Air", sv.air]].filter(r => r[1]);
+    if (conn.length) d += '<h3>Connections</h3><dl class="kv">' + conn.map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join("") + '</dl>';
+    if (m.needed.length) d += '<h3>Photos and details still needed</h3><ul class="tight">' + m.needed.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul>';
+    return d;
+  }
+  function machinePage(m) {
+    const p = PROGRAM.machines[m.id] || {};
+    let h = '<div class="recname"><span class="alt">' + esc(m.name) + (m.shopNo ? ', shop number ' + esc(m.shopNo) : '') + '</span></div>' + statusBar(m);
+    h += '<ul class="mlist menu">' + machineTopics(m).map(t => menuRow('data-topic="' + t[0] + '"', t[1], t[2])).join("") + '</ul>';
+    return h;
+  }
+  function openMachine(id, root) {
+    const m = MACHINES.find(x => x.id === id); if (!m) return;
+    push({ title: spoken(m), mid: id, hash: "#m=" + id, html: () => machinePage(m) }, root);
+  }
+  function openTopic(key) {
+    const top = stack[stack.length - 1]; if (!top || !top.mid) return;
+    const m = MACHINES.find(x => x.id === top.mid); const t = machineTopics(m).find(x => x[0] === key); if (!t) return;
+    push({ title: t[1], mid: m.id, hash: "#m=" + m.id, html: () => '<p class="note" style="margin:0">' + esc(spoken(m)) + '</p>' + t[3]() });
+  }
+
+  // ----- the Shop tab's topics -----
+  const html = id => { const el = $(id); return el ? el.innerHTML : ""; };
+  const PAGES = {
+    rules: ["Shop rules", "Before use, protective equipment, while running, after use, lockout", () => '<p class="note">' + badge("draft") + ' Every machine. Drawn from CCOHS guidance and Ontario rules; not yet adopted by the co-op.</p><ul class="mlist menu">' + RULES.map(r => menuRow('data-page="rule-' + r[0] + '"', r[1], count(PROGRAM.rules[r[0]].length, "rule"))).join("") + '</ul>'],
+    issues: ["Issue register", count(PROGRAM.issues.length, "issue") + ": what's wrong and what to do", () => '<p class="note">What\'s wrong, what to do now, whether use is permitted, owner, due date and closure evidence. Owners and dates are recommendations awaiting adoption.</p><div class="isslist">' + html("issueList") + '</div>'],
+    inspections: ["Inspection calendar", "Shop-wide checks and how often", () => '<ul class="tight">' + html("calList") + '</ul>'],
+    safeguards: ["Shared safeguards", "Lockout, dust, fire, first aid and more", () => '<p class="note">Protections for the whole shop that single machine records can\'t cover. Each is a required inspection or decision.</p><div class="sg">' + html("safeguardBox") + '</div>'],
+    process: ["Reporting, repairs and release", "How a problem gets fixed and a machine returns", () => html("processBox")],
+    about: ["About this draft", "What's approved, and how each part is labelled", () => html("readiness")],
+    goals: ["Program goals", "Goals, tactics and measures", () => '<p class="note">' + badge("rec") + '</p><div class="goals">' + html("goalsBox") + '</div>'],
+    changes: ["Changes in this revision", PROGRAM.revision.version + ", " + PROGRAM.revision.date, () => '<ul class="tight">' + html("changeList") + '</ul>'],
+    sources: ["Sources", count(PROGRAM.sources.length, "source"), () => '<ol class="srcs">' + html("srcList").replace(/ id="src-/g, ' id="msrc-') + '</ol>'],
+    stickers: ["Machine stickers", "A code to scan on each machine", () => '<p>A sticker for each machine, with a code to scan. It opens that machine\'s page: its status first, then buttons to ask about it or report a problem.</p><p><a class="mbtn primary" href="stickers.html" target="_blank" rel="noopener">Open the sticker sheet to print</a></p>'],
+    homescreen: ["Put this page on your home screen", "So it opens like an app", () => '<ul class="tight"><li><strong>iPhone:</strong> open this page in Safari, tap the Share button, then Add to Home Screen.</li><li><strong>Android:</strong> open this page in Chrome, tap the three-dot menu, then Add to Home screen.</li></ul>'],
+  };
+  const RULES = [["before", "Before you use any machine"], ["ppe", "Protective equipment"], ["during", "While a machine is running"], ["after", "After use"], ["lockout", "Lockout and defects"]];
+  RULES.forEach(r => { PAGES["rule-" + r[0]] = [r[1], "", () => '<p class="note">' + badge("draft") + ' Shop rules, every machine.</p><ul class="tight">' + PROGRAM.rules[r[0]].map(lineLI).join("") + '</ul>']; });
+  function openPage(key) { const p = PAGES[key]; if (p) push({ title: p[0], hash: "#p=" + key, html: p[2] }); }
+  function renderShop() {
+    $("mShopSafety").innerHTML = ["rules", "issues", "inspections", "safeguards", "process"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("");
+    $("mShopAbout").innerHTML = ["about", "goals", "changes", "sources", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor");
+  }
+
+  // ----- Home: may I use it? -----
+  function renderHome() {
+    const row = m => '<li><button type="button" class="mrow" data-id="' + m.id + '"><span class="dot ' + STATUS[m.status].cls + '" role="img" aria-label="' + esc(STATUS[m.status].label) + '"></span><span class="mtxt"><span class="mname">' + esc(spoken(m)) + '</span><span class="mwhy">' + esc(reasonOf(m)) + '</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+    const group = (st, title, help) => { const ms = MACHINES.filter(m => m.status === st); return ms.length ? '<h2 class="mgroup"><span class="dot ' + STATUS[st].cls + '"></span>' + title + '</h2><p class="note" style="margin:-2px 0 8px">' + help + '</p><ul class="mlist">' + ms.map(row).join("") + '</ul>' : ""; };
+    $("mAlert").innerHTML = group("crit", "Out of service", "Can't be used until repaired.") + group("hold", "Recommended out of service", "Still working, but the program recommends not using them until the problem is fixed.") + group("warn", "Restricted", "Only for the operations named on their page.");
+    const rest = MACHINES.filter(m => m.status === "none").length, ok = MACHINES.filter(m => m.status === "ok").length;
+    $("mRest").innerHTML = (rest ? 'The other ' + count(rest, "machine") + ' haven\'t been assessed yet: the shop\'s existing rules and sign-offs apply. ' : '') + (ok ? count(ok, "machine") + ' released. ' : '') + '<button type="button" class="mlinkbtn" data-go="machines">See every machine</button>';
+  }
+
+  // ----- Machines: find one -----
   function renderList() {
     const q = query.trim().toLowerCase();
-    const list = MACHINES.filter(m => (filter === "all" || m.status === filter) && (!q || [spoken(m), m.name, m.short, m.maker, m.model, m.serial, m.shopNo].join(" ").toLowerCase().includes(q)));
+    const list = MACHINES.filter(m => !q || [spoken(m), m.name, m.short, m.maker, m.model, m.serial, m.shopNo].join(" ").toLowerCase().includes(q));
     let h = "";
     Object.keys(AREAS).forEach(a => {
-      const ms = list.filter(m => m.area === a).sort((x, y) => (SEV[x.status] - SEV[y.status]) || x.name.localeCompare(y.name));
+      const ms = list.filter(m => m.area === a).sort((x, y) => (SEV[x.status] - SEV[y.status]) || spoken(x).localeCompare(spoken(y)));
       if (!ms.length) return;
       h += '<h2 class="marea">' + esc(AREAS[a]) + '</h2><ul class="mlist">' + ms.map(m => {
-        const sub = (spoken(m) !== m.name ? m.name : [m.maker, m.model].filter(x => x && !/^To confirm$/i.test(x)).join(", ")) + (m.shopNo ? ", shop number " + m.shopNo : "");
-        return '<li><button type="button" class="mrow" data-id="' + m.id + '"><span class="dot ' + STATUS[m.status].cls + '" role="img" aria-label="' + esc(STATUS[m.status].label) + '"></span><span class="mtxt"><span class="mname">' + esc(spoken(m)) + '</span>' + (sub ? '<span class="msub">' + esc(sub) + '</span>' : "") + (["crit", "hold", "warn"].includes(m.status) ? '<span class="mwhy">' + esc(STATUS[m.status].label) + ': ' + esc(reasonOf(m)) + '</span>' : "") + '</span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+        const adds = !spoken(m).toLowerCase().includes(m.name.toLowerCase());
+        const sub = ["crit", "hold", "warn"].includes(m.status) ? STATUS[m.status].label : [adds ? m.name : "", m.shopNo ? "shop number " + m.shopNo : ""].filter(Boolean).join(", ").replace(/^shop/, "Shop");
+        return '<li><button type="button" class="mrow" data-id="' + m.id + '"><span class="dot ' + STATUS[m.status].cls + '" role="img" aria-label="' + esc(STATUS[m.status].label) + '"></span><span class="mtxt"><span class="mname">' + esc(spoken(m)) + '</span>' + (sub ? '<span class="msub">' + esc(sub) + '</span>' : "") + '</span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
       }).join("") + "</ul>";
     });
     $("mList").innerHTML = h || '<p class="note" style="margin-top:12px">No machines match.</p>';
-  }
-  function hashId() { const m = (location.hash || "").match(/^#m=([\w-]+)/); return m ? m[1] : null; }
-  function openSheet(id, push) {
-    const m = MACHINES.find(x => x.id === id); if (!m) return;
-    $("msTitle").textContent = spoken(m);
-    $("msBody").innerHTML = recordHTML(m);
-    const sh = $("msheet"); sh.hidden = false; sh.scrollTop = 0; document.body.classList.add("noscroll");
-    if (push !== false) { try { history.pushState({ m: id }, "", "#m=" + id); } catch (e) {} }
-    $("mBack").focus();
-  }
-  function closeSheet(fromPop) {
-    const sh = $("msheet"); if (sh.hidden) return;
-    sh.hidden = true; document.body.classList.remove("noscroll");
-    if (!fromPop) { try { if (history.state && history.state.m) history.back(); else history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
   }
   function renderMap() {
     const src = $("map"); if (!src) return;
     let h = src.outerHTML.replace('id="map"', 'id="mMapSvg"').replace(/id="g(Minor|Major)"/g, 'id="mg$1"').replace(/url\(#g(Minor|Major)\)/g, "url(#mg$1)");
     $("mMap").innerHTML = h;
-    const svg = $("mMap").querySelector("svg"); svg.style.width = zoom + "px"; svg.setAttribute("aria-label", "Shop floor plan; tap a machine to open its record");
+    const svg = $("mMap").querySelector("svg"); svg.style.width = zoom + "px"; svg.setAttribute("aria-label", "Shop floor plan; tap a machine to open its page");
   }
+  function setMode(v) {
+    mode = v;
+    mob.querySelectorAll(".mseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === v ? "true" : "false"));
+    $("mListMode").hidden = v !== "list"; $("mMapMode").hidden = v !== "map";
+    if (v === "map") renderMap();
+  }
+
   function show(v) {
+    clearSheets();
     current = v;
     mob.querySelectorAll(".mview").forEach(x => { x.hidden = x.id !== "mv-" + v; });
     mob.querySelectorAll(".mnav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
-    if (v === "map") renderMap();
+    if (v === "machines" && mode === "map") renderMap();
+    if (v === "ask" && window.aiApi) window.aiApi.activate();
     window.scrollTo(0, 0);
   }
-  function copyStatic() {
-    const strip = h => h.replace(/ id="src-/g, ' id="msrc-');
-    $("mIssueList").innerHTML = $("issueList").innerHTML;
-    $("mRules").innerHTML = $("rulesBox").innerHTML;
-    $("mCal").innerHTML = $("calList").innerHTML;
-    $("mGoals").innerHTML = $("goalsBox").innerHTML;
-    $("mSources").innerHTML = strip($("srcList").innerHTML);
-    $("mReadiness").innerHTML = $("readiness").innerHTML;
-    $("mProcess").innerHTML = $("processBox").innerHTML;
-    $("mSafeguards").innerHTML = $("safeguardBox").innerHTML;
-    $("mChanges").innerHTML = $("changeList").innerHTML;
-    renderAlert();
-  }
-  // Machines not to use, as rows: out of service first, then recommended out of service.
-  function renderAlert() {
-    const row = m => '<li><button type="button" class="mrow" data-id="' + m.id + '"><span class="dot ' + STATUS[m.status].cls + '" role="img" aria-label="' + esc(STATUS[m.status].label) + '"></span><span class="mtxt"><span class="mname">' + esc(spoken(m)) + '</span><span class="mwhy">' + esc(reasonOf(m)) + '</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
-    const group = (st, title, help) => { const ms = MACHINES.filter(m => m.status === st); return ms.length ? '<h2 class="mgroup"><span class="dot ' + STATUS[st].cls + '"></span>' + title + '</h2><p class="note" style="margin:-2px 0 8px">' + help + '</p><ul class="mlist">' + ms.map(row).join("") + '</ul>' : ""; };
-    const h = group("crit", "Out of service", "Can't be used until repaired.") + group("hold", "Recommended out of service", "Still working, but the program recommends not using them until the problem is fixed.");
-    $("mAlert").innerHTML = h ? h + '<p class="note mfoot">Found a problem? Stop using the machine, tell a shop manager, and report it in the box at the bottom of the screen.</p>' : "";
-  }
-  window.mob = { refresh() { renderChips(); renderList(); renderAlert(); if (!$("msheet").hidden && hashId()) openSheet(hashId(), false); }, openSheet: id => openSheet(id) };
+
   mob.addEventListener("click", e => {
-    const row = e.target.closest(".mrow"); if (row) { openSheet(row.dataset.id); return; }
-    const op = e.target.closest("[data-open]"); if (op) { openSheet(op.dataset.open); return; }
-    const go = e.target.closest("[data-go]"); if (go) { closeSheet(); show(go.dataset.go); window.scrollTo(0, 0); return; }
-    const chip = e.target.closest(".mchip"); if (chip) { filter = chip.dataset.f; renderChips(); renderList(); return; }
-    const ex = e.target.closest("[data-ask]"); if (ex && window.aiApi) { window.aiApi.open(ex.dataset.ask, true); return; }
-    const nav = e.target.closest(".mnav button"); if (nav) { closeSheet(); show(nav.dataset.v); return; }
-    const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openSheet(mach.dataset.id); return; }
+    const row = e.target.closest(".mrow[data-id]"); if (row) { openMachine(row.dataset.id); return; }
+    const tp = e.target.closest("[data-topic]"); if (tp) { openTopic(tp.dataset.topic); return; }
+    const pg = e.target.closest("[data-page]"); if (pg) { openPage(pg.dataset.page); return; }
+    if (e.target.closest("[data-desk]")) { clearSheets(); document.body.classList.add("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); return; }
+    const go = e.target.closest("[data-go]"); if (go) { show(go.dataset.go); return; }
+    const sg = e.target.closest(".mseg button"); if (sg) { setMode(sg.dataset.mode); return; }
+    const nav = e.target.closest(".mnav button"); if (nav) { show(nav.dataset.v); return; }
+    const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openMachine(mach.dataset.id); return; }
     const a = e.target.closest('a.src[href^="#src-"]');
-    if (a) { e.preventDefault(); closeSheet(); show("more"); const t = document.getElementById("m" + a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ block: "center" }); }
+    if (a) { e.preventDefault(); openPage("sources"); const t = document.getElementById("m" + a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ block: "center" }); }
   });
   $("mSearch").addEventListener("input", e => { query = e.target.value; renderList(); });
-  $("mAskBar").addEventListener("submit", e => { e.preventDefault(); const t = $("mAskText").value.trim(); if (!t || !window.aiApi) return; $("mAskText").value = ""; $("mAskText").blur(); window.aiApi.open(t, true); });
-  $("mBack").addEventListener("click", () => closeSheet());
+  $("mBack").addEventListener("click", back);
   $("mZoomIn").addEventListener("click", () => { zoom = Math.min(4000, Math.round(zoom * 1.4)); renderMap(); });
   $("mZoomOut").addEventListener("click", () => { zoom = Math.max(700, Math.round(zoom / 1.4)); renderMap(); });
-  $("toDesk").addEventListener("click", () => { document.body.classList.add("desk"); window.scrollTo(0, 0); });
-  $("toPhone").addEventListener("click", () => { document.body.classList.remove("desk"); window.scrollTo(0, 0); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("msheet").hidden) closeSheet(); });
-  window.addEventListener("popstate", () => { const id = hashId(); if (isPhone()) { if (id) openSheet(id, false); else closeSheet(true); } else if (id) showRecord(id); });
-  renderSum(); renderChips(); renderList(); copyStatic();
-  const start = hashId();
-  if (start) { if (isPhone()) openSheet(start, false); else { showRecord(start); const mg = document.querySelector(".mapgrid"); if (mg) mg.scrollIntoView(); } }
+  $("toPhone").addEventListener("click", () => { document.body.classList.remove("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); });
+  window.matchMedia("(max-width: 760px)").addEventListener("change", () => { if (window.aiApi) window.aiApi.place(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && stack.length) back(); });
+  window.addEventListener("popstate", e => {
+    if (!isPhone()) { const m = (location.hash || "").match(/^#m=([\w-]+)/); if (m) showRecord(m[1]); return; }
+    const d = (e.state && e.state.depth) || 0;
+    if (d < stack.length) { stack.length = d; paintSheet(); }
+  });
+  window.mob = {
+    isPhone, show, openMachine,
+    refresh() { renderHome(); renderList(); renderShop(); if (stack.length) paintSheet(); if (mode === "map" && current === "machines") renderMap(); },
+  };
+  renderHome(); renderList(); renderShop();
+  const start = (location.hash || "").match(/^#(m|p)=([\w-]+)/);
+  if (start) {
+    if (isPhone()) { if (start[1] === "m") openMachine(start[2], true); else if (PAGES[start[2]]) { const p = PAGES[start[2]]; push({ title: p[0], hash: "#p=" + start[2], html: p[2] }, true); } }
+    else if (start[1] === "m") { showRecord(start[2]); const mg = document.querySelector(".mapgrid"); if (mg) mg.scrollIntoView(); }
+  }
 })();
 
 
@@ -1841,7 +1940,8 @@ renderGates();
   const $ = id => document.getElementById(id);
   const dlg = $('aiDlg'), log = $('aiLog'), form = $('aiForm'), text = $('aiText'), send = $('aiSend');
   const signin = $('aiSignin'), meta = $('aiMeta'), leftEl = $('aiLeft');
-  let turns = [], LIMIT = 20, started = false, pending = '';
+  let turns = [], LIMIT = 20, started = false, pending = '', inTab = false;
+  const panel = dlg.querySelector('.aipanel');
   const store = {
     get(){ try { return localStorage.getItem('aiSession'); } catch(e){ return null; } },
     set(v){ try { localStorage.setItem('aiSession', v); } catch(e){} },
@@ -1879,7 +1979,7 @@ renderGates();
       started = true; log.innerHTML = '';
       add('aia', '<p>Ask me about the shop\'s machines: checks, setup, problems, schedules and rules. I answer from the program\'s records and the makers\' manuals, and I label anything that\'s general advice.</p>');
       const chips = document.createElement('div'); chips.className = 'aichips';
-      ['Which machines are out of service?', 'What do I check before using the jointer?', 'How do I report a problem with a machine?']
+      ['I want to report a problem with a machine.', 'Which machines are out of service?', 'What do I check before using the jointer?']
         .forEach(q => { const b = document.createElement('button'); b.type = 'button'; b.className = 'aichip'; b.textContent = q; b.onclick = () => ask(q); chips.appendChild(b); });
       log.appendChild(chips);
     }
@@ -1934,7 +2034,16 @@ renderGates();
     } catch (e) { if (e.message !== 'signin') { if (!el) w.remove(); add('aierr', '<p>The connection dropped. Please try again.</p>'); } }
     send.disabled = false;
   }
+  // On phones the AI Assistant is the Ask tab; on computers it opens as a side panel.
+  function place(){
+    const host = document.getElementById('mAskHost');
+    const want = !!(host && window.mob && window.mob.isPhone());
+    if (want && !inTab) { host.appendChild(panel); inTab = true; dlg.hidden = true; document.documentElement.style.overflow = ''; }
+    else if (!want && inTab) { dlg.appendChild(panel); inTab = false; }
+  }
+  function activate(){ if (store.get()) { showChat(); refresh(); } else showSignin(); }
   function open(){
+    if (inTab) { if (window.mob) window.mob.show('ask'); else activate(); return; }
     dlg.hidden = false; document.documentElement.style.overflow = 'hidden';
     if (store.get()) { showChat(); refresh(); setTimeout(() => text.focus(), 50); } else showSignin();
   }
@@ -1956,7 +2065,8 @@ renderGates();
     else { text.value = q; setTimeout(() => { text.focus(); try { text.setSelectionRange(q.length, q.length); } catch (e) {} }, 60); pending = ''; }
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-ai-prefill]'); if (b) { e.preventDefault(); openWith(b.dataset.aiPrefill, false); } });
-  window.aiApi = { open: openWith, signedIn: () => !!store.get(), me: () => (store.get() ? call('/api/me') : Promise.resolve(null)) };
+  window.aiApi = { open: openWith, place, activate, signedIn: () => !!store.get(), me: () => (store.get() ? call('/api/me') : Promise.resolve(null)) };
+  place();
   const m = location.hash.match(/^#ai-session=([a-f0-9]{64})$/);
   if (m) {
     store.set(m[1]); try { window.history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
@@ -2018,13 +2128,15 @@ renderGates();
 
   // Your jobs: for a member signed in to the AI Assistant who has jobs open.
   function yourJobs() {
-    const box = document.getElementById("mJobs");
-    if (!box || !window.aiApi || !window.aiApi.signedIn()) return;
+    const box = document.getElementById("mJobs"), note = document.getElementById("mJobsNote");
+    if (!box || !window.aiApi) return;
+    if (!window.aiApi.signedIn()) { box.innerHTML = '<p class="note" style="margin-bottom:8px">Sign in to the AI Assistant to see the jobs assigned to you.</p><button type="button" class="b" data-go="ask">Sign in</button>'; return; }
     window.aiApi.me().then(me => {
       const jobs = (me && me.jobs) || [];
-      if (!jobs.length) { box.hidden = true; return; }
-      box.className = "mjobs"; box.hidden = false;
-      box.innerHTML = '<h2>Your jobs</h2>' + jobs.map(j => {
+      if (!jobs.length) { box.innerHTML = '<p class="note">You have no jobs open.</p>'; if (note) note.hidden = true; return; }
+      const late = jobs.filter(j => j.overdue).length, ready = jobs.filter(j => j.role === "inspect" && j.status === "done").length;
+      if (note) { note.className = "mjobsnote"; note.hidden = false; note.innerHTML = '<span>You have ' + jobs.length + ' job' + (jobs.length === 1 ? '' : 's') + ' open' + (late ? ', ' + late + ' overdue' : '') + (ready ? ', ' + ready + ' ready for your inspection' : '') + '.</span><button type="button" class="b" data-go="jobs">Your jobs</button>'; }
+      box.className = "mjobs"; box.innerHTML = jobs.map(j => {
         const m = MACHINES.find(x => x.id === j.machine);
         const name = m ? spoken(m) : (j.name || "Whole shop");
         let role, btn = "";
