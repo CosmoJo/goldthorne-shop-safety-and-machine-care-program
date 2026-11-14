@@ -427,6 +427,16 @@ button.mask span.note { display:block; font-size:12.5px; }
 .aiform textarea { flex:1; font:inherit; font-size:16px; border:1px solid var(--line); border-radius:10px; padding:8px 10px; resize:none; height:44px; background:var(--bg); color:var(--ink); }
 .aiform button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:0 16px; cursor:pointer; }
 .aiform button:disabled { opacity:.5; }
+.aiform button.aiattach { flex:none; width:44px; padding:0; border:1px solid var(--line); background:var(--bg); color:var(--accent); display:grid; place-items:center; }
+.aiattach svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linejoin:round; }
+.aithumbs { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:10px 12px 2px; background:var(--surface); border-top:1px solid var(--line); }
+.aithumbs + .aiform { border-top:0; }
+.aithumbs .t { position:relative; }
+.aithumbs img { width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--line); display:block; }
+.aithumbs .t button { position:absolute; top:-7px; right:-7px; width:24px; height:24px; padding:0; border-radius:50%; border:0; background:var(--ink); color:var(--surface); font:700 15px/24px var(--body); cursor:pointer; }
+.aithumbs .note { flex-basis:100%; font-size:12.5px; }
+.aiqphotos { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; margin-bottom:6px; }
+.aiqphotos img { width:76px; height:76px; object-fit:cover; border-radius:8px; }
 .aimeta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); padding:4px 14px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); }
 .ailink { font:inherit; font-size:12px; background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; padding:0; }
 .aibtn { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:10px 16px; cursor:pointer; }
@@ -1927,11 +1937,14 @@ renderGates();
       <button class="aibtn" type="button" id="aiSigninBtn">Sign in with my email</button>
     </div>
     <div class="ailog" id="aiLog"></div>
+    <div class="aithumbs" id="aiThumbs" hidden></div>
     <form class="aiform" id="aiForm" hidden>
-      <textarea id="aiText" maxlength="500" placeholder="Ask a question" aria-label="Your question"></textarea>
+      <button type="button" class="aiattach" id="aiAttach" aria-label="Add a photo" title="Add a photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+      <input type="file" id="aiFile" accept="image/*" multiple hidden>
+      <textarea id="aiText" maxlength="500" placeholder="Ask, or add a photo" aria-label="Your question"></textarea>
       <button type="submit" id="aiSend">Ask</button>
     </form>
-    <div class="aimeta" id="aiMeta" hidden><span id="aiLeft"></span><span>Questions are logged. <button class="ailink" type="button" id="aiOut">Sign out</button></span></div>
+    <div class="aimeta" id="aiMeta" hidden><span id="aiLeft"></span><span>Questions and photos are logged. <button class="ailink" type="button" id="aiOut">Sign out</button></span></div>
   </div>
 </div>
 
@@ -1941,7 +1954,7 @@ renderGates();
   const $ = id => document.getElementById(id);
   const dlg = $('aiDlg'), log = $('aiLog'), form = $('aiForm'), text = $('aiText'), send = $('aiSend');
   const signin = $('aiSignin'), meta = $('aiMeta'), leftEl = $('aiLeft');
-  let turns = [], LIMIT = 20, started = false, pending = '', inTab = false;
+  let turns = [], LIMIT = 20, started = false, pending = '', inTab = false, picked = [];
   const panel = dlg.querySelector('.aipanel');
   const store = {
     get(){ try { return localStorage.getItem('aiSession'); } catch(e){ return null; } },
@@ -1985,6 +1998,36 @@ renderGates();
       log.appendChild(chips);
     }
   }
+  // Photos: shrunk on the phone to at most 1568 pixels on the long side, as JPEG, before sending.
+  const thumbs = $('aiThumbs'), fileIn = $('aiFile');
+  function shrink(file){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 1568 / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        const dataUrl = c.toDataURL('image/jpeg', 0.82);
+        resolve({ type: 'image/jpeg', data: dataUrl.split(',')[1], url: dataUrl });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable')); };
+      img.src = url;
+    });
+  }
+  function renderThumbs(){
+    thumbs.hidden = !picked.length;
+    thumbs.innerHTML = picked.map((p, i) => '<span class="t"><img src="' + p.url + '" alt="Photo ' + (i + 1) + '"><button type="button" data-rm="' + i + '" aria-label="Remove photo ' + (i + 1) + '">&times;</button></span>').join('') +
+      (picked.length ? '<span class="note">Photos go to the program\'s admin with any report. Keep people out of the shot.</span>' : '');
+  }
+  $('aiAttach').onclick = () => { if (picked.length >= 3) { add('aierr', '<p>Up to three photos per question.</p>'); return; } fileIn.click(); };
+  fileIn.addEventListener('change', async () => {
+    for (const f of [...fileIn.files].slice(0, 3 - picked.length)) {
+      try { picked.push(await shrink(f)); } catch (e) { add('aierr', '<p>That photo couldn\'t be read. Try another, or take a new one.</p>'); }
+    }
+    fileIn.value = ''; renderThumbs(); text.focus();
+  });
+  thumbs.addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { picked.splice(Number(b.dataset.rm), 1); renderThumbs(); } });
   function setLeft(n){ if (typeof n === 'number') leftEl.textContent = n + ' of ' + LIMIT + ' questions left today'; }
   async function call(path, body){
     const tok = store.get();
@@ -1997,10 +2040,15 @@ renderGates();
     catch (e) { if (e.message !== 'signin') add('aierr', '<p>The AI Assistant can\'t be reached from this copy of the map. Open the public map to use it.</p>'); }
   }
   async function ask(q){
-    q = String(q || '').trim(); if (!q) return;
+    q = String(q || '').trim();
+    const sending = picked.slice(0, 3);
+    if (!q && !sending.length) return;
+    if (!q) q = sending.length === 1 ? 'Here is a photo.' : 'Here are some photos.';
+    picked = []; renderThumbs();
     const chips = log.querySelector('.aichips'); if (chips) chips.remove();
-    add('aiq', '<p>' + esc(q) + '</p>'); text.value = ''; send.disabled = true;
-    const w = add('aia aiwait', 'Reading the program records…');
+    add('aiq', (sending.length ? '<div class="aiqphotos">' + sending.map(p => '<img src="' + p.url + '" alt="Your photo">').join('') + '</div>' : '') + '<p>' + esc(q) + '</p>'); text.value = ''; send.disabled = true;
+    const w = add('aia aiwait', sending.length ? 'Sending your photo' + (sending.length > 1 ? 's' : '') + '…' : 'Reading the program records…');
+    const earlierPhotos = turns.reduce((a, t) => a.concat(t.photos || []), []).slice(-3);
     let el = null, buf = '', end = null, queued = false;
     const paint = () => { queued = false; if (!el) { w.remove(); el = add('aia', ''); } el.innerHTML = render(buf); log.scrollTop = log.scrollHeight; };
     const finish = d => {
@@ -2008,12 +2056,12 @@ renderGates();
       else {
         if (!el || buf !== d.answer) { buf = d.answer || buf; paint(); }
         docs(d.manuals);
-        if (d.on_topic) turns = turns.concat([{ q, a: d.answer }]).slice(-6);
+        if (d.on_topic) turns = turns.concat([{ q, a: d.answer, photos: d.photos || [] }]).slice(-6);
       }
       if (d) setLeft(d.left);
     };
     try {
-      const r = await fetch(API + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify({ question: q, history: turns, stream: true }) });
+      const r = await fetch(API + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify({ question: q, history: turns.map(t => ({ q: t.q, a: t.a })), stream: true, photos: sending.map(p => ({ type: p.type, data: p.data })), photo_ids: earlierPhotos }) });
       if (r.status === 401) { store.clear(); showSignin(); throw new Error('signin'); }
       if (!(r.headers.get('content-type') || '').includes('ndjson') || !r.body) finish(await r.json());
       else {
@@ -2053,7 +2101,7 @@ renderGates();
   dlg.addEventListener('click', e => { if (e.target === dlg) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dlg.hidden) close(); });
   $('aiSigninBtn').onclick = () => { try { if (pending) localStorage.setItem('aiPending', pending); } catch (e) {} location.href = GATE + '/signin?return=' + encodeURIComponent(location.href.split('#')[0]); };
-  $('aiOut').onclick = async () => { try { await call('/api/signout', {}); } catch (e) {} store.clear(); turns = []; showSignin(); };
+  $('aiOut').onclick = async () => { try { await call('/api/signout', {}); } catch (e) {} store.clear(); turns = []; picked = []; renderThumbs(); showSignin(); };
   form.addEventListener('submit', e => { e.preventDefault(); ask(text.value); });
   text.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(text.value); } });
   document.querySelectorAll('[data-ai-open]').forEach(b => b.addEventListener('click', open));
