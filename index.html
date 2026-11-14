@@ -1991,9 +1991,12 @@ renderGates();
   function start(s){
     const o = opening(s); if (!o || busy) return;
     if (s.machine) pin = s.machine; else if (s.start === 'report') pin = '';
+    // A first message nobody answered gives way to the new one.
+    const last = log.lastElementChild;
+    if (last && last.classList.contains('aiopen')) { last.remove(); turns = turns.slice(0, -1); }
     if (!turns.length && !log.querySelector('.aiq')) log.innerHTML = '';
     else { const chips = log.querySelector('.aichips'); if (chips) chips.remove(); }
-    add('aia', '<p>' + esc(o.say) + '</p>');
+    add('aia aiopen', '<p>' + esc(o.say) + '</p>');
     turns = turns.concat([{ q: o.tap, a: o.say }]).slice(-6);
   }
   function sync(){ send.disabled = busy || !text.value.trim(); }
