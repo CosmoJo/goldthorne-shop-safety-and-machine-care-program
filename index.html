@@ -429,7 +429,11 @@ button.mask span.note { display:block; font-size:12.5px; }
 .aiform button:disabled { opacity:.5; }
 .aictx { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px 0; background:var(--surface); border-top:1px solid var(--line); font-size:14.5px; font-weight:600; color:var(--ink); }
 .aictx + .aiform { border-top:0; }
-.aictxx { font:inherit; font-size:22px; line-height:1; font-weight:400; background:none; border:0; color:var(--muted); cursor:pointer; padding:2px 6px; }
+.aictxx { font:inherit; font-size:13.5px; font-weight:400; background:none; border:0; color:var(--accent); text-decoration:underline; cursor:pointer; padding:2px 0; white-space:nowrap; }
+.aipanel.telling .aisub { display:none; }
+.aipanel.telling .aiform { align-items:flex-end; }
+.aipanel.telling .aiform textarea { height:104px; }
+.aipanel.telling .aiform button { height:44px; }
 .aimeta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); padding:4px 14px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); }
 .ailink { font:inherit; font-size:12px; background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; padding:0; }
 .aibtn { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:10px 16px; cursor:pointer; }
@@ -619,7 +623,7 @@ button.mask span.note { display:block; font-size:12.5px; }
     <h2 class="mq">Machine statuses</h2>
     <div class="malert" id="mAlert"></div>
     <p class="note mrest" id="mRest"></p>
-    <button class="mbig" type="button" data-ai-label="Reporting a problem" data-ai-lead="I want to report a problem" data-ai-hint="Which machine, and what's wrong?">Report a problem</button>
+    <button class="mbig" type="button" data-ai-kind="report" data-ai-label="Reporting a problem" data-ai-lead="I want to report a problem" data-ai-hint="Which machine, and what's wrong?">Report a problem</button>
     <p class="note mnote911">Someone hurt, or a fire? Call 911 first.</p>
   </div>
   <div class="mview" id="mv-machines" hidden>
@@ -1495,7 +1499,7 @@ function statusBar(m) {
   const use = p.use || "notassessed";
   const live = p.liveSince ? ' <span class="obs brn">Updated ' + esc(new Date(p.liveSince + "T12:00:00Z").toLocaleDateString("en-CA", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })) + ' in the live record</span>' : "";
   return '<div class="statbar u-' + use + '" role="status"><span class="dot ' + USE_CLS[use] + '"></span><div><strong>' + esc(PROGRAM.useLabels[use]) + '</strong><span class="why">' + esc(reasonOf(m)) + live + '</span></div></div>' +
-    '<div class="recbtns"><button type="button" class="b" data-ai-machine="' + esc(m.id) + '" data-ai-label="Asking about the ' + esc(spoken(m)) + '" data-ai-lead="About the ' + esc(spoken(m)) + '" data-ai-hint="What do you want to know about it?">Ask about this machine</button><button type="button" class="b primary" data-ai-machine="' + esc(m.id) + '" data-ai-label="Reporting a problem with the ' + esc(spoken(m)) + '" data-ai-lead="I want to report a problem with the ' + esc(spoken(m)) + '" data-ai-hint="What\'s wrong with it?">Report a problem</button></div>';
+    '<div class="recbtns"><button type="button" class="b" data-ai-machine="' + esc(m.id) + '" data-ai-label="Asking about the ' + esc(spoken(m)) + '" data-ai-lead="About the ' + esc(spoken(m)) + '" data-ai-hint="What do you want to know about it?">Ask about this machine</button><button type="button" class="b primary" data-ai-kind="report" data-ai-machine="' + esc(m.id) + '" data-ai-label="Reporting a problem with the ' + esc(spoken(m)) + '" data-ai-lead="I want to report a problem with the ' + esc(spoken(m)) + '" data-ai-hint="What\'s wrong with it?">Report a problem</button></div>';
 }
 function recordHTML(m) {
   const rows = [["Shop number", m.shopNo || "Not found yet"], ["Area", AREAS[m.area]], ["Maker", m.maker], ["Model", m.model],
@@ -1929,7 +1933,7 @@ renderGates();
       <button class="aibtn" type="button" id="aiSigninBtn">Sign in with my email</button>
     </div>
     <div class="ailog" id="aiLog"></div>
-    <div class="aictx" id="aiCtx" hidden><span id="aiCtxText"></span><button type="button" class="aictxx" id="aiCtxClear" aria-label="Ask about something else">&times;</button></div>
+    <div class="aictx" id="aiCtx" hidden><span id="aiCtxText"></span><button type="button" class="aictxx" id="aiCtxClear">Ask about something else</button></div>
     <form class="aiform" id="aiForm" hidden>
       <textarea id="aiText" maxlength="500" placeholder="Ask a question" aria-label="Your question"></textarea>
       <button type="submit" id="aiSend">Ask</button>
@@ -1944,7 +1948,7 @@ renderGates();
   const $ = id => document.getElementById(id);
   const dlg = $('aiDlg'), log = $('aiLog'), form = $('aiForm'), text = $('aiText'), send = $('aiSend'), ctxBox = $('aiCtx'), ctxText = $('aiCtxText');
   const signin = $('aiSignin'), meta = $('aiMeta'), leftEl = $('aiLeft');
-  let turns = [], LIMIT = 20, started = false, pending = null, inTab = false, ctx = null, busy = false;
+  let turns = [], LIMIT = 20, started = false, pending = null, inTab = false, ctx = null, busy = false, leftN = null;
   const panel = dlg.querySelector('.aipanel');
   const store = {
     get(){ try { return localStorage.getItem('aiSession'); } catch(e){ return null; } },
@@ -1979,28 +1983,53 @@ renderGates();
   // A machine's or a job's button shows what it's about above the box and sends it with the
   // question; the box holds only the member's own words, and Ask waits until there are some.
   const HINT = 'Ask a question';
+  const HELLO = '<p>Ask me about the shop\'s machines: checks, setup, problems, schedules and rules. I answer from the program\'s records and the makers\' manuals, and I label anything that\'s general advice.</p>';
+  const REPORT = { kind: 'report', label: 'Reporting a problem', lead: 'I want to report a problem', hint: 'Which machine, and what\'s wrong?' };
   function sync(){ send.disabled = busy || !text.value.trim(); }
   function setCtx(c){
-    ctx = c && c.lead ? { lead: String(c.lead), label: String(c.label || c.lead), hint: String(c.hint || ''), machine: String(c.machine || '') } : null;
+    ctx = c && c.lead ? { kind: c.kind === 'report' || c.kind === 'job' ? c.kind : 'ask', lead: String(c.lead), label: String(c.label || c.lead), hint: String(c.hint || ''), machine: String(c.machine || '') } : null;
     ctxText.textContent = ctx ? ctx.label : '';
     ctxBox.hidden = !ctx || form.hidden;
     text.placeholder = ctx && ctx.hint ? ctx.hint : HINT;
     if (ctx) { const chips = log.querySelector('.aichips'); if (chips) chips.remove(); }
-    sync();
+    paintMode(); sync();
+  }
+  // Reporting a problem or updating a job is telling, not asking: the screen says what a
+  // report does, the button says Send, and the count of questions steps aside.
+  function paintMode(){
+    const kind = ctx ? ctx.kind : '';
+    const telling = kind === 'report' || kind === 'job';
+    panel.classList.toggle('telling', telling);
+    send.textContent = kind === 'report' ? 'Send report' : kind === 'job' ? 'Send' : 'Ask';
+    $('aiCtxClear').textContent = telling ? 'Ask a question instead' : 'Ask about something else';
+    const last = log.lastElementChild;
+    if (last && last.classList.contains('aiprompt')) last.remove();
+    const tell = '<p>' + (ctx && ctx.machine ? 'Tell me what\'s wrong.' : 'Tell me which machine and what\'s wrong.') + ' Your report goes to the program\'s admin by email, and you\'ll get a report number here.</p>';
+    const hello = $('aiHello');
+    if (hello && log.children.length === 1) hello.innerHTML = kind === 'report' ? tell : HELLO;
+    else if (kind === 'report' && started) add('aia aiprompt', tell);
+    paintLeft();
+  }
+  function paintLeft(){
+    const kind = ctx ? ctx.kind : '';
+    leftEl.textContent = kind === 'report' ? 'Reports don\'t count toward your ' + LIMIT + ' questions'
+      : kind === 'job' ? 'Job updates don\'t count toward your ' + LIMIT + ' questions'
+      : leftN === null ? '' : leftN + ' of ' + LIMIT + ' questions left today';
   }
   function showSignin(){ signin.hidden = false; form.hidden = true; meta.hidden = true; ctxBox.hidden = true; log.innerHTML = ''; started = false; }
   function showChat(){
     signin.hidden = true; form.hidden = false; meta.hidden = false; ctxBox.hidden = !ctx;
     if (!started) {
       started = true; log.innerHTML = '';
-      add('aia', '<p>Ask me about the shop\'s machines: checks, setup, problems, schedules and rules. I answer from the program\'s records and the makers\' manuals, and I label anything that\'s general advice.</p>');
+      add('aia', HELLO).id = 'aiHello';
       const chips = document.createElement('div'); chips.className = 'aichips';
-      ['I want to report a problem with a machine.', 'Which machines are out of service?', 'What do I check before using the jointer?']
-        .forEach(q => { const b = document.createElement('button'); b.type = 'button'; b.className = 'aichip'; b.textContent = q; b.onclick = () => ask(q); chips.appendChild(b); });
+      [['Report a problem', () => { setCtx(REPORT); text.focus(); }], ['Which machines are out of service?'], ['What do I check before using the jointer?']]
+        .forEach(([q, fn]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'aichip'; b.textContent = q; b.onclick = fn || (() => ask(q)); chips.appendChild(b); });
       log.appendChild(chips);
+      if (ctx) { chips.remove(); paintMode(); }
     }
   }
-  function setLeft(n){ if (typeof n === 'number') leftEl.textContent = n + ' of ' + LIMIT + ' questions left today'; }
+  function setLeft(n){ if (typeof n === 'number') leftN = n; paintLeft(); }
   async function call(path, body){
     const tok = store.get();
     const r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok }, body: body ? JSON.stringify(body) : undefined });
@@ -2031,7 +2060,7 @@ renderGates();
       if (d) setLeft(d.left);
     };
     try {
-      const r = await fetch(API + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify({ question: q, machine: (c && c.machine) || undefined, history: turns, stream: true }) });
+      const r = await fetch(API + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify({ question: q, kind: (c && c.kind !== 'ask' && c.kind) || undefined, machine: (c && c.machine) || undefined, history: turns, stream: true }) });
       if (r.status === 401) { store.clear(); showSignin(); throw new Error('signin'); }
       if (!(r.headers.get('content-type') || '').includes('ndjson') || !r.body) finish(await r.json());
       else {
@@ -2088,7 +2117,7 @@ renderGates();
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-ai-lead]'); if (!b) return;
     e.preventDefault();
-    openWith({ lead: b.dataset.aiLead, label: b.dataset.aiLabel, hint: b.dataset.aiHint, machine: b.dataset.aiMachine });
+    openWith({ kind: b.dataset.aiKind, lead: b.dataset.aiLead, label: b.dataset.aiLabel, hint: b.dataset.aiHint, machine: b.dataset.aiMachine });
   });
   window.aiApi = { open: openWith, place, activate, signedIn: () => !!store.get(), me: () => (store.get() ? call('/api/me') : Promise.resolve(null)) };
   place(); sync();
@@ -2167,10 +2196,10 @@ renderGates();
         let role, btn = "";
         if (j.role === "inspect") {
           role = j.status === "done" ? "You inspect it. It's ready for you now." : "You inspect it after the work is done.";
-          if (j.status === "done") btn = '<button type="button" class="b primary" data-ai-label="Recording the inspection of job ' + esc(j.id) + '" data-ai-lead="Job ' + esc(j.id) + ' passed inspection. What I checked" data-ai-hint="What did you check?">Record the inspection</button>';
+          if (j.status === "done") btn = '<button type="button" class="b primary" data-ai-kind="job" data-ai-label="Recording the inspection of job ' + esc(j.id) + '" data-ai-lead="Job ' + esc(j.id) + ' passed inspection. What I checked" data-ai-hint="What did you check?">Record the inspection</button>';
         } else {
           role = j.status === "done" ? "You did the work. It's waiting for its inspection." : j.status === "failed" ? "It failed inspection and needs more work." : "You do the work.";
-          if (j.status !== "done") btn = '<button type="button" class="b primary" data-ai-label="Marking job ' + esc(j.id) + ' done" data-ai-lead="Job ' + esc(j.id) + ' is done. What I found" data-ai-hint="What did you find and do?">Mark it done</button>';
+          if (j.status !== "done") btn = '<button type="button" class="b primary" data-ai-kind="job" data-ai-label="Marking job ' + esc(j.id) + ' done" data-ai-lead="Job ' + esc(j.id) + ' is done. What I found" data-ai-hint="What did you find and do?">Mark it done</button>';
         }
         return '<div class="mjob"><div><strong>' + esc(name) + '</strong>: ' + esc(j.task) + '</div><div class="note">Due ' + esc(longNoYear(j.due)) + (j.overdue ? ' (overdue)' : '') + '. ' + esc(role) + '</div>' + btn + '</div>';
       }).join("");
