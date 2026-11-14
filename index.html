@@ -310,6 +310,10 @@ h2.mq { font-size: 22px !important; margin: 0 0 4px !important; }
 .sosrow .b[aria-pressed="true"] { border-color: var(--crit); box-shadow: inset 0 0 0 2px var(--crit); font-weight: 700; }
 .sosreplies { list-style: none; padding: 0; margin: 6px 0; }
 .sosreplies li { padding: 6px 0; border-top: 1px solid var(--line); }
+.sosundo { margin: 0 0 12px; padding: 10px 12px; border: 2px solid var(--crit); border-radius: 10px; background: var(--bg); }
+.sosundo p { margin: 0 0 8px; }
+.soshist { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); }
+.soshist summary { cursor: pointer; font-weight: 600; min-height: 32px; }
 .sosmsg { margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--bg); font-weight: 600; }
 .sosnotice { padding: 8px 0; border-top: 1px solid var(--line); }
 .mnotice { border: 2px solid var(--crit); border-radius: 12px; background: var(--surface); padding: 10px 12px; margin-bottom: 14px; display: grid; gap: 8px; }
@@ -327,6 +331,13 @@ h2.mq { font-size: 22px !important; margin: 0 0 4px !important; }
 .ckstate.late { border: 2px solid var(--crit); }
 .ckstate p { margin: 4px 0; }
 .ckperson { padding: 10px 0; border-top: 1px solid var(--line); }
+.fbbox label { display: block; font-weight: 600; margin: 10px 0 4px; }
+.fbbox select, .fbbox textarea { width: 100%; min-height: 46px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); padding: 8px 10px; font: 16px var(--body); }
+.fblist { list-style: none; padding: 0; margin: 6px 0; }
+.fblist li { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--line); }
+.fbhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fbvote { justify-self: start; min-height: 40px; }
+.fbvote[aria-pressed="true"] { border-color: var(--accent); font-weight: 600; }
 .ckbox label, .wfbox label { display: block; font-weight: 600; margin: 10px 0 4px; }
 .ckbox select, .ckbox input { width: 100%; min-height: 46px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); padding: 8px 10px; font: 16px var(--body); }
 .wflink { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); padding: 8px 10px; font: 13px var(--mono, monospace); }
@@ -529,7 +540,7 @@ button.mask span.note { display:block; font-size:12.5px; }
 <div class="wrap">
   <header>
     <h1>Goldthorne Shop Safety and Machine Care Program</h1>
-    <button type="button" class="sosdesk" data-sos="1">Emergency: what to do</button><button type="button" class="closedesk" data-extra="checkin">Working alone: check in</button><button type="button" class="closedesk" data-extra="closing">Last one out: closing checklist</button>
+    <button type="button" class="sosdesk" data-sos="1">Emergency: what to do</button><button type="button" class="closedesk" data-extra="checkin">Working alone: check in</button><button type="button" class="closedesk" data-extra="closing">Last one out: closing checklist</button><button type="button" class="closedesk" data-extra="feedback">Suggest a change to the app</button>
     <button class="b phone-only" type="button" id="toPhone" style="margin:6px 0">Back to the phone view</button>
     <p class="sub">Machine map and register from the walkthrough of November 12, 2026, at 14 Goldthorne Ave. Draft for Peter and Will to correct: room shapes and machine positions come from Cosmo's layout, checked against all 240 walkthrough photos, and are not to scale. Areas marked "to confirm" are placed from photos only.</p>
   </header>
@@ -2013,6 +2024,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     closing: ["Closing up the shop", "For the last person out: the checklist", () => window.EXTRA_PAGES && window.EXTRA_PAGES.closing ? window.EXTRA_PAGES.closing.html() : ""],
     checkin: ["Working alone: check in", "So someone checks on you if you don't check out", () => window.EXTRA_PAGES && window.EXTRA_PAGES.checkin ? window.EXTRA_PAGES.checkin.html() : ""],
     sossetup: ["Your phone's emergency button", "Calls 911 from the locked screen, no app needed", () => window.EXTRA_PAGES && window.EXTRA_PAGES.sossetup ? window.EXTRA_PAGES.sossetup.html() : ""],
+    feedback: ["Suggest a change to the app", "Something in the app not working, or an idea", () => window.EXTRA_PAGES && window.EXTRA_PAGES.feedback ? window.EXTRA_PAGES.feedback.html() : ""],
     wifireminder: ["Reminder when you leave the shop Wi-Fi", "iPhone only: so you don't forget to check out", () => window.EXTRA_PAGES && window.EXTRA_PAGES.wifireminder ? window.EXTRA_PAGES.wifireminder.html() : ""],
     homescreen: ["Put this page on your home screen", "So it opens like an app", () => '<ul class="tight"><li><strong>iPhone:</strong> open this page in Safari, tap the Share button, then Add to Home Screen.</li><li><strong>Android:</strong> open this page in Chrome, tap the three-dot menu, then Add to Home screen.</li></ul>'],
   };
@@ -2038,7 +2050,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
       return '<li><button type="button" class="mrow"' + (m ? ' data-id="' + m.id + '"' : ' data-page="reports"') + '><span class="dot ' + (r.unsafe ? "s-crit" : "s-none") + '"></span><span class="mtxt"><span class="mname">' + esc(m ? spoken(m) : "General") + '</span><span class="mwhy">' + esc(r.problem) + '</span><span class="msub">' + esc(reportMeta(r)) + '</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
     }).join("") + '</ul>' + (list.length > 4 ? '<p class="note" style="margin-top:8px"><button type="button" class="mlinkbtn" data-page="reports">See all ' + list.length + ' reports</button></p>' : '');
   }
-  function openPage(key) { const p = PAGES[key]; if (p) push({ title: p[0], hash: "#p=" + key, html: p[2] }); }
+  function openPage(key) { const p = PAGES[key]; if (!p) return; push({ title: p[0], hash: "#p=" + key, html: p[2] }); const x = window.EXTRA_PAGES && window.EXTRA_PAGES[key]; if (x && x.opened) x.opened(); }
   function suppliesHTML() {
     const list = window.SUPPLIES || [];
     return '<p>Tell the AI Assistant when something runs low or out: blades, sandpaper, paste wax, filters, glue, rags. The admin gets the list every Monday.</p><button type="button" class="b primary" data-ai-prefill="We\'re running low on ">Something\'s running low</button>' +
@@ -2055,7 +2067,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   }
   function renderShop() {
     $("mShopSafety").innerHTML = menuRow('data-page="newhere"', PAGES.newhere[0], PAGES.newhere[1]) + menuRow('data-sos="1"', "Emergency", "What to do if someone is hurt, the first aid kit, where to go") + menuRow('data-page="checkin"', PAGES.checkin[0], PAGES.checkin[1]) + menuRow('data-page="closing"', PAGES.closing[0], PAGES.closing[1]) + menuRow('data-page="sossetup"', PAGES.sossetup[0], PAGES.sossetup[1]) + menuRow('data-page="wifireminder"', PAGES.wifireminder[0], PAGES.wifireminder[1]) + menuRow('data-page="supplies"', PAGES.supplies[0], (window.SUPPLIES || []).length ? count(window.SUPPLIES.length, "item") + " on the list" : PAGES.supplies[1]) + ["rules", "issues", "inspections", "safeguards", "process"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("");
-    $("mShopAbout").innerHTML = ["about", "goals", "changes", "sources", "printables", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor") + (window.ME_ADMIN ? menuRow('data-handover="1"', "Handover note", "Admins only: where everything lives, and what moves if the admin changes") : "");
+    $("mShopAbout").innerHTML = menuRow('data-page="feedback"', PAGES.feedback[0], PAGES.feedback[1]) + ["about", "goals", "changes", "sources", "printables", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor") + (window.ME_ADMIN ? menuRow('data-handover="1"', "Handover note", "Admins only: where everything lives, and what moves if the admin changes") : "");
   }
 
   // ----- Home: may I use it? -----
@@ -2383,7 +2395,7 @@ renderGates();
     else { text.value = q; setTimeout(() => { text.focus(); try { text.setSelectionRange(q.length, q.length); } catch (e) {} }, 60); pending = ''; }
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-ai-prefill]'); if (b) { e.preventDefault(); openWith(b.dataset.aiPrefill, false); } });
-  window.aiApi = { open: openWith, place, activate, signedIn: () => !!store.get(), me: () => (store.get() ? call('/api/me') : Promise.resolve(null)), alert: (body) => call('/api/alert', body), close: (body) => call('/api/close', body), checkin: (body) => call('/api/checkin', body),
+  window.aiApi = { open: openWith, place, activate, signedIn: () => !!store.get(), me: () => (store.get() ? call('/api/me') : Promise.resolve(null)), alert: (body) => call('/api/alert', body), close: (body) => call('/api/close', body), checkin: (body) => call('/api/checkin', body), feedback: (body) => call('/api/feedback', body),
     // Sends without waiting, and keeps going if the page is left (the alert sent as the phone's dialer opens).
     beacon: (path, body) => { try { fetch(API + path, { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json', authorization: 'Bearer ' + store.get() }, body: JSON.stringify(body) }); } catch (e) {} } };
   place();
@@ -2450,7 +2462,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
   }
   window.openExtra = function (key) {
     const p = window.EXTRA_PAGES[key]; if (!p) return;
-    if (window.mob && window.mob.isPhone && window.mob.isPhone()) { window.mob.openPage(key); if (p.opened) p.opened(); return; }
+    if (window.mob && window.mob.isPhone && window.mob.isPhone()) { window.mob.openPage(key); return; }
     deskPage(key);
   };
   // A page's content changed: repaint wherever it's showing.
@@ -2573,7 +2585,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
   }
   function alertHTML(a) {
     const coming = a.replies.filter(r => r.answer === "coming");
-    let h = '<h3>' + (a.kind === "911" ? 'Emergency alert sent: 911 called' : 'Emergency alert sent') + '</h3><p><strong>Where: ' + esc(a.where.charAt(0).toUpperCase() + a.where.slice(1)) + '.</strong>' + (a.notes.length ? ' ' + esc(a.notes.join(". ")) + '.' : '') + ' Sent at ' + esc(a.time) + ' by ' + esc(a.by) + (a.mine ? ' (you)' : '') + (a.alone ? ', who checked in alone at ' + esc(a.alone) : '') + '.</p>';
+    let h = (a.mine && a.kind === "911" && !closing ? '<div class="sosundo"><p><strong>Didn\'t make the call?</strong> Cancel the alert, so nobody comes for nothing.</p><button type="button" class="b" data-sosclose="false_alarm">Cancel the alert (false alarm)</button></div>' : '') + '<h3>' + (a.kind === "911" ? 'Emergency alert sent: 911 called' : 'Emergency alert sent') + '</h3><p><strong>Where: ' + esc(a.where.charAt(0).toUpperCase() + a.where.slice(1)) + '.</strong>' + (a.notes.length ? ' ' + esc(a.notes.join(". ")) + '.' : '') + ' Sent at ' + esc(a.time) + ' by ' + esc(a.by) + (a.mine ? ' (you)' : '') + (a.alone ? ', who checked in alone at ' + esc(a.alone) : '') + '.</p>';
     h += a.phones ? '<p>It reached ' + a.phones + ' phone' + (a.phones === 1 ? '' : 's') + '.</p>' : '<p class="sosmsg">It reached no phones. Phone a manager or shout for help.</p>';
     h += a.replies.length ? '<ul class="sosreplies">' + a.replies.map(r => '<li><strong>' + esc(r.name) + '</strong> (' + esc(r.role) + '): ' + (r.answer === "coming" ? "coming" : "can't come") + (r.me ? ' (you)' : '') + '</li>').join("") + '</ul>' : '<p class="note">No answers yet. This page checks every 10 seconds.</p>';
     if (a.can_reply) {
@@ -2586,7 +2598,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
     if (a.can_close) {
       h += closing
         ? '<p><strong>Did the injured person need medical care?</strong> That means paramedics, a hospital, urgent care, or a doctor or nurse practitioner. First aid from the shop\'s kit alone doesn\'t count.</p><div class="sosrow"><button type="button" class="b" data-sosclose="yes">Yes</button><button type="button" class="b" data-sosclose="no">No</button><button type="button" class="b" data-sosclose="unknown">Not sure</button></div><p class="note">If yes, a notice to all members is drafted, with no names and no injury details. It goes out only when a manager approves it.</p>'
-        : '<div class="sosrow"><button type="button" class="b" id="sosCloseAlert">Close the alert (everyone has the help they need)</button>' + (a.mine ? '<button type="button" class="b" data-sosclose="false_alarm">It was a false alarm</button>' : '') + '</div>';
+        : '<div class="sosrow"><button type="button" class="b" id="sosCloseAlert">Close the alert (everyone has the help they need)</button>' + (a.mine && a.kind !== "911" ? '<button type="button" class="b" data-sosclose="false_alarm">It was a false alarm</button>' : '') + '</div>';
     }
     return h;
   }
@@ -2599,6 +2611,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
     if (state.role) h += '<h3 class="plain">Emergency alerts on this phone</h3><p>You\'re on the alert list as ' + esc(ROLE[state.role] || state.role) + '.</p>' + window.pushSetup.html();
     if (state.pending && state.pending.length) h += '<h3 class="plain">Waiting for your approval</h3>' + state.pending.map(n => '<div class="sosnotice"><p>' + esc(n.text) + '</p><button type="button" class="b" data-ai-prefill="Show me injury notice ' + esc(n.id) + ' so I can approve it.">Review it with the AI Assistant</button></div>').join("");
     if (state.notices && state.notices.length) h += '<h3 class="plain">Safety notices</h3>' + state.notices.map(n => '<div class="sosnotice">' + esc(n.text) + '</div>').join("");
+    if (state.history && state.history.length) h += '<details class="soshist"><summary>Earlier alerts (' + state.history.length + ')</summary><ul class="sosreplies">' + state.history.map(x => '<li><strong>' + esc(x.when) + '</strong>: ' + (x.kind === "911" ? '911 called' : 'someone hurt') + ', ' + esc(x.where) + '. ' + esc(x.outcome) + '.' + (x.replies ? ' ' + x.replies + ' answer' + (x.replies === 1 ? '' : 's') + '.' : '') + (x.mine ? ' (sent by you)' : '') + '</li>').join("") + '</ul></details>';
     b.innerHTML = h;
   }
   window.pushSetup.on(render);
@@ -2612,7 +2625,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
     loading = false;
     window.pushSetup.setKey(state.key, state.ready);
     if (state.role && !window.pushSetup.loaded) await window.pushSetup.load();
-    render(); schedule();
+    render(); paintHome(); schedule();
   }
   function schedule() {
     clearTimeout(timer);
@@ -2622,10 +2635,10 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
     busy = true; msg = ""; render();
     try {
       const r = await window.aiApi.alert(body);
-      if (r && r.ok) { if (r.alert !== undefined) state.current = r.alert && !r.alert.resolved ? r.alert : null; if (after) after(r); }
+      if (r && r.ok) { if (r.alert !== undefined) state.current = r.alert && !r.alert.resolved ? r.alert : null; if (after) after(r); if (r.closed) setTimeout(load, 800); }
       else msg = (r && r.error) || "That didn't go through. Shout for help or phone a manager.";
     } catch (e) { msg = "That didn't go through. Shout for help or phone a manager."; }
-    busy = false; render(); schedule();
+    busy = false; render(); paintHome(); schedule();
   }
   // "Call 911 and alert the shop": the alert goes out as the dialer opens; the link itself still dials 911 if anything fails.
   document.addEventListener("click", e => {
@@ -2650,14 +2663,21 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
   // The phone's home screen: an open alert for the people on the list, an injury notice waiting
   // for a manager's approval, and the safety notices from the last two weeks.
   function home(a) {
-    const el = document.getElementById("mNotice"); if (!el) return;
     if (a) { state = Object.assign(state || {}, a, { ok: true }); window.pushSetup.setKey(a.key, a.ready); }
+    paintHome();
+  }
+  function paintHome() {
+    const el = document.getElementById("mNotice"); if (!el) return;
+    const a = state || {};
     let h = "";
-    if (a && a.current && (a.current.can_reply || a.current.mine)) h += '<div class="mnotice"><strong>Emergency alert open: ' + (a.current.kind === "911" ? '911 has been called.' : 'someone is hurt.') + '</strong><span>Where: ' + esc(a.current.where) + '. Sent at ' + esc(a.current.time) + '.</span><button type="button" class="b primary" data-sos="1">Open the alert</button></div>';
-    if (a && a.pending && a.pending.length) h += '<div class="mnotice calm"><strong>An injury notice is waiting for your approval.</strong><button type="button" class="b" data-sos="1">See it</button></div>';
-    if (a && a.notices && a.notices.length) h += a.notices.slice(0, 2).map(n => '<div class="mnotice calm"><strong>Safety notice</strong><span>' + esc(n.text) + '</span></div>').join("");
+    if (a.current && (a.current.can_reply || a.current.mine)) h += '<div class="mnotice"><strong>Emergency alert open: ' + (a.current.kind === "911" ? '911 has been called.' : 'someone is hurt.') + '</strong><span>Where: ' + esc(a.current.where) + '. Sent at ' + esc(a.current.time) + (a.current.mine ? ' by you' : '') + '.</span><div class="sosrow" style="margin:0"><button type="button" class="b primary" data-sos="1">Open the alert</button>' + (a.current.mine ? '<button type="button" class="b" data-sosfalse="1">Cancel it (false alarm)</button>' : '') + '</div></div>';
+    if (a.pending && a.pending.length) h += '<div class="mnotice calm"><strong>An injury notice is waiting for your approval.</strong><button type="button" class="b" data-sos="1">See it</button></div>';
+    if (a.notices && a.notices.length) h += a.notices.slice(0, 2).map(n => '<div class="mnotice calm"><strong>Safety notice</strong><span>' + esc(n.text) + '</span></div>').join("");
     el.innerHTML = h; el.hidden = !h;
   }
+  // Cancelling from the home screen, and catching up when the app comes back on screen (an alert closed on another phone).
+  document.addEventListener("click", e => { if (e.target.closest("[data-sosfalse]") && !busy && state && state.current) act({ action: "close", needed_care: "false_alarm" }, () => { msg = "Closed as a false alarm. Everyone on the alert list has been told nobody needs to come."; }); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && signedIn() && state) load(); });
   function open() {
     closing = false; msg = "";
     // Opened while the page is still loading (a tapped notification): wait for the AI Assistant's sign-in to be ready.
@@ -2863,10 +2883,84 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
   window.EXTRA_PAGES.wifireminder = { title: "Reminder when you leave the shop Wi-Fi", sub: "iPhone only: so you don't forget to check out", html };
 })();
 
+// Feedback on the app itself: something broken, a new feature, or a change to how something works.
+// Sending needs the AI Assistant's sign-in; the list of suggestions so far shows no names.
+(function () {
+  let items = null, busy = false, msg = "", loading = false, sent = false;
+  const signedIn = () => !!(window.aiApi && window.aiApi.signedIn());
+  const KINDS = [["bug", "Something in the app isn't working"], ["feature", "A new feature"], ["redesign", "A change to how something works"]];
+  const WHERE = ["", "Home", "Machines, or a machine's page", "The AI Assistant (Ask)", "Jobs", "Shop", "Emergency page", "Working alone: check in", "Closing checklist", "Notifications", "Print or sticker pages", "Signing in", "Somewhere else"];
+  const BADGE = { new: "s-none", planned: "s-hold", in_progress: "s-hold", done: "s-ok", wont: "s-none" };
+  function device() {
+    const ua = navigator.userAgent;
+    const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android" : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Other";
+    const br = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "browser";
+    const home = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+    return os + ", " + br + (home ? ", from the Home Screen" : "") + ", " + window.innerWidth + " wide";
+  }
+  function listHTML() {
+    if (!items) return '<p class="note">Loading…</p>';
+    if (!items.length) return '<p class="note">Nothing has been sent yet.</p>';
+    return '<ul class="fblist">' + items.map(f => '<li><div class="fbhead"><span class="dot ' + (BADGE[f.status] || "s-none") + '"></span><strong>' + esc(f.status_label) + '</strong><span class="note">' + esc(f.kind_label) + ', ' + esc(f.date) + (f.where ? ', ' + esc(f.where) : '') + '</span></div><div>' + esc(f.text) + '</div>' + (f.note ? '<div class="note">From the admin: ' + esc(f.note) + '</div>' : '') +
+      (f.mine ? '<div class="note">You sent this' + (f.votes > 1 ? '. ' + (f.votes - 1) + ' other member' + (f.votes === 2 ? '' : 's') + ' want it too' : '') + '.</div>' : '<button type="button" class="b fbvote" data-fbvote="' + esc(f.id) + '" aria-pressed="' + f.voted + '">' + (f.voted ? 'You want this too' : 'Me too') + (f.votes > 1 ? ' (' + f.votes + ')' : '') + '</button>') + '</li>').join("") + '</ul>';
+  }
+  function body() {
+    let h = '<p>Something in the app not working, or an idea to make it better? Tell the admin here. For a problem with a machine, a tool or the building, use Report a problem on the Home page instead.</p>';
+    if (!signedIn()) h += '<p class="note">Sign in to the AI Assistant to send feedback.</p><button type="button" class="b" data-go="ask">Sign in</button>';
+    else {
+      if (msg) h += '<p class="sosmsg" role="status">' + esc(msg) + '</p>';
+      if (!sent) h += '<label for="fbKind">What is it?</label><select id="fbKind">' + KINDS.map(k => '<option value="' + k[0] + '">' + k[1] + '</option>').join("") + '</select>' +
+        '<label for="fbWhere">Where in the app? (optional)</label><select id="fbWhere">' + WHERE.map(w => '<option value="' + esc(w) + '">' + (w ? esc(w) : 'Choose, or leave it') + '</option>').join("") + '</select>' +
+        '<label for="fbText">What happened, or what would you like?</label><textarea id="fbText" rows="5" maxlength="1500" placeholder="For a problem: what you did, and what happened instead."></textarea>' +
+        '<button type="button" class="sosbtn" id="fbSend" style="background:var(--accent)"' + (busy ? ' disabled' : '') + '>' + (busy ? 'Sending…' : 'Send to the admin') + '</button>' +
+        '<p class="note">The admin sees your name, so they can ask you about it; other members don\'t. Your phone or computer type goes with it, to help find problems.</p>';
+      else h += '<button type="button" class="b" id="fbAgain">Send another</button>';
+      h += '<p class="note">Or tell the AI Assistant. <button type="button" class="mlinkbtn" data-ai-prefill="I want to suggest a change to the app: ">Ask it</button></p>';
+    }
+    h += '<h3 class="plain">Suggestions so far</h3>' + (signedIn() ? listHTML() : '<p class="note">Sign in to see them.</p>');
+    return h;
+  }
+  const html = () => '<div class="fbbox">' + body() + '</div>';
+  // Repainting (the list arriving, a vote) keeps whatever is half-typed in the form.
+  function refresh() {
+    document.querySelectorAll(".fbbox").forEach(b => {
+      const keep = {}; ["fbText", "fbKind", "fbWhere"].forEach(id => { const el = b.querySelector("#" + id); if (el) keep[id] = el.value; });
+      b.innerHTML = body();
+      if (!sent) Object.keys(keep).forEach(id => { const el = b.querySelector("#" + id); if (el && keep[id]) el.value = keep[id]; });
+    });
+  }
+  async function load() {
+    if (loading || !signedIn()) return;
+    loading = true;
+    try { const r = await window.aiApi.feedback({ action: "list" }); items = r && r.ok ? r.items : []; } catch (e) { items = []; msg = "The suggestions can't be loaded just now."; }
+    loading = false; refresh();
+  }
+  document.addEventListener("click", async e => {
+    if (e.target.closest("#fbAgain")) { sent = false; msg = ""; return refresh(); }
+    if (e.target.closest("#fbSend") && !busy) {
+      const text = document.getElementById("fbText").value.trim();
+      if (text.length < 5) { msg = "Say what's wrong or what you'd like, in a sentence or two."; return refresh(); }
+      busy = true; msg = ""; refresh();
+      try {
+        const r = await window.aiApi.feedback({ action: "send", kind: document.getElementById("fbKind").value, where: document.getElementById("fbWhere").value, text, device: device(), version: PROGRAM.revision.version });
+        if (r && r.ok) { sent = true; msg = "Sent to the admin as " + r.item.id + ". Thank you."; items = [r.item].concat(items || []); }
+        else msg = (r && r.error) || "That didn't go through. Try again in a minute.";
+      } catch (x) { msg = "That didn't go through. Try again in a minute."; }
+      busy = false; return refresh();
+    }
+    const v = e.target.closest("[data-fbvote]");
+    if (v && !busy) {
+      try { const r = await window.aiApi.feedback({ action: "vote", id: v.dataset.fbvote }); if (r && r.ok && items) items = items.map(f => f.id === r.item.id ? r.item : f); else if (r && r.error) msg = r.error; } catch (x) {}
+      refresh();
+    }
+  });
+  window.EXTRA_PAGES.feedback = { title: "Suggest a change to the app", sub: "Something in the app not working, or an idea", html, opened: () => { sent = false; msg = ""; load(); } };
+})();
+
 // Pages opened from their own address (a code by the door, a tapped notification): on a computer,
 // open them over the map; on a phone, repaint now that their content exists.
 (function () {
-  const m = location.hash.match(/^#p=(closing|checkin|sossetup|wifireminder)$/);
+  const m = location.hash.match(/^#p=(closing|checkin|sossetup|wifireminder|feedback)$/);
   const phone = window.mob && window.mob.isPhone && window.mob.isPhone();
   if (m && !phone) window.openExtra(m[1]);
   if (m && phone && window.mob.refresh) { window.mob.refresh(); const p = window.EXTRA_PAGES[m[1]]; if (p && p.opened) p.opened(); }
