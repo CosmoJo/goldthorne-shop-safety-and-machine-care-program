@@ -2012,8 +2012,8 @@ renderGates();
   }
   function paintLeft(){
     const kind = ctx ? ctx.kind : '';
-    leftEl.textContent = kind === 'report' ? 'Reports don\'t count toward your ' + LIMIT + ' questions'
-      : kind === 'job' ? 'Job updates don\'t count toward your ' + LIMIT + ' questions'
+    leftEl.textContent = kind === 'report' ? 'Reports don\'t use up questions'
+      : kind === 'job' ? 'Job updates don\'t use up questions'
       : leftN === null ? '' : leftN + ' of ' + LIMIT + ' questions left today';
   }
   function showSignin(){ signin.hidden = false; form.hidden = true; meta.hidden = true; ctxBox.hidden = true; log.innerHTML = ''; started = false; }
