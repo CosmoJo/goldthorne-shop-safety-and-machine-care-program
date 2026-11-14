@@ -626,6 +626,7 @@ button.mask span.note { display:block; font-size:12.5px; }
     <h2 class="mq">Machine statuses</h2>
     <div class="malert" id="mAlert"></div>
     <p class="note mrest" id="mRest"></p>
+    <div id="mReports" hidden></div>
     <button class="mbig" type="button" data-ai-prefill="I want to report a problem: ">Report a problem</button>
     <p class="note mnote911">Someone hurt, or a fire? Call 911 first.</p>
   </div>
@@ -1739,7 +1740,9 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     const run = (p.during || []).concat(p.never || []);
     const stops = (p.stop || []).concat(MB.stopGeneral || []);
     const T = [];
-    T.push(["status", "Status in detail", "Use authorization, maintenance and verification", () => statusBlock(m)]);
+    T.push(["status", "Status in detail", "Status, maintenance and verification", () => statusBlock(m)]);
+    const reps = (window.MEMBER_REPORTS || []).filter(r => r.machine === m.id);
+    if (reps.length) T.push(["reports", "Problem reports", count(reps.length, "report") + " in the last 30 days", () => reportsList(reps)]);
     T.push(["auth", "Am I authorized?", "Who may use it", () => '<p>' + esc(MB.auth) + '</p>']);
     if (p.before && p.before.length) T.push(["before", "Before you start", count(p.before.length, "check"), () => '<p>' + badge("draft") + '</p>' + ul(p.before)]);
     if (run.length) T.push(["running", "While it's running", count(run.length, "rule"), () => '<p>' + badge("draft") + '</p>' + ul(run)]);
@@ -1803,6 +1806,26 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   };
   const RULES = [["before", "Before you use any machine"], ["ppe", "Protective equipment"], ["during", "While a machine is running"], ["after", "After use"], ["lockout", "Lockout and defects"]];
   RULES.forEach(r => { PAGES["rule-" + r[0]] = [r[1], "", () => '<p class="note">' + badge("draft") + ' Shop rules, every machine.</p><ul class="tight">' + PROGRAM.rules[r[0]].map(lineLI).join("") + '</ul>']; });
+  // Problem reports from members (through the AI Assistant or the member group), for members signed in.
+  const dayName = d => new Date(String(d).slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-CA", { timeZone: "UTC", month: "long", day: "numeric" });
+  const reportMeta = r => [dayName(r.date), r.source === "group" ? "from the member group" : "through the AI Assistant", r.status === "new" ? "not reviewed yet" : "reviewed", r.photos ? count(r.photos, "photo") : "", r.updates ? count(r.updates, "reply", "replies") : ""].filter(Boolean).join(", ");
+  function reportsList(list) {
+    if (!list.length) return '<p class="note">No problem reports in the last 30 days.</p>';
+    return '<p class="note" style="margin-bottom:8px">Reports from members haven\'t been checked by the program until they\'re reviewed, and they don\'t change a machine\'s status.</p><ul class="jlist">' + list.map(r => {
+      const m = MACHINES.find(x => x.id === r.machine);
+      return '<li><span class="dot ' + (r.unsafe ? "s-crit" : "s-none") + '"></span><div><div class="jwhen">' + esc(m ? spoken(m) : r.name || "General") + '</div><div>' + esc(r.problem) + (r.unsafe ? ' <strong>The reporter says it could hurt someone.</strong>' : '') + '</div><div class="note">' + esc(reportMeta(r)) + '</div></div></li>';
+    }).join("") + '</ul>';
+  }
+  PAGES.reports = ["Recent problem reports", "The last 30 days", () => reportsList(window.MEMBER_REPORTS || [])];
+  function renderHomeReports() {
+    const box = $("mReports"), list = window.MEMBER_REPORTS || [];
+    if (!list.length) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = '<h2 class="mgroup" style="margin-top:18px !important">Recent problem reports</h2><p class="note" style="margin:-2px 0 8px">From members, through the AI Assistant or the member group.</p><ul class="mlist">' + list.slice(0, 4).map(r => {
+      const m = MACHINES.find(x => x.id === r.machine);
+      return '<li><button type="button" class="mrow"' + (m ? ' data-id="' + m.id + '"' : ' data-page="reports"') + '><span class="dot ' + (r.unsafe ? "s-crit" : "s-none") + '"></span><span class="mtxt"><span class="mname">' + esc(m ? spoken(m) : "General") + '</span><span class="mwhy">' + esc(r.problem) + '</span><span class="msub">' + esc(reportMeta(r)) + '</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+    }).join("") + '</ul>' + (list.length > 4 ? '<p class="note" style="margin-top:8px"><button type="button" class="mlinkbtn" data-page="reports">See all ' + list.length + ' reports</button></p>' : '');
+  }
   function openPage(key) { const p = PAGES[key]; if (p) push({ title: p[0], hash: "#p=" + key, html: p[2] }); }
   function renderShop() {
     $("mShopSafety").innerHTML = ["rules", "issues", "inspections", "safeguards", "process"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("");
@@ -1883,7 +1906,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   });
   window.mob = {
     isPhone, show, openMachine,
-    refresh() { renderHome(); renderList(); renderShop(); if (stack.length) paintSheet(); if (mode === "map" && current === "machines") renderMap(); },
+    refresh() { renderHome(); renderHomeReports(); renderList(); renderShop(); if (stack.length) paintSheet(); if (mode === "map" && current === "machines") renderMap(); },
   };
   renderHome(); renderList(); renderShop();
   const start = (location.hash || "").match(/^#(m|p)=([\w-]+)/);
@@ -2181,6 +2204,8 @@ renderGates();
     if (!box || !window.aiApi) return;
     if (!window.aiApi.signedIn()) { box.innerHTML = '<p class="note" style="margin-bottom:8px">Sign in to the AI Assistant to see the jobs assigned to you.</p><button type="button" class="b" data-go="ask">Sign in</button>'; return; }
     window.aiApi.me().then(me => {
+      window.MEMBER_REPORTS = (me && me.reports) || [];
+      if (window.mob) window.mob.refresh();
       const jobs = (me && me.jobs) || [];
       if (!jobs.length) { box.innerHTML = '<p class="note">You have no jobs open.</p>'; if (note) note.hidden = true; return; }
       const late = jobs.filter(j => j.overdue).length, ready = jobs.filter(j => j.role === "inspect" && j.status === "done").length;
