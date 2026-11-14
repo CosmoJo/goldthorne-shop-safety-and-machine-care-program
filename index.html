@@ -613,7 +613,7 @@ button.mask span.note { display:block; font-size:12.5px; }
   <div class="mview" id="mv-home">
     <div class="mhead"><h1>Goldthorne Shop Safety and Machine Care Program</h1><p class="mdraft">Draft for review, not an approved safety standard. <button type="button" class="mlinkbtn" data-page="about">Details</button></p></div>
     <div id="mJobsNote" hidden></div>
-    <h2 class="mq">May I use it?</h2>
+    <h2 class="mq">Machine statuses</h2>
     <div class="malert" id="mAlert"></div>
     <p class="note mrest" id="mRest"></p>
     <button class="mbig" type="button" data-ai-prefill="I want to report a problem: ">Report a problem</button>
@@ -1368,7 +1368,7 @@ function obsLI(l) { return '<li>' + esc(l[0]) + ' ' + cite(l[1]) + tagFor(l[1]) 
 function statusBlock(m) {
   const p = PROGRAM.machines[m.id] || {};
   const use = p.use || "notassessed";
-  let h = '<h3 class="qh">May I use it?</h3><div class="stat3">';
+  let h = '<h3 class="qh">Machine status</h3><div class="stat3">';
   h += '<div><span class="k">Use authorization</span><span class="pill"><span class="dot ' + USE_CLS[use] + '"></span>' + esc(PROGRAM.useLabels[use]) + '</span><p class="note">' + esc(p.useNote || "Not assessed. This draft gives no permission to use this equipment; the shop's existing rules and sign-offs apply.") + '</p></div>';
   h += '<div><span class="k">Maintenance status</span><strong>' + esc(PROGRAM.maintLabels[p.maint || "unknown"]) + '</strong><p class="note">' + esc(p.maintNote || "No maintenance record found.") + '</p></div>';
   h += '<div><span class="k">Verification</span><p class="note">' + esc(p.verify || "Not verified.") + '</p></div>';
