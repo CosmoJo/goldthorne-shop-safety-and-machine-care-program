@@ -268,8 +268,8 @@ h2.mq { font-size: 22px !important; margin: 0 0 4px !important; }
 .mnote911 { text-align: center; }
 .mjobsnote { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); padding: 10px 12px; margin-bottom: 14px; }
 .mjobsnote .b { min-height: 40px; flex: none; }
-.mseg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 0 0 12px; }
-.mseg button { min-height: 42px; border: 0; background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; }
+.mseg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 0 0 12px; }
+.mseg button { min-height: 42px; border: 0; background: var(--surface); color: var(--ink); font: 600 14px/1.15 var(--body); cursor: pointer; padding: 4px 6px; }
 .mseg button + button { border-left: 1px solid var(--line); }
 .mseg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
 .mlist.menu .mrow { grid-template-columns: 1fr 12px; min-height: 56px; }
@@ -574,7 +574,7 @@ button.mask span.note { display:block; font-size:12.5px; }
   #mv-machines { max-width: 1500px; }
   .mhead h1 { font-size: 22px; }
   h1.mtitle { font-size: 28px; margin: 0 0 16px; }
-  .mseg { grid-template-columns: repeat(3, 1fr); max-width: 460px; }
+  .mseg { grid-template-columns: repeat(4, 1fr); max-width: 600px; }
   .mmapbox { height: calc(100vh - 200px); }
   .msheet { left: auto; width: var(--pane); border-left: 1px solid var(--line); box-shadow: -12px 0 32px rgba(0,0,0,.14); }
   .mshead { padding: 10px 12px; }
@@ -896,7 +896,7 @@ button.dtile:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--l
   </div>
   <div class="mview" id="mv-machines" hidden>
     <h1 class="mtitle">Machines</h1>
-    <div class="mseg" role="group" aria-label="Show machines as"><button type="button" data-mode="list" aria-pressed="true">List</button><button type="button" data-mode="map" aria-pressed="false">Floor map</button><button type="button" class="desk-only" data-mode="table" aria-pressed="false">Table</button></div>
+    <div class="mseg" role="group" aria-label="Show machines as"><button type="button" data-mode="list" aria-pressed="true">List</button><button type="button" data-mode="map" aria-pressed="false">Floor map</button><button type="button" data-mode="power" aria-pressed="false">Power switches</button><button type="button" class="desk-only" data-mode="table" aria-pressed="false">Table</button></div>
     <div id="mFind">
       <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
       <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, machine number" autocomplete="off">
@@ -905,6 +905,7 @@ button.dtile:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--l
       <div id="mList"></div>
     </div>
     <div id="mTableMode" hidden><div class="mtablebox" id="mTable"></div></div>
+    <div id="mPowerMode" hidden><div id="mPower"></div></div>
     <div id="mMapMode" hidden>
       <p class="note">Drag to move around, use the buttons to zoom, and tap a machine for its page.</p>
       <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button><button class="b desk-only" type="button" data-desk="plan">Edit the floor plan</button></div>
@@ -2224,11 +2225,12 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   function paintSheet() {
     const sh = $("msheet"), top = stack[stack.length - 1];
     mob.querySelectorAll(".mrow.on, .mtable tr.on").forEach(x => x.classList.remove("on"));
-    if (!top) { sh.hidden = true; document.body.classList.remove("noscroll", "sheetopen"); return; }
+    if (!top) { sh.hidden = true; document.body.classList.remove("noscroll", "sheetopen"); if (mode === "power") markPower([]); return; }
     $("msTitle").textContent = top.title;
     $("msBody").innerHTML = top.html(); placeElevations($("msBody"));
     sh.hidden = false; document.body.classList.add("sheetopen"); if (!wide()) document.body.classList.add("noscroll"); else document.body.classList.remove("noscroll");
     if (top.mid) mob.querySelectorAll('#mList .mrow[data-id="' + top.mid + '"], .mtable tr[data-open="' + top.mid + '"]').forEach(x => x.classList.add("on"));
+    if (mode === "power") markPower(top.mid ? corridorFor(top.mid) : []);
     if (wide() && mode === "map" && current === "machines") renderMap();
   }
   function push(page, root) {
@@ -2626,10 +2628,22 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     });
     $("mTable").innerHTML = list.length ? h + '</tbody></table>' : '<p class="note" style="padding:12px">No machines match.</p>';
   }
+  // ----- Machines: the electrical corridor's wall, every power switch -----
+  function renderPower() {
+    const top = stack[stack.length - 1], hi = top && top.mid ? corridorFor(top.mid).filter(k => CORRIDOR.devices[k].g) : [];
+    $("mPower").innerHTML = corridorElevation({ focus: hi[0] || "end" }) + corridorLegend() + '<p class="note">The power switch for each machine is on the west wall of the electrical corridor. ' + esc(CORRIDOR.way.split(". ").slice(1).join(". ")) + '</p>' +
+      '<p><button type="button" class="b" data-page="corridor">Who may do what, and every item on the wall</button></p>';
+    placeElevations($("mPower"));
+    markPower(hi);
+  }
+  function markPower(hi) {
+    mob.querySelectorAll("#mPower .edev").forEach(g => g.classList.toggle("hi", hi.includes(g.dataset.dev)));
+  }
   function setMode(v) {
     mode = v;
     mob.querySelectorAll(".mseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === v ? "true" : "false"));
-    $("mListMode").hidden = v !== "list"; $("mMapMode").hidden = v !== "map"; $("mTableMode").hidden = v !== "table"; $("mFind").hidden = v === "map";
+    $("mListMode").hidden = v !== "list"; $("mMapMode").hidden = v !== "map"; $("mTableMode").hidden = v !== "table"; $("mPowerMode").hidden = v !== "power"; $("mFind").hidden = v === "map" || v === "power";
+    if (v === "power") renderPower();
     if (v === "map") renderMap();
     if (v === "table") renderTable();
   }
