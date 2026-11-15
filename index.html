@@ -251,13 +251,14 @@ ol.srcs { margin:0; padding-left:22px; font-size:13px; display:grid; gap:4px; }
 ol.srcs a { color: var(--accent); word-break: break-word; }
 
 .mob { display: none; }
-@media (max-width: 760px) {
-  body:not(.desk) .wrap { display: none; }
-  body:not(.desk) .mob { display: block; }
-}
+/* The app at every width; the long page (body.desk) is the floor plan editor. */
+body:not(.desk) .wrap { display: none; }
+body:not(.desk) .mob { display: block; }
+.desk-only, .mbrand { display: none !important; }
 .phone-only { display: none !important; }
 @media (max-width: 760px) { body.desk .phone-only { display: inline-flex !important; } }
 body.noscroll { overflow: hidden; }
+
 .mob { font-size: 16px; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .mhead { padding: 4px 0 12px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
 .mhead h1 { font-size: 17px; line-height: 1.3; margin: 0; }
@@ -301,8 +302,8 @@ h2.mq { font-size: 22px !important; margin: 0 0 4px !important; }
 .msub { font-size: 13px; color: var(--muted); }
 .mwhy { font-size: 13px; }
 .chev { color: var(--muted); font-size: 22px; line-height: 1; }
-.mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(6, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
-.mnav button { display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 58px; background: none; border: 0; color: var(--muted); font: 600 11px var(--body); cursor: pointer; }
+.mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(7, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.mnav button { display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 58px; padding: 0; background: none; border: 0; color: var(--muted); font: 600 10.5px var(--body); letter-spacing: -.01em; cursor: pointer; min-width: 0; }
 .mnav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .mnav button[aria-current="page"] { color: var(--accent); }
 .mnav button.sosnav { color: var(--crit); }
@@ -556,16 +557,125 @@ button.mask span.note { display:block; font-size:12.5px; }
 .manblock .manbtns { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 6px; }
 .manblock a.manbtn { display:inline-block; padding:6px 11px; border-radius:14px; border:1px solid var(--accent); color:var(--accent); text-decoration:none; font-size:13.5px; font-weight:600; }
 .manblock p { margin:0; }
+/* ---------- The app on a computer: sidebar, content, pages in a panel on the right ---------- */
+@media (min-width: 761px) {
+  .mob { --side: 232px; --pane: min(520px, calc(100vw - var(--side))); padding: 0 0 0 var(--side); min-height: 100vh; }
+  .desk-only { display: revert !important; }
+  .mnav { top: 0; right: auto; bottom: 0; width: var(--side); display: flex; flex-direction: column; gap: 2px; padding: 14px 10px; border-top: 0; border-right: 1px solid var(--line); overflow-y: auto; }
+  .mbrand { display: block !important; padding: 4px 10px 16px; margin-bottom: 8px; border-bottom: 1px solid var(--line); font: 700 15px/1.3 var(--body); color: var(--ink); }
+  .mbrand span { display: block; font: 500 12px/1.35 var(--body); color: var(--muted); margin-top: 3px; }
+  .mnav button { display: flex; justify-items: initial; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 8px; font: 600 15px var(--body); text-align: left; }
+  .mnav button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .mnav button[aria-current="page"] { background: color-mix(in srgb, var(--accent) 13%, transparent); color: var(--accent); }
+  .mnav button.sosnav { margin-top: 10px; border: 1px solid color-mix(in srgb, var(--crit) 55%, var(--line)); }
+  .mnav .mnavfoot { margin-top: auto; padding: 12px 10px 4px; font-size: 12px; color: var(--muted); }
+  .mnav .mnavfoot button { all: unset; cursor: pointer; color: var(--accent); font-weight: 600; }
+  .mview { max-width: 860px; padding: 28px 36px 56px; }
+  #mv-machines { max-width: 1500px; }
+  .mhead h1 { font-size: 22px; }
+  h1.mtitle { font-size: 28px; margin: 0 0 16px; }
+  .mseg { grid-template-columns: repeat(3, 1fr); max-width: 460px; }
+  .mmapbox { height: calc(100vh - 200px); }
+  .msheet { left: auto; width: var(--pane); border-left: 1px solid var(--line); box-shadow: -12px 0 32px rgba(0,0,0,.14); }
+  .mshead { padding: 10px 12px; }
+  .msbody { padding: 20px 24px 48px; }
+  #mv-ask .aipanel { left: var(--side); bottom: 0; width: auto; border-left: 0; box-shadow: none; }
+  #mv-ask .aipanel .ailog, #mv-ask .aipanel .aiform, #mv-ask .aipanel .aihead, #mv-ask .aipanel .aisos, #mv-ask .aipanel .aisignin, #mv-ask .aipanel .aimeta, #mv-ask .aipanel .aithumbs { width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+  .mrow.on { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  .mtable tr.on td { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+}
+/* Wide screens: the open page sits beside the content instead of over it. */
+@media (min-width: 1000px) {
+  .mob { --pane: clamp(400px, 38vw, 560px); }
+  body.sheetopen .mob { padding-right: var(--pane); }
+}
+/* Machines as a table (computers) */
+.mtablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.mtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.mtable th { position: sticky; top: 0; text-align: left; font-weight: 600; font-size: 12px; color: var(--muted); background: var(--surface); padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.mtable td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mtable tr:last-child td { border-bottom: 0; }
+.mtable tbody tr { cursor: pointer; }
+.mtable tbody tr:hover td { background: color-mix(in srgb, var(--ink) 4%, var(--surface)); }
+.mtable .mtname { all: unset; cursor: pointer; font-weight: 600; color: var(--ink); }
+.mtable .mtname:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mtable .mtstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.mtable td.mono { font-family: var(--mono, ui-monospace, monospace); font-size: 12.5px; }
+.mtarea td { background: color-mix(in srgb, var(--ink) 4%, var(--surface)) !important; font-weight: 700; font-size: 12px; color: var(--muted); cursor: default; }
+.deskback { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 8px 20px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: 14px; }
+body:not(.desk) .deskback { display: none; }
+/* ---------- Dashboard ---------- */
+.dlead { margin: -6px 0 14px; }
+h2.dh { font-size: 19px !important; margin: 22px 0 10px !important; display: flex; align-items: center; gap: 8px; }
+h3.dsh { font-size: 16px; margin: 18px 0 2px; }
+.dwhat { margin: 0 0 10px; }
+.dtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.dtile { display: grid; align-content: start; gap: 2px; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 92px; }
+button.dtile { cursor: pointer; }
+button.dtile:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.dtile.t-crit { border-left-color: var(--crit); } .dtile.t-hold { border-left-color: var(--hold); } .dtile.t-ok { border-left-color: var(--ok); }
+.dtile .dk { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.dtile .dv { font-size: 24px; font-weight: 700; line-height: 1.15; }
+.dtile .ds { font-size: 12.5px; color: var(--muted); }
+.dgridc { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.dcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; min-width: 0; }
+.dgridc .dcard { margin: 0; }
+.dcard h3 { font-size: 15px; margin: 0 0 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dcard.sample { border-style: dashed; background: repeating-linear-gradient(135deg, transparent 0 12px, color-mix(in srgb, var(--ink) 2.5%, transparent) 12px 13px), var(--surface); }
+.dsub { margin: -2px 0 8px; }
+.dsample { display: inline-block; font: 700 11px var(--body); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border: 1px dashed var(--muted); border-radius: 5px; padding: 1px 6px; }
+.dbanner { border: 1px dashed var(--muted); border-radius: 10px; padding: 10px 12px; margin: 0 0 6px; font-size: 14px; background: var(--surface); }
+.dbars { display: grid; gap: 7px; }
+.dbar { display: grid; grid-template-columns: minmax(7em, 1.25fr) minmax(48px, 1fr) auto; align-items: center; gap: 10px; font-size: 13px; }
+.dbl { line-height: 1.25; overflow-wrap: anywhere; }
+.dbt { height: 10px; border-radius: 0 4px 4px 0; background: color-mix(in srgb, var(--ink) 7%, transparent); overflow: hidden; }
+.dbt i { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; }
+.dbv { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12.5px; min-width: 3em; text-align: right; }
+.dunit { margin: 4px 0 0; text-align: right; font-size: 12px; }
+.dsvg { display: block; width: 100%; height: auto; max-height: 200px; overflow: visible; }
+.dsvg .dgrid { stroke: var(--line); stroke-width: 1; }
+.dsvg .dax { font: 500 10px var(--body); fill: var(--muted); }
+.dsvg .dalt { fill: var(--crit); font-weight: 600; }
+.dsvg .dalert { stroke: var(--crit); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.dsvg .dln { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dsvg .dlast { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.dsvg .dhit, .dsvg .dhitr { fill: transparent; cursor: pointer; }
+.dsvg .dhit:hover { fill: color-mix(in srgb, var(--accent) 25%, transparent); }
+.dsvg .dcol { fill: var(--accent); }
+.dsvg .dhitr:hover { fill: color-mix(in srgb, var(--ink) 5%, transparent); }
+.dsvg .dvl { fill: var(--ink); font-weight: 600; }
+.dnote { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.dstack { display: flex; gap: 2px; height: 14px; margin: 6px 0 10px; }
+.dstack i { display: block; border-radius: 4px; min-width: 6px; cursor: default; }
+.dstack i.s-crit { background: var(--crit); } .dstack i.s-hold { background: var(--hold); } .dstack i.s-ok { background: var(--ok); } .dstack i.s-none { background: var(--none); }
+.dleg { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+.dleg li { display: inline-flex; align-items: center; gap: 6px; }
+.dlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+.dlist li { display: grid; grid-template-columns: 12px 1fr; gap: 8px; align-items: start; }
+.dlist .dot { margin-top: 4px; }
+.dgates { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 4px 0 10px; }
+.dgates span { display: grid; place-items: center; height: 34px; border-radius: 7px; border: 1px solid var(--line); font: 600 12px var(--body); color: var(--muted); }
+.dgates span.on { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.dgk { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); }
+.dgk.on { background: var(--accent); border-color: var(--accent); }
+.dhero { font-size: 40px; font-weight: 700; line-height: 1.1; }
+.dhero small { font-size: 15px; font-weight: 500; color: var(--muted); }
+.dtip { position: fixed; z-index: 40; max-width: 280px; padding: 6px 10px; border-radius: 7px; background: var(--ink); color: var(--surface); font: 500 13px var(--body); pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+@media (min-width: 761px) {
+  #mv-dash { max-width: 1280px; }
+  .dtiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .dgridc { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 12px; }
+}
 </style>
 </head>
 <body>
 <div class="sosdlg" id="pageDlg" hidden role="dialog" aria-modal="true" aria-labelledby="pageTitle"><div class="sosin"><div class="soshead"><h2 id="pageTitle" style="color:var(--ink)"></h2><button type="button" class="b" id="pageDlgClose">Close</button></div><div id="pageDlgBody"></div></div></div>
 <div class="sosdlg" id="sosDlg" hidden role="dialog" aria-modal="true" aria-labelledby="sosTitle"><div class="sosin"><div class="soshead"><h2 id="sosTitle">Emergency</h2><button type="button" class="b" id="sosClose">Close</button></div><div id="sosBody"></div></div></div>
+<div class="deskback"><span><strong>Floor plan editor</strong> and every register on one page.</span><button class="b primary" type="button" id="toApp">Back to the app</button></div>
 <div class="wrap">
   <header>
     <h1>Goldthorne Wood Studio Safety and Machine Care Program</h1>
     <button type="button" class="sosdesk" data-sos="1">Emergency: what to do</button><button type="button" class="closedesk" data-extra="checkin">Working alone: check in</button><button type="button" class="closedesk" data-extra="closing">Last one out: closing checklist</button><button type="button" class="closedesk" data-extra="feedback">Suggest a change to the app</button>
-    <button class="b phone-only" type="button" id="toPhone" style="margin:6px 0">Back to the phone view</button>
     <p class="sub">Machine map and register from the walkthrough of November 12, 2026, at 14 Goldthorne Ave. Draft for Peter and William to correct. The main machine room and the rooms south of it (press room, spray booth, electrical corridor and client room) are drawn to scale from Cosmo's measurements of November 14, 2026; the hallway, the maker spaces and the rooms east still come from his layout, checked against all 240 walkthrough photos, and aren't to scale yet. Areas marked "to confirm" are placed from photos only.</p>
   </header>
 
@@ -749,17 +859,24 @@ button.mask span.note { display:block; font-size:12.5px; }
     <p class="note mnote911">Someone hurt, or a fire? Call 911 first. <button type="button" class="mlinkbtn" data-sos="1">What to do</button></p>
     <p class="note mnote911">Here alone? <button type="button" class="mlinkbtn" data-page="checkin">Check in</button>. Last one out? <button type="button" class="mlinkbtn" data-page="closing">Closing checklist</button></p>
   </div>
+  <div class="mview" id="mv-dash" hidden>
+    <h1 class="mtitle">Dashboard</h1>
+    <div id="mDash"></div>
+  </div>
   <div class="mview" id="mv-machines" hidden>
     <h1 class="mtitle">Machines</h1>
-    <div class="mseg" role="group" aria-label="Show machines as"><button type="button" data-mode="list" aria-pressed="true">List</button><button type="button" data-mode="map" aria-pressed="false">Floor map</button></div>
-    <div id="mListMode">
+    <div class="mseg" role="group" aria-label="Show machines as"><button type="button" data-mode="list" aria-pressed="true">List</button><button type="button" data-mode="map" aria-pressed="false">Floor map</button><button type="button" class="desk-only" data-mode="table" aria-pressed="false">Table</button></div>
+    <div id="mFind">
       <label for="mSearch" class="note" style="display:block;margin-bottom:6px">Find a machine</label>
       <input id="mSearch" class="msearch" type="search" placeholder="Name, maker, machine number" autocomplete="off">
+    </div>
+    <div id="mListMode">
       <div id="mList"></div>
     </div>
+    <div id="mTableMode" hidden><div class="mtablebox" id="mTable"></div></div>
     <div id="mMapMode" hidden>
       <p class="note">Drag to move around, use the buttons to zoom, and tap a machine for its page.</p>
-      <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button></div>
+      <div class="mzoom"><button class="b" type="button" id="mZoomOut" aria-label="Zoom out">&minus;</button><button class="b" type="button" id="mZoomIn" aria-label="Zoom in">+</button><button class="b desk-only" type="button" data-desk="plan">Edit the floor plan</button></div>
       <div class="mmapbox" id="mMap"></div>
     </div>
   </div>
@@ -792,16 +909,21 @@ button.mask span.note { display:block; font-size:12.5px; }
     <h1 class="mtitle">Studio</h1>
     <h2 class="marea">Safety</h2>
     <ul class="mlist menu" id="mShopSafety"></ul>
+    <h2 class="marea">Registers</h2>
+    <ul class="mlist menu" id="mShopRecords"></ul>
     <h2 class="marea">About the program</h2>
     <ul class="mlist menu" id="mShopAbout"></ul>
   </div>
   <nav class="mnav" aria-label="Sections">
+    <div class="mbrand">Goldthorne Wood Studio<span>Safety and Machine Care Program. Draft for review.</span></div>
     <button type="button" data-v="home" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Home</button>
+    <button type="button" data-v="dash" aria-current="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard</button>
     <button type="button" data-v="machines" aria-current="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Machines</button>
     <button type="button" data-v="ask" aria-current="false"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Ask</button>
     <button type="button" data-v="jobs" aria-current="false"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></svg>Jobs</button>
     <button type="button" data-v="shop" aria-current="false"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>Studio</button>
     <button type="button" class="sosnav" data-sos="1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Emergency</button>
+    <div class="mnavfoot desk-only"><button type="button" data-desk="plan">Floor plan editor</button></div>
   </nav>
   <div class="msheet" id="msheet" hidden role="dialog" aria-modal="true" aria-labelledby="msTitle">
     <div class="mshead"><button class="mback" type="button" id="mBack">&lsaquo; Back</button><span class="mstitle" id="msTitle"></span></div>
@@ -1982,8 +2104,11 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   const mob = document.getElementById("mob"); if (!mob) return;
   const SEV = { crit: 0, hold: 1, warn: 2, none: 3, ok: 4 };
   const $ = id => document.getElementById(id);
-  let query = "", zoom = 1600, current = "home", mode = "list";
-  const isPhone = () => window.matchMedia("(max-width: 760px)").matches && !document.body.classList.contains("desk");
+  let query = "", zoom = 1600, current = "home", mode = "list", zoomSet = false;
+  // The app shows at every width; only the floor plan editor (body.desk) is the long page.
+  // isPhone keeps its name for the code that calls it: it means "the app is showing".
+  const isPhone = () => !document.body.classList.contains("desk");
+  const wide = () => window.matchMedia("(min-width: 761px)").matches;
   const count = (n, one, many) => n + " " + (n === 1 ? one : (many || one + "s"));
   const ul = (lines, fn) => '<ul class="tight">' + lines.map(fn || lineLI).join("") + '</ul>';
   const menuRow = (attr, title, hint, dot) => '<li><button type="button" class="mrow' + (dot ? ' dotted' : '') + '" ' + attr + '>' + (dot ? '<span class="dot ' + dot + '"></span>' : '') + '<span class="mtxt"><span class="mname">' + esc(title) + '</span>' + (hint ? '<span class="msub">' + esc(hint) + '</span>' : '') + '</span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
@@ -1992,16 +2117,19 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   const stack = [];
   function paintSheet() {
     const sh = $("msheet"), top = stack[stack.length - 1];
-    if (!top) { sh.hidden = true; document.body.classList.remove("noscroll"); return; }
+    mob.querySelectorAll(".mrow.on, .mtable tr.on").forEach(x => x.classList.remove("on"));
+    if (!top) { sh.hidden = true; document.body.classList.remove("noscroll", "sheetopen"); return; }
     $("msTitle").textContent = top.title;
     $("msBody").innerHTML = top.html();
-    sh.hidden = false; document.body.classList.add("noscroll");
+    sh.hidden = false; document.body.classList.add("sheetopen"); if (!wide()) document.body.classList.add("noscroll"); else document.body.classList.remove("noscroll");
+    if (top.mid) mob.querySelectorAll('#mList .mrow[data-id="' + top.mid + '"], .mtable tr[data-open="' + top.mid + '"]').forEach(x => x.classList.add("on"));
+    if (wide() && mode === "map" && current === "machines") renderMap();
   }
   function push(page, root) {
     stack.push(page);
     try { history[root ? "replaceState" : "pushState"]({ depth: stack.length }, "", page.hash || location.pathname + location.search); } catch (e) {}
     page.root = !!root;
-    paintSheet(); $("msheet").scrollTop = 0; $("mBack").focus();
+    paintSheet(); $("msheet").scrollTop = 0; $("mBack").focus({ preventScroll: true });
   }
   function back() {
     const top = stack[stack.length - 1];
@@ -2151,6 +2279,9 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     sossetup: ["Your phone's emergency button", "Calls 911 from the locked screen, no app needed", () => window.EXTRA_PAGES && window.EXTRA_PAGES.sossetup ? window.EXTRA_PAGES.sossetup.html() : ""],
     feedback: ["Suggest a change to the app", "Something in the app not working, or an idea", () => window.EXTRA_PAGES && window.EXTRA_PAGES.feedback ? window.EXTRA_PAGES.feedback.html() : ""],
     wifireminder: ["Reminder when you leave the Wood Studio Wi-Fi", "iPhone only: so you don't forget to check out", () => window.EXTRA_PAGES && window.EXTRA_PAGES.wifireminder ? window.EXTRA_PAGES.wifireminder.html() : ""],
+    actnow: ["Act now", "Building and site items to deal with first", () => '<div style="display:grid;gap:8px">' + html("issues") + '</div>'],
+    collect: ["Still to collect", "Photos, labels and measurements the program still needs", () => '<ul class="tight">' + html("todo") + '</ul>'],
+    gates: ["Blast gates", "Every gate on the dust collection ducting", () => '<p class="note">' + esc(($("gateCount") || {}).textContent || "") + ' One row per gate, numbered along the ducting. Sensor and open-hours columns fill in once gate sensors are installed; duct routes on the map are approximate, gate positions follow the photos.</p><div class="tablebox"><table><thead><tr><th>Gate</th><th>Serves</th><th>Where</th><th>Seen in photos</th><th>Sensor</th><th>Open hours, last 7 days</th></tr></thead><tbody>' + html("gateRows") + '</tbody></table></div>'],
     corridor: ["Electrical corridor: power switches", "Which switch turns off each machine, and who may do what", () => corridorPageHTML()],
     homescreen: ["Put this page on your home screen", "So it opens like an app", () => '<ul class="tight"><li><strong>iPhone:</strong> open this page in Safari, tap the Share button, then Add to Home Screen.</li><li><strong>Android:</strong> open this page in Chrome, tap the three-dot menu, then Add to Home screen.</li></ul>'],
   };
@@ -2176,7 +2307,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
       return '<li><button type="button" class="mrow"' + (m ? ' data-id="' + m.id + '"' : ' data-page="reports"') + '><span class="dot ' + (r.unsafe ? "s-crit" : "s-none") + '"></span><span class="mtxt"><span class="mname">' + esc(m ? spoken(m) : "General") + '</span><span class="mwhy">' + esc(r.problem) + '</span><span class="msub">' + esc(reportMeta(r)) + '</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
     }).join("") + '</ul>' + (list.length > 4 ? '<p class="note" style="margin-top:8px"><button type="button" class="mlinkbtn" data-page="reports">See all ' + list.length + ' reports</button></p>' : '');
   }
-  function openPage(key) { const p = PAGES[key]; if (!p) return; push({ title: p[0], hash: "#p=" + key, html: p[2] }); const x = window.EXTRA_PAGES && window.EXTRA_PAGES[key]; if (x && x.opened) x.opened(); }
+  function openPage(key, root) { const p = PAGES[key]; if (!p) return; push({ title: p[0], hash: "#p=" + key, html: p[2] }, root); const x = window.EXTRA_PAGES && window.EXTRA_PAGES[key]; if (x && x.opened) x.opened(); }
   function suppliesHTML() {
     const list = window.SUPPLIES || [];
     return '<p>Tell the AI Assistant when something runs low or out: blades, sandpaper, paste wax, filters, glue, rags. The admin gets the list every Monday.</p><button type="button" class="b primary" data-ai-prefill="We\'re running low on ">Something\'s running low</button>' +
@@ -2193,7 +2324,8 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   }
   function renderShop() {
     $("mShopSafety").innerHTML = menuRow('data-page="newhere"', PAGES.newhere[0], PAGES.newhere[1]) + menuRow('data-sos="1"', "Emergency", "What to do if someone is hurt, the first aid kit, where to go") + menuRow('data-page="corridor"', PAGES.corridor[0], PAGES.corridor[1]) + menuRow('data-page="checkin"', PAGES.checkin[0], PAGES.checkin[1]) + menuRow('data-page="closing"', PAGES.closing[0], PAGES.closing[1]) + menuRow('data-page="sossetup"', PAGES.sossetup[0], PAGES.sossetup[1]) + menuRow('data-page="wifireminder"', PAGES.wifireminder[0], PAGES.wifireminder[1]) + menuRow('data-page="supplies"', PAGES.supplies[0], (window.SUPPLIES || []).length ? count(window.SUPPLIES.length, "item") + " on the list" : PAGES.supplies[1]) + ["rules", "issues", "inspections", "safeguards", "process"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("");
-    $("mShopAbout").innerHTML = menuRow('data-page="feedback"', PAGES.feedback[0], PAGES.feedback[1]) + ["about", "goals", "changes", "sources", "printables", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="1"', "Desktop version", "The full page, with the layout editor") + (window.ME_ADMIN ? menuRow('data-handover="1"', "Handover note", "Admins only: where everything lives, and what moves if the admin changes") : "");
+    $("mShopRecords").innerHTML = ["actnow", "gates", "collect"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + '<li class="desk-only"><button type="button" class="mrow" data-go-table="1"><span class="mtxt"><span class="mname">Machine register</span><span class="msub">Every machine in one table</span></span><span class="chev" aria-hidden="true">&rsaquo;</span></button></li>';
+    $("mShopAbout").innerHTML = menuRow('data-page="feedback"', PAGES.feedback[0], PAGES.feedback[1]) + ["about", "goals", "changes", "sources", "printables", "stickers", "homescreen"].map(k => menuRow('data-page="' + k + '"', PAGES[k][0], PAGES[k][1])).join("") + menuRow('data-desk="plan"', "Floor plan editor", "The long page: the layout editor and every register in one place") + (window.ME_ADMIN ? menuRow('data-handover="1"', "Handover note", "Admins only: where everything lives, and what moves if the admin changes") : "");
   }
 
   // ----- Home: may I use it? -----
@@ -2231,14 +2363,169 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   function renderMap() {
     const src = $("map"); if (!src) return;
     let h = src.outerHTML.replace('id="map"', 'id="mMapSvg"').replace(/id="g(Minor|Major)"/g, 'id="mg$1"').replace(/url\(#g(Minor|Major)\)/g, "url(#mg$1)");
+    if (!zoomSet && wide() && $("mMap").clientWidth > 300) zoom = Math.max(480, $("mMap").clientWidth - 2);
     $("mMap").innerHTML = h;
     const svg = $("mMap").querySelector("svg"); svg.style.width = zoom + "px"; svg.setAttribute("aria-label", "Wood Studio floor plan; tap a machine to open its page");
+  }
+  // ----- Dashboard: the program's numbers now, how complete the records are, and what sensors would add -----
+  const DSAMPLE = {
+    runHours: [["Dust collector", 19.8], ["Compressor", 14.3], ["SCM sliding saw", 11.2], ["Martin sliding saw", 8.4], ["SCM planer", 6.5], ["SCM jointer", 4.1], ["Edge bander", 3.6], ["SCM shaper", 1.2]],
+    vib: [2.1, 2.2, 2.1, 2.3, 2.2, 2.4, 2.3, 2.5, 2.4, 2.6, 2.6, 2.8, 2.7, 2.9, 3.0, 3.0, 3.2, 3.1, 3.3, 3.5, 3.4, 3.6, 3.8, 3.7, 3.9, 4.1, 4.0, 4.3, 4.4, 4.6],
+    due: [["SCM planer knives", "due in 6 running hours", "hold"], ["Dust collector fan bearings", "vibration rising: check booked", "crit"], ["SCM sliding saw blade", "due in 22 running hours", "none"], ["Compressor service", "due in 41 running hours", "none"]],
+    gatesOpen: ["G4", "G6", "G18"],
+    gateWeek: [["Machine ran with its gate closed", "3 times", "SCM sliding saw twice, edge sander once"], ["Gates left open after the machine stopped", "9.5 hours", "Suction lost at the machines in use"]],
+    suction: [6.4, 6.4, 6.3, 6.3, 6.2, 6.2, 6.1, 6.0, 6.0, 5.9, 5.8, 5.7, 5.7, 5.6],
+    powerNow: [["Switch 12: SCM planer", 6.8], ["Dust collector (circuit to confirm)", 5.4], ["Compressor switch", 3.9], ["Panel 2: lights", 1.2]],
+    energy: [["Mon", 38], ["Tue", 52], ["Wed", 47], ["Thu", 61], ["Fri", 44], ["Sat", 88], ["Sun", 72]],
+    load: [17.2, 17.0, 17.4, 17.6, 17.5, 17.9, 18.2, 18.1, 18.6, 18.9, 19.3, 19.2, 19.8, 20.1],
+    trips: [["Panel 1: breaker marked CNC", "tripped twice; reset once each time and reported"], ["Switch 11: edge sander", "no events"], ["Main disconnect", "no events"]],
+    dust: [9, 8, 9, 14, 22, 31, 28, 35, 41, 26, 18, 30, 38, 33, 21, 12, 9, 8],
+    humidity: 41,
+  };
+  const dnum = v => (Math.round(v * 10) / 10).toLocaleString("en-CA");
+  const dday = t => { const d = Math.floor((Date.now() - Date.parse(t)) / 864e5); return d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago"; };
+  function dTile(o) {
+    const attr = o.page ? ' data-page="' + o.page + '"' : o.go ? ' data-go="' + o.go + '"' : '';
+    const tag = attr ? 'button type="button"' : 'div';
+    return '<' + tag + ' class="dtile' + (o.tone ? ' t-' + o.tone : '') + '"' + attr + '><span class="dk">' + esc(o.k) + '</span><span class="dv">' + esc(String(o.v)) + '</span>' + (o.sub ? '<span class="ds">' + esc(o.sub) + '</span>' : '') + '</' + (attr ? 'button' : 'div') + '>';
+  }
+  function dCard(title, body, opt) {
+    opt = opt || {};
+    return '<section class="dcard' + (opt.sample ? ' sample' : '') + (opt.wide ? ' wide' : '') + '"><h3>' + esc(title) + (opt.sample ? ' <span class="dsample">Sample</span>' : '') + '</h3>' + (opt.sub ? '<p class="note dsub">' + esc(opt.sub) + '</p>' : '') + body + '</section>';
+  }
+  // Horizontal bars, one series, labelled.
+  function dBars(rows, unit) {
+    const max = Math.max(...rows.map(r => r[1])) || 1;
+    return '<div class="dbars">' + rows.map(r => '<div class="dbar" data-tip="' + esc(r[0] + ": " + dnum(r[1]) + " " + unit) + '"><span class="dbl">' + esc(r[0]) + '</span><span class="dbt"><i style="width:' + (r[1] / max * 100).toFixed(1) + '%"></i></span><span class="dbv">' + dnum(r[1]) + '</span></div>').join("") + '</div><p class="note dunit">' + esc(unit) + '</p>';
+  }
+  // Progress rows: x of y.
+  function dProg(rows) {
+    return '<div class="dbars">' + rows.map(r => '<div class="dbar" data-tip="' + esc(r[0] + ": " + r[1] + " of " + r[2]) + '"><span class="dbl">' + esc(r[0]) + '</span><span class="dbt"><i style="width:' + (r[2] ? r[1] / r[2] * 100 : 0).toFixed(1) + '%"></i></span><span class="dbv">' + r[1] + ' of ' + r[2] + '</span></div>').join("") + '</div>';
+  }
+  // A trend line with an optional alert level.
+  function dLine(vals, o) {
+    o = o || {};
+    const W = 320, H = 110, pl = 30, pr = 10, pt = 10, pb = 20;
+    const lo = Math.min(...vals, o.alert !== undefined ? o.alert : Infinity, o.min !== undefined ? o.min : Infinity), hi = Math.max(...vals, o.alert || -Infinity) * 1.08;
+    const x = i => pl + i * (W - pl - pr) / (vals.length - 1), y = v => pt + (hi - v) / (hi - lo || 1) * (H - pt - pb);
+    const pts = vals.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    let g = '<line class="dgrid" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + (H - pb) + '" y2="' + (H - pb) + '"/>';
+    g += '<text class="dax" x="' + (pl - 4) + '" y="' + (y(hi / 1.08) + 4).toFixed(1) + '" text-anchor="end">' + dnum(hi / 1.08) + '</text><text class="dax" x="' + (pl - 4) + '" y="' + (H - pb) + '" text-anchor="end">' + dnum(lo) + '</text>';
+    g += '<text class="dax" x="' + pl + '" y="' + (H - 4) + '">' + esc(o.from || "") + '</text><text class="dax" x="' + (W - pr) + '" y="' + (H - 4) + '" text-anchor="end">' + esc(o.to || "") + '</text>';
+    if (o.alert !== undefined) g += '<line class="dalert" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(o.alert).toFixed(1) + '" y2="' + y(o.alert).toFixed(1) + '"/><text class="dax dalt" x="' + (pl + 4) + '" y="' + (y(o.alert) - 4).toFixed(1) + '">' + esc(o.alertLabel || "Alert level") + '</text>';
+    g += '<polyline class="dln" points="' + pts + '"/>';
+    vals.forEach((v, i) => { g += '<circle class="dhit" cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="7" data-tip="' + esc((o.labels ? o.labels[i] + ": " : "") + dnum(v) + " " + (o.unit || "")) + '"/>'; });
+    const last = vals.length - 1;
+    g += '<circle class="dlast" cx="' + x(last).toFixed(1) + '" cy="' + y(vals[last]).toFixed(1) + '" r="4.5"/>';
+    return '<svg class="dsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.aria || "Trend") + ": from " + dnum(vals[0]) + " to " + dnum(vals[last]) + " " + (o.unit || "")) + '">' + g + '</svg>';
+  }
+  // Columns for days of the week.
+  function dCols(rows, unit) {
+    const W = 320, H = 120, pb = 20, pt = 16, max = Math.max(...rows.map(r => r[1])) || 1, bw = (W - 8) / rows.length;
+    let g = '<line class="dgrid" x1="0" x2="' + W + '" y1="' + (H - pb) + '" y2="' + (H - pb) + '"/>';
+    rows.forEach((r, i) => {
+      const h = r[1] / max * (H - pb - pt), x = 4 + i * bw + bw * 0.22, w = bw * 0.56, y = H - pb - h;
+      g += '<path class="dcol" d="M' + x.toFixed(1) + ',' + (H - pb) + 'V' + (y + 4).toFixed(1) + 'q0,-4 4,-4h' + (w - 8).toFixed(1) + 'q4,0 4,4V' + (H - pb) + 'Z"/>';
+      g += '<rect class="dhitr" x="' + (4 + i * bw).toFixed(1) + '" y="0" width="' + bw.toFixed(1) + '" height="' + H + '" data-tip="' + esc(r[0] + ": " + dnum(r[1]) + " " + unit) + '"/>';
+      g += '<text class="dax" x="' + (x + w / 2).toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle">' + esc(r[0]) + '</text>';
+      if (r[1] === max) g += '<text class="dax dvl" x="' + (x + w / 2).toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" text-anchor="middle">' + dnum(r[1]) + '</text>';
+    });
+    return '<svg class="dsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(rows.map(r => r[0] + " " + dnum(r[1])).join(", ") + " " + unit) + '">' + g + '</svg>';
+  }
+  function renderDash() {
+    const box = $("mDash"); if (!box) return;
+    const B = window.PUBLIC_BRAIN, D = CORRIDOR.devices;
+    // Live: the program's records.
+    const ST = [["crit", "Out of service"], ["hold", "Use with care"], ["ok", "Ready to use"], ["none", "Not checked yet"]];
+    const cnt = k => MACHINES.filter(m => m.status === k || (k === "hold" && m.status === "warn")).length;
+    const total = MACHINES.length;
+    let h = '<p class="note dlead">The numbers in the first two sections come from the program\'s records and update as they change. The last section is sample data: it shows what the dashboard adds once sensors are installed.</p>';
+    h += '<h2 class="dh">Now</h2><div class="dtiles">';
+    h += dTile({ k: "Ready to use", v: cnt("ok") + " of " + total, sub: cnt("crit") + " out of service, " + cnt("hold") + " to use with care", go: "home", tone: cnt("crit") ? "crit" : "" });
+    const open = PROGRAM.issues.filter(i => /^Open/.test(i.state)), byU = u => open.filter(i => i.urgency === u).length;
+    h += dTile({ k: "Open issues", v: open.length, sub: byU("now") + " to act on now, " + byU("soon") + " soon, " + byU("plan") + " planned", page: "issues", tone: byU("now") ? "hold" : "" });
+    const al = (window.ALERTS || []).length;
+    h += dTile({ k: "Hazards reported, not dealt with", v: al, sub: al ? "Shown on the Home page until the admin deals with them" : "None right now", go: "home", tone: al ? "crit" : "ok" });
+    const J = B ? (B.jobs || []) : null, late = J ? J.filter(j => j.overdue).length : 0;
+    h += dTile({ k: "Open jobs", v: J ? J.length : "…", sub: J ? (late ? late + " overdue" : "None overdue") : "Loading", go: "jobs", tone: late ? "crit" : "" });
+    const acts = B ? (B.actions || []).filter(a => a.status === "open").length : null;
+    h += dTile({ k: "Causes being fixed", v: acts === null ? "…" : acts, sub: "Corrective actions open", go: "jobs" });
+    const sup = (window.SUPPLIES || []).length;
+    h += dTile({ k: "Supplies running low", v: sup, sub: sup ? "Reported by members" : "Nothing reported", page: "supplies", tone: sup ? "hold" : "" });
+    const wl = B && B.walk && B.walk.last;
+    h += dTile({ k: "Last safety walk", v: wl ? dday(wl) : "None yet", sub: "Due once a week", go: "jobs", tone: !wl || (Date.now() - Date.parse(wl)) > 8 * 864e5 ? "hold" : "ok" });
+    const br = window.BOOTH && window.BOOTH.last && window.BOOTH.last.reset;
+    h += dTile({ k: "Finishing room last reset", v: br ? dday(br) : "Not recorded", sub: "Reset after every session", tone: br ? "" : "hold" });
+    h += '</div>';
+    // Status of every machine, as one bar.
+    h += dCard("Machine status", '<div class="dstack" role="img" aria-label="' + esc(ST.map(x => x[1] + " " + cnt(x[0])).join(", ")) + '">' + ST.filter(x => cnt(x[0])).map(x => '<i class="s-' + x[0] + '" style="flex:' + cnt(x[0]) + '" data-tip="' + esc(x[1] + ": " + count(cnt(x[0]), "machine")) + '"></i>').join("") + '</div><ul class="dleg">' + ST.map(x => '<li><span class="dot s-' + x[0] + '"></span>' + esc(x[1]) + ' <b>' + cnt(x[0]) + '</b></li>').join("") + '</ul>', { wide: true });
+    // How complete the records are.
+    const NONMACH = ["ducts", "airlines", "sinktrap", "accoil", "heaters", "filterwall", "turntable"];
+    const MM = MACHINES.filter(m => !NONMACH.includes(m.id)), PM = MM.map(m => [m, PROGRAM.machines[m.id] || {}]);
+    const powered = MACHINES.filter(m => corridorFor(m.id).length || CORRIDOR.noSwitch.includes(m.id));
+    const devs = Object.keys(D);
+    h += '<h2 class="dh">How complete the records are</h2><div class="dgridc">';
+    h += dCard("Machine records", dProg([
+      ["Maker's manual on file", PM.filter(x => x[1].manual && x[1].manual.state === "found").length, PM.length],
+      ["A manual found, fit to confirm", PM.filter(x => x[1].manual && x[1].manual.state === "candidate").length, PM.length],
+      ["Machine card written", PM.filter(x => x[1].card).length, PM.length],
+      ["Maintenance schedule", PM.filter(x => x[1].sched && x[1].sched.length).length, PM.length],
+      ["Machine number known", MM.filter(m => m.shopNo && !/\?|or/.test(m.shopNo)).length, PM.length],
+    ]), { sub: "Out of " + count(PM.length, "machine") + " (ducts, drains, heaters and the like left out)" });
+    h += dCard("Electrical corridor", dProg([
+      ["Power switch found", powered.filter(m => corridorFor(m.id).some(k => !D[k].confirm)).length, powered.length],
+      ["Labels confirmed", devs.filter(k => !D[k].confirm).length, devs.length],
+    ]) + '<p><button type="button" class="b" data-page="corridor">Open the corridor page</button></p>', { sub: "From the photos of November 15, 2026" });
+    h += '</div>';
+    // With sensors: sample data.
+    h += '<h2 class="dh">With sensors <span class="dsample">Sample data</span></h2>';
+    h += '<p class="dbanner"><strong>No sensors are installed yet.</strong> Everything in this section uses made-up numbers, to show what the dashboard shows once they are.</p>';
+    h += '<h3 class="dsh">Vibration sensors</h3><p class="note dwhat">A small wireless sensor on each motor and on the dust collector fan. It counts running time and picks up the change in vibration that comes before a bearing or belt fails.</p><div class="dgridc">';
+    h += dCard("Running hours this week", dBars(DSAMPLE.runHours, "hours"), { sample: true });
+    h += dCard("Dust collector fan: vibration", dLine(DSAMPLE.vib, { alert: 4.5, alertLabel: "Alert level set by the steward", unit: "millimetres per second", from: "30 days ago", to: "Today", aria: "Dust collector fan vibration over 30 days" }) + '<p class="dnote">Rising for three weeks and now over its alert level: the program opens a job to check the fan bearings before they fail.</p>', { sample: true });
+    h += dCard("Maintenance by running hours", '<ul class="dlist">' + DSAMPLE.due.map(d => '<li><span class="dot s-' + d[2] + '"></span><span><b>' + esc(d[0]) + '</b><br><span class="note">' + esc(d[1]) + '</span></span></li>').join("") + '</ul><p class="dnote">Maintenance falls due by how much a machine has run, not by the calendar.</p>', { sample: true });
+    h += '</div>';
+    h += '<h3 class="dsh">Blast gate sensors</h3><p class="note dwhat">A switch on each of the 18 blast gates that reports open or closed, a pressure sensor in the main duct, and a level sensor on the dust collector drums.</p><div class="dgridc">';
+    const gates = Array.from({ length: 18 }, (_, i) => "G" + (i + 1));
+    h += dCard("Gates right now", '<div class="dgates">' + gates.map(g => '<span class="' + (DSAMPLE.gatesOpen.includes(g) ? "on" : "") + '" data-tip="' + g + (DSAMPLE.gatesOpen.includes(g) ? ": open" : ": closed") + '">' + g + '</span>').join("") + '</div><ul class="dleg"><li><span class="dgk on"></span>Open <b>' + DSAMPLE.gatesOpen.length + '</b></li><li><span class="dgk"></span>Closed <b>' + (18 - DSAMPLE.gatesOpen.length) + '</b></li></ul>', { sample: true });
+    h += dCard("This week", '<ul class="dlist">' + DSAMPLE.gateWeek.map(d => '<li><span class="dot s-hold"></span><span><b>' + esc(d[0]) + ': ' + esc(d[1]) + '</b><br><span class="note">' + esc(d[2]) + '</span></span></li>').join("") + '</ul><p class="dnote">A machine running with its gate closed means its dust isn\'t being collected. It shows on that machine\'s page and in the weekly summary.</p>', { sample: true });
+    h += dCard("Dust collector suction", dLine(DSAMPLE.suction, { unit: "inches of water", from: "2 weeks ago", to: "Today", min: 5, aria: "Suction in the main duct over two weeks" }) + '<p class="dnote">Falling suction as the filter loads. Drums about 70 percent full: empty them in about 3 days.</p>', { sample: true });
+    h += '</div>';
+    h += '<h3 class="dsh">Panel sensors</h3><p class="note dwhat">Clamp-on current sensors on the circuits in the electrical corridor, fitted by a licensed electrician. They show which machines are running, how much power each uses, and every tripped breaker or blown fuse.</p><div class="dgridc">';
+    const pn = DSAMPLE.powerNow.reduce((a, r) => a + r[1], 0);
+    h += dCard("Power right now: " + dnum(pn) + " kilowatts", dBars(DSAMPLE.powerNow, "kilowatts"), { sample: true });
+    h += dCard("Energy this week: " + DSAMPLE.energy.reduce((a, r) => a + r[1], 0) + " kilowatt-hours", dCols(DSAMPLE.energy, "kilowatt-hours"), { sample: true });
+    h += dCard("SCM planer: motor load per cut", dLine(DSAMPLE.load, { unit: "amps", from: "4 weeks ago", to: "Today", aria: "Planer motor load per cut over four weeks" }) + '<p class="dnote">The same cuts take more current as the knives dull. Past its usual range, the program suggests a knife change.</p>', { sample: true });
+    h += dCard("Tripped breakers and blown fuses", '<ul class="dlist">' + DSAMPLE.trips.map(d => '<li><span class="dot ' + (/no events/.test(d[1]) ? "s-ok" : "s-hold") + '"></span><span><b>' + esc(d[0]) + '</b><br><span class="note">' + esc(d[1]) + '</span></span></li>').join("") + '</ul><p class="dnote">Each one is logged against its machine. A breaker that trips again, or a fuse that blows twice, goes to an electrician.</p>', { sample: true });
+    h += '</div>';
+    h += '<h3 class="dsh">Air and climate</h3><p class="note dwhat">A fine dust sensor and a humidity sensor in the main machine room.</p><div class="dgridc">';
+    h += dCard("Fine dust in the air today", dLine(DSAMPLE.dust, { unit: "micrograms per cubic metre", from: "7 am", to: "Now", aria: "Fine dust in the air through the day" }) + '<p class="dnote">Peaks line up with sanding and with gates left closed.</p>', { sample: true });
+    h += dCard("Humidity", '<div class="dhero">' + DSAMPLE.humidity + '<small> percent</small></div><p class="dnote">Wood moves, glue sets and finishes cure differently as humidity changes.</p>', { sample: true });
+    h += '</div>';
+    h += dCard("What the program does with sensor data", '<ul class="tight"><li>Maintenance falls due by running hours instead of dates.</li><li>A job opens when vibration or motor load rises past its alert level.</li><li>A machine running with its blast gate closed shows on its page and in the weekly summary.</li><li>Tripped breakers and blown fuses are logged against the machine.</li><li>A machine running while nobody is checked in prompts the working-alone check.</li><li>Energy use and running hours are reported each month.</li></ul>', { wide: true });
+    box.innerHTML = h;
+  }
+  // ----- Machines as a table (computers): every machine in one register -----
+  function renderTable() {
+    const q = query.trim().toLowerCase(), top = stack[stack.length - 1];
+    const list = MACHINES.filter(m => !q || [spoken(m), m.name, m.short, m.maker, m.model, m.serial, m.shopNo].join(" ").toLowerCase().includes(q));
+    let h = '<table class="mtable"><thead><tr><th>Machine</th><th>Number</th><th>Status</th><th>Maker and model</th><th>Serial</th><th>Power switch</th></tr></thead><tbody>';
+    Object.keys(AREAS).forEach(a => {
+      const ms = list.filter(m => m.area === a).sort((x, y) => (SEV[x.status] - SEV[y.status]) || spoken(x).localeCompare(spoken(y)));
+      if (!ms.length) return;
+      h += '<tr class="mtarea"><td colspan="6">' + esc(AREAS[a]) + '</td></tr>' + ms.map(m => {
+        const sub = spoken(m).toLowerCase().includes(m.name.toLowerCase()) ? "" : '<div class="note">' + esc(m.name) + '</div>';
+        return '<tr data-open="' + m.id + '"' + (top && top.mid === m.id ? ' class="on"' : '') + '><td><button type="button" class="mtname" data-open="' + m.id + '">' + esc(spoken(m)) + '</button>' + sub + '</td><td>' + esc(m.shopNo || "") + '</td><td><span class="mtstat"><span class="dot ' + STATUS[m.status].cls + '"></span>' + esc(STATUS[m.status].label) + '</span>' + (alertsFor(m.id).length ? '<div class="note">Reported problem, not reviewed yet</div>' : '') + '</td><td>' + esc([m.maker, m.model].filter(Boolean).join(" ")) + '</td><td class="mono">' + esc(m.serial || "") + '</td><td>' + esc(powerHint(m)) + '</td></tr>';
+      }).join("");
+    });
+    $("mTable").innerHTML = list.length ? h + '</tbody></table>' : '<p class="note" style="padding:12px">No machines match.</p>';
   }
   function setMode(v) {
     mode = v;
     mob.querySelectorAll(".mseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === v ? "true" : "false"));
-    $("mListMode").hidden = v !== "list"; $("mMapMode").hidden = v !== "map";
+    $("mListMode").hidden = v !== "list"; $("mMapMode").hidden = v !== "map"; $("mTableMode").hidden = v !== "table"; $("mFind").hidden = v === "map";
     if (v === "map") renderMap();
+    if (v === "table") renderTable();
   }
 
   function show(v) {
@@ -2248,30 +2535,35 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     mob.querySelectorAll(".mnav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
     if (v === "machines" && mode === "map") renderMap();
     if (v === "ask" && window.aiApi) window.aiApi.activate();
+    if (v === "dash") renderDash();
     window.scrollTo(0, 0);
   }
 
   mob.addEventListener("click", e => {
-    const cm = e.target.closest("[data-cmach]"); if (cm) { openMachine(cm.dataset.cmach); return; }
-    const row = e.target.closest(".mrow[data-id]"); if (row) { openMachine(row.dataset.id); return; }
+    const fresh = wide() && !e.target.closest("#msheet");
+    const reset = () => { if (fresh) stack.length = 0; return fresh; };
+    const cm = e.target.closest("[data-cmach]"); if (cm) { openMachine(cm.dataset.cmach, reset()); return; }
+    const op = e.target.closest("[data-open]"); if (op) { openMachine(op.dataset.open, reset()); return; }
+    const row = e.target.closest(".mrow[data-id]"); if (row) { openMachine(row.dataset.id, reset()); return; }
     const tp = e.target.closest("[data-topic]"); if (tp) { openTopic(tp.dataset.topic); return; }
-    const pg = e.target.closest("[data-page]"); if (pg) { openPage(pg.dataset.page); return; }
+    const pg = e.target.closest("[data-page]"); if (pg) { openPage(pg.dataset.page, reset()); return; }
     // The handover note is served only to signed-in admins, by the AI Assistant, not by this public page.
     if (e.target.closest("[data-handover]")) { window.open("https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev/admin/handover", "_blank", "noopener"); return; }
-    if (e.target.closest("[data-desk]")) { clearSheets(); document.body.classList.add("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); return; }
+    const dk = e.target.closest("[data-desk]"); if (dk) { clearSheets(); document.body.classList.add("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); if (dk.dataset.desk === "plan") { fitCanvas(); const mg = document.querySelector(".mapgrid"); if (mg) mg.scrollIntoView(); } return; }
     const go = e.target.closest("[data-go]"); if (go) { show(go.dataset.go); return; }
+    if (e.target.closest("[data-go-table]")) { show("machines"); setMode("table"); return; }
     const sg = e.target.closest(".mseg button"); if (sg) { setMode(sg.dataset.mode); return; }
     const nav = e.target.closest(".mnav button"); if (nav) { show(nav.dataset.v); return; }
-    const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openMachine(mach.dataset.id); return; }
-    const fx = e.target.closest('#mMap [data-kind="fixture"]'); if (fx && CORRIDOR.fixtures.includes(fx.dataset.id)) { openPage("corridor"); return; }
+    const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openMachine(mach.dataset.id, reset()); return; }
+    const fx = e.target.closest('#mMap [data-kind="fixture"]'); if (fx && CORRIDOR.fixtures.includes(fx.dataset.id)) { openPage("corridor", reset()); return; }
     const a = e.target.closest('a.src[href^="#src-"]');
     if (a) { e.preventDefault(); openPage("sources"); const t = document.getElementById("m" + a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ block: "center" }); }
   });
-  $("mSearch").addEventListener("input", e => { query = e.target.value; renderList(); });
+  $("mSearch").addEventListener("input", e => { query = e.target.value; renderList(); if (mode === "table") renderTable(); });
   $("mBack").addEventListener("click", back);
-  $("mZoomIn").addEventListener("click", () => { zoom = Math.min(4000, Math.round(zoom * 1.4)); renderMap(); });
-  $("mZoomOut").addEventListener("click", () => { zoom = Math.max(700, Math.round(zoom / 1.4)); renderMap(); });
-  $("toPhone").addEventListener("click", () => { document.body.classList.remove("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); });
+  $("mZoomIn").addEventListener("click", () => { zoomSet = true; zoom = Math.min(4000, Math.round(zoom * 1.4)); renderMap(); });
+  $("mZoomOut").addEventListener("click", () => { zoomSet = true; zoom = Math.max(700, Math.round(zoom / 1.4)); renderMap(); });
+  $("toApp").addEventListener("click", () => { document.body.classList.remove("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); if (mode === "map" && current === "machines") renderMap(); });
   window.matchMedia("(max-width: 760px)").addEventListener("change", () => { if (window.aiApi) window.aiApi.place(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && stack.length) back(); });
   window.addEventListener("popstate", e => {
@@ -2281,7 +2573,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   });
   window.mob = {
     isPhone, show, openMachine, openPage,
-    refresh() { renderHome(); renderHomeReports(); renderList(); renderShop(); if (stack.length) paintSheet(); if (mode === "map" && current === "machines") renderMap(); },
+    refresh() { renderHome(); renderHomeReports(); renderList(); renderShop(); if (current === "dash") renderDash(); if (stack.length) paintSheet(); if (mode === "map" && current === "machines") renderMap(); },
   };
   renderHome(); renderList(); renderShop();
   const start = (location.hash || "").match(/^#(m|p)=([\w-]+)/);
@@ -3085,6 +3377,16 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
   window.EXTRA_PAGES.feedback = { title: "Suggest a change to the app", sub: "Something in the app not working, or an idea", html, opened: () => { sent = false; msg = ""; load(); } };
 })();
 
+// Dashboard tooltips: hover with a mouse, tap on a phone.
+(function () {
+  const tip = document.createElement("div"); tip.className = "dtip"; tip.hidden = true; tip.setAttribute("role", "status"); document.body.appendChild(tip);
+  let shownAt = 0;
+  const showAt = (el, x, y) => { shownAt = Date.now(); tip.textContent = el.getAttribute("data-tip"); tip.hidden = false; const w = tip.offsetWidth; tip.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x - w / 2)) + "px"; tip.style.top = Math.max(8, y - 44) + "px"; };
+  document.addEventListener("pointermove", e => { const el = e.target.closest && e.target.closest("#mDash [data-tip]"); if (el && e.pointerType === "mouse") showAt(el, e.clientX, e.clientY); else if (e.pointerType === "mouse") tip.hidden = true; });
+  document.addEventListener("click", e => { const el = e.target.closest && e.target.closest("#mDash [data-tip]"); if (el) showAt(el, e.clientX, e.clientY); else tip.hidden = true; });
+  window.addEventListener("scroll", () => { if (Date.now() - shownAt > 500) tip.hidden = true; }, { passive: true });
+})();
+
 // Pages opened from their own address (a code by the door, a tapped notification): on a computer,
 // open them over the map; on a phone, repaint now that their content exists.
 (function () {
@@ -3154,6 +3456,7 @@ window.EXTRA_PAGES = window.EXTRA_PAGES || {};
       if (x.lastWork) p.maintNote = "Last recorded work: " + x.lastWork.task + ", done and passed inspection on " + long(x.lastWork.date) + ".";
       if (x.facts && x.facts.length) p.history = (p.history || []).filter(h => (h[1] || []).indexOf("brain") < 0).concat(x.facts.map(f => [long(f.date) + ": " + f.text + (f.label ? " (" + f.label + ")" : ""), ["brain"]]));
     }
+    window.PUBLIC_BRAIN = d;
     window.ALERTS = Array.isArray(d.alerts) ? d.alerts : [];
     window.BOOTH = d.booth || { connected: false, bookings: [], log: [], last: {} };
     window.QUICK = Array.isArray(d.quick) ? d.quick : [];
