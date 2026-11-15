@@ -1,4 +1,4 @@
-// Goldthorne Shop Safety and Machine Care Program: emergency alerts on this phone.
+// Goldthorne Wood Studio Safety and Machine Care Program: emergency alerts on this phone.
 // This file only shows the emergency alert notifications sent by the AI Assistant and opens
 // the map when one is tapped. It doesn't cache the map or change how it loads.
 
@@ -10,12 +10,12 @@ self.addEventListener("push", (e) => {
   try {
     m = e.data ? e.data.json() : {};
   } catch (err) {
-    m = { t: "Goldthorne shop", b: e.data ? e.data.text() : "" };
+    m = { t: "Goldthorne Wood Studio", b: e.data ? e.data.text() : "" };
   }
   const base = self.registration.scope;
   const url = typeof m.u === "string" && m.u.startsWith(base) ? m.u : base + "#p=emergency";
   e.waitUntil(
-    self.registration.showNotification(m.t || "Goldthorne shop", {
+    self.registration.showNotification(m.t || "Goldthorne Wood Studio", {
       body: m.b || "",
       tag: m.tag || "goldthorne",
       renotify: true,

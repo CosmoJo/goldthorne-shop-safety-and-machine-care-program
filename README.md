@@ -1,6 +1,6 @@
-# Goldthorne Shop Safety and Machine Care Program
+# Goldthorne Wood Studio Safety and Machine Care Program
 
-Machine map, operating procedures, maintenance schedules and safety list for the Goldthorne co-op wood shop (14 Goldthorne Ave, Etobicoke). Members assigned to look after a machine are its machine stewards.
+Machine map, operating procedures, maintenance schedules and safety list for the Goldthorne Wood Studio (14 Goldthorne Ave, Etobicoke). Members assigned to look after a machine are its machine stewards.
 
 Status: Draft revision 3 (November 13, 2026). Draft for review, not an approved operating safety standard.
 
