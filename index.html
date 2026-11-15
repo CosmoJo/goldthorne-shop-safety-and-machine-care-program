@@ -722,6 +722,8 @@ button.krow:hover .kname { color: var(--accent); }
   .krow { grid-template-columns: minmax(0, 1fr) 11em 15em 9.5em; grid-template-areas: "name now tgt st"; align-items: start; column-gap: 18px; }
   .ktgt { text-align: left; }
 }
+.mreturn { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; margin: -4px 0 8px; color: var(--accent); font: 600 15px var(--body); cursor: pointer; }
+.mreturn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -2236,7 +2238,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   const mob = document.getElementById("mob"); if (!mob) return;
   const SEV = { crit: 0, hold: 1, warn: 2, none: 3, ok: 4 };
   const $ = id => document.getElementById(id);
-  let query = "", zoom = 1600, current = "home", mode = "list", zoomSet = false;
+  let query = "", zoom = 1600, current = "home", mode = "list", zoomSet = false, returnTo = null;
   // The app shows at every width; only the floor plan editor (body.desk) is the long page.
   // isPhone keeps its name for the code that calls it: it means "the app is showing".
   const isPhone = () => !document.body.classList.contains("desk");
@@ -2740,6 +2742,10 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     if (v === "machines" && mode === "map") renderMap();
     if (v === "ask" && window.aiApi) window.aiApi.activate();
     if (v === "dash") renderDash();
+    // Arrived from a Dashboard link: a way back at the top of the tab.
+    if (v === returnTo) returnTo = null;
+    mob.querySelectorAll(".mreturn").forEach(x => x.remove());
+    if (returnTo) { const vw = $("mv-" + v); if (vw) vw.insertAdjacentHTML("afterbegin", '<button type="button" class="mreturn" data-return="1">&lsaquo; Back to the Dashboard</button>'); }
     window.scrollTo(0, 0);
   }
 
@@ -2754,10 +2760,15 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     // The handover note is served only to signed-in admins, by the AI Assistant, not by this public page.
     if (e.target.closest("[data-handover]")) { window.open("https://ask.goldthorne-shop-safety-and-machine-care-program.workers.dev/admin/handover", "_blank", "noopener"); return; }
     const dk = e.target.closest("[data-desk]"); if (dk) { clearSheets(); document.body.classList.add("desk"); if (window.aiApi) window.aiApi.place(); window.scrollTo(0, 0); if (dk.dataset.desk === "plan") { fitCanvas(); const mg = document.querySelector(".mapgrid"); if (mg) mg.scrollIntoView(); } return; }
-    const go = e.target.closest("[data-go]"); if (go) { show(go.dataset.go); return; }
+    if (e.target.closest("[data-return]")) { if (history.state && history.state.tab) history.back(); else { returnTo = null; show("dash"); } return; }
+    const go = e.target.closest("[data-go]"); if (go) {
+      if (current === "dash" && go.closest("#mDash") && go.dataset.go !== "dash") { returnTo = "dash"; clearSheets(); try { history.pushState({ tab: go.dataset.go }, "", location.pathname + location.search); } catch (err) {} }
+      else returnTo = null;
+      show(go.dataset.go); return;
+    }
     if (e.target.closest("[data-go-table]")) { show("machines"); setMode("table"); return; }
     const sg = e.target.closest(".mseg button"); if (sg) { setMode(sg.dataset.mode); return; }
-    const nav = e.target.closest(".mnav button"); if (nav) { show(nav.dataset.v); return; }
+    const nav = e.target.closest(".mnav button"); if (nav) { returnTo = null; show(nav.dataset.v); return; }
     const mach = e.target.closest('#mMap [data-kind="machine"]'); if (mach) { openMachine(mach.dataset.id, reset()); return; }
     const fx = e.target.closest('#mMap [data-kind="fixture"]'); if (fx && CORRIDOR.fixtures.includes(fx.dataset.id)) { openPage("corridor", reset()); return; }
     const a = e.target.closest('a.src[href^="#src-"]');
@@ -2773,7 +2784,9 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
   window.addEventListener("popstate", e => {
     if (!isPhone()) { const m = (location.hash || "").match(/^#m=([\w-]+)/); if (m) showRecord(m[1]); return; }
     const d = (e.state && e.state.depth) || 0;
-    if (d < stack.length) { stack.length = d; paintSheet(); }
+    if (d < stack.length) { stack.length = d; paintSheet(); return; }
+    // Back from a tab reached by a Dashboard link: return to the Dashboard.
+    if (!stack.length && returnTo && current !== returnTo && !(e.state && e.state.tab)) show(returnTo);
   });
   window.mob = {
     isPhone, show, openMachine, openPage,
