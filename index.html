@@ -697,6 +697,31 @@ button.dtile:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--l
 .esvg .eq { font: 700 2.6px var(--body); fill: var(--muted); pointer-events: none; }
 .enote { margin: 6px 0 0; }
 .clegend i.k-front { border-style: dashed; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+/* ---------- Dashboard: goals and targets ---------- */
+.ktally { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; margin: 0 0 12px; }
+.kt { display: inline-flex; align-items: center; gap: 6px; }
+.dot.s-sample { background: transparent; border: 1.5px dashed var(--muted); box-sizing: border-box; }
+.kgoals { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 8px; }
+.kgoals .dcard { margin: 0; }
+.klist { list-style: none; margin: 0; padding: 0; }
+.klist li + li { border-top: 1px solid var(--line); }
+.krow { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name st" "now tgt"; gap: 4px 12px; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none; border: 0; padding: 9px 0; }
+button.krow { cursor: pointer; }
+button.krow:hover .kname { color: var(--accent); }
+.kname { grid-area: name; font-weight: 600; font-size: 14px; }
+.kname .note { display: block; font-weight: 400; font-size: 12.5px; }
+.know { grid-area: now; font-size: 14px; font-variant-numeric: tabular-nums; }
+.ktgt { grid-area: tgt; font-size: 13px; color: var(--muted); text-align: right; }
+.kl { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.kst { grid-area: st; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; align-self: start; }
+.krow.k-off .kst { color: var(--crit); }
+.krow.k-ok .kst { color: var(--ok); }
+.krow.k-none .kst, .krow.k-sample .kst { color: var(--muted); }
+.krow.k-sample { opacity: .9; }
+@media (min-width: 761px) {
+  .krow { grid-template-columns: minmax(0, 1fr) 11em 15em 9.5em; grid-template-areas: "name now tgt st"; align-items: start; column-gap: 18px; }
+  .ktgt { text-align: left; }
+}
 </style>
 </head>
 <body>
@@ -2481,7 +2506,7 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     vib: [2.1, 2.2, 2.1, 2.3, 2.2, 2.4, 2.3, 2.5, 2.4, 2.6, 2.6, 2.8, 2.7, 2.9, 3.0, 3.0, 3.2, 3.1, 3.3, 3.5, 3.4, 3.6, 3.8, 3.7, 3.9, 4.1, 4.0, 4.3, 4.4, 4.6],
     due: [["SCM planer knives", "due in 6 running hours", "hold"], ["Dust collector fan bearings", "vibration rising: check booked", "crit"], ["SCM sliding saw blade", "due in 22 running hours", "none"], ["Compressor service", "due in 41 running hours", "none"]],
     gatesOpen: ["G4", "G6", "G18"],
-    gateWeek: [["Machine ran with its gate closed", "3 times", "SCM sliding saw twice, edge sander once"], ["Gates left open after the machine stopped", "9.5 hours", "Suction lost at the machines in use"]],
+    gateWeek: [["Machine ran with its gate closed", "3 times (target: none)", "SCM sliding saw twice, edge sander once"], ["Gates left open after the machine stopped", "9.5 hours (target: under 2 hours)", "Suction lost at the machines in use"], ["Dust collector running with no machine running", "6.2 hours (target: none)", "Power and air paid for with nothing being cut"]],
     suction: [6.4, 6.4, 6.3, 6.3, 6.2, 6.2, 6.1, 6.0, 6.0, 5.9, 5.8, 5.7, 5.7, 5.6],
     powerNow: [["Switch 12: SCM planer", 6.8], ["Dust collector (circuit to confirm)", 5.4], ["Compressor switch", 3.9], ["Panel 2: lights", 1.2]],
     energy: [["Mon", 38], ["Tue", 52], ["Wed", 47], ["Thu", 61], ["Fri", 44], ["Sat", 88], ["Sun", 72]],
@@ -2553,23 +2578,82 @@ render(); buildStrip(); renderRows(); renderIssues(); renderInspector(); updateU
     const open = PROGRAM.issues.filter(i => /^Open/.test(i.state)), byU = u => open.filter(i => i.urgency === u).length;
     h += dTile({ k: "Open issues", v: open.length, sub: byU("now") + " to act on now, " + byU("soon") + " soon, " + byU("plan") + " planned", page: "issues", tone: byU("now") ? "hold" : "" });
     const al = (window.ALERTS || []).length;
-    h += dTile({ k: "Hazards reported, not dealt with", v: al, sub: al ? "Shown on the Home page until the admin deals with them" : "None right now", go: "home", tone: al ? "crit" : "ok" });
+    h += dTile({ k: "Hazards reported, not dealt with", v: al, sub: al ? "Shown on the Home page until the admin deals with them. Target: none" : "None right now. Target: none", go: "home", tone: al ? "crit" : "ok" });
     const J = B ? (B.jobs || []) : null, late = J ? J.filter(j => j.overdue).length : 0;
-    h += dTile({ k: "Open jobs", v: J ? J.length : "…", sub: J ? (late ? late + " overdue" : "None overdue") : "Loading", go: "jobs", tone: late ? "crit" : "" });
+    h += dTile({ k: "Open jobs", v: J ? J.length : "…", sub: J ? (late ? late + " overdue. Target: none overdue" : "None overdue. Target: none overdue") : "Loading", go: "jobs", tone: late ? "crit" : "" });
     const acts = B ? (B.actions || []).filter(a => a.status === "open").length : null;
     h += dTile({ k: "Causes being fixed", v: acts === null ? "…" : acts, sub: "Corrective actions open", go: "jobs" });
     const sup = (window.SUPPLIES || []).length;
-    h += dTile({ k: "Supplies running low", v: sup, sub: sup ? "Reported by members" : "Nothing reported", page: "supplies", tone: sup ? "hold" : "" });
+    h += dTile({ k: "Supplies running low", v: sup, sub: sup ? "Reported by members. Target: none waiting more than a week" : "Nothing reported", page: "supplies", tone: sup ? "hold" : "" });
     const wl = B && B.walk && B.walk.last;
-    h += dTile({ k: "Last safety walk", v: wl ? dday(wl) : "None yet", sub: "Due once a week", go: "jobs", tone: !wl || (Date.now() - Date.parse(wl)) > 8 * 864e5 ? "hold" : "ok" });
+    h += dTile({ k: "Last safety walk", v: wl ? dday(wl) : "None yet", sub: "Target: every 7 days or fewer", go: "jobs", tone: !wl || (Date.now() - Date.parse(wl)) > 8 * 864e5 ? "hold" : "ok" });
     const br = window.BOOTH && window.BOOTH.last && window.BOOTH.last.reset;
     h += dTile({ k: "Finishing room last reset", v: br ? dday(br) : "Not recorded", sub: "Reset after every session", tone: br ? "" : "hold" });
     h += '</div>';
     // Status of every machine, as one bar.
     h += dCard("Machine status", '<div class="dstack" role="img" aria-label="' + esc(ST.map(x => x[1] + " " + cnt(x[0])).join(", ")) + '">' + ST.filter(x => cnt(x[0])).map(x => '<i class="s-' + x[0] + '" style="flex:' + cnt(x[0]) + '" data-tip="' + esc(x[1] + ": " + count(cnt(x[0]), "machine")) + '"></i>').join("") + '</div><ul class="dleg">' + ST.map(x => '<li><span class="dot s-' + x[0] + '"></span>' + esc(x[1]) + ' <b>' + cnt(x[0]) + '</b></li>').join("") + '</ul>', { wide: true });
-    // How complete the records are.
+    // ----- Goals and targets: the program's goals, each measure with its number now and a proposed target -----
     const NONMACH = ["ducts", "airlines", "sinktrap", "accoil", "heaters", "filterwall", "turntable"];
     const MM = MACHINES.filter(m => !NONMACH.includes(m.id)), PM = MM.map(m => [m, PROGRAM.machines[m.id] || {}]);
+    const walkAlerts = (window.ALERTS || []).filter(a => a.source === "walk").length;
+    const wdays = wl ? Math.floor((Date.now() - Date.parse(wl)) / 864e5) : null;
+    const oldSup = (window.SUPPLIES || []).filter(x => Date.now() - Date.parse(x.since) > 7 * 864e5).length;
+    const recParts = PM.reduce((a, x) => a + (x[1].manual && x[1].manual.state === "found" ? 1 : 0) + (x[1].card ? 1 : 0) + (x[1].sched && x[1].sched.length ? 1 : 0) + (x[0].shopNo && !/\?|or/.test(x[0].shopNo) ? 1 : 0), 0);
+    const recPct = Math.round(recParts / (PM.length * 4) * 100);
+    const i22 = PROGRAM.issues.find(i => i.id === "I-22"), i22open = i22 && /^Open/.test(i22.state);
+    const A = B ? (B.actions || []) : null, checked = A ? A.filter(a => a.status === "worked" || a.status === "did_not_work") : [], worked = checked.filter(a => a.status === "worked").length;
+    const onTime = J && J.length ? Math.round((J.length - late) / J.length * 100) : null;
+    const KP = [
+      ["Safety", [
+        ["Hazards and act-now issues not yet contained", al + byU("now"), "None", al + byU("now") === 0 ? "ok" : "off", "Hazards reported by members plus issues marked act now", { page: "issues" }],
+        ["Overdue jobs", J ? late : "Loading", "None", J ? (late ? "off" : "ok") : "none", "Maintenance, repair and safety check jobs past their due date", { go: "jobs" }],
+        ["Repeat failures", "Not measured yet", "None", "none", "Needs a few months of repair history on each machine"],
+      ]],
+      ["Fire and dust health", [
+        ["Days since the last safety walk", wdays === null ? "No walk yet" : wdays, "7 or fewer", wdays !== null && wdays <= 7 ? "ok" : "off", "The walk checks extinguishers, exits, panels and walkways", { go: "jobs" }],
+        ["Safety walk findings not fixed", walkAlerts, "None", walkAlerts ? "off" : "ok", "Hazards found on the walk that weren't fixed on the spot"],
+        ["Machine run with its blast gate closed, per week", "3 times", "None", "sample", "Blast gate sensors"],
+      ]],
+      ["Downtime prevention", [
+        ["Machines out of service", cnt("crit"), "None", cnt("crit") ? "off" : "ok", "Each one is waiting on a repair or a decision", { go: "home" }],
+        ["Maintenance jobs on time", onTime === null ? (J ? "No jobs open" : "Loading") : onTime + "%", "100%", onTime === null ? "none" : onTime === 100 ? "ok" : "off", "Open jobs not yet past their due date", { go: "jobs" }],
+        ["Maintenance done within its running hours", "3 of 4", "All", "sample", "Vibration or panel sensors count the hours"],
+      ]],
+      ["Cost savings", [
+        ["Repair spend per machine per year", "Not recorded yet", "Set once a year of spending is known", "none", "Needs repair costs recorded against each machine"],
+        ["Dust collector running with no machine running", "6.2 hours this week", "None", "sample", "Panel sensors on the dust collector and the machines"],
+      ]],
+      ["Studio efficiency", [
+        ["Finishing room reset after each session", br ? "Last reset " + dday(br) : "Not recorded yet", "After every booked session", br ? "none" : "off", "Compared with bookings once the booking calendar is connected"],
+        ["Supplies reported low for more than a week", oldSup, "None", oldSup ? "off" : "ok", "Reported through the AI Assistant", { page: "supplies" }],
+      ]],
+      ["Compliance and insurance readiness", [
+        ["Machine records complete", recPct + "%", "100%", recPct === 100 ? "ok" : "off", "Manual, machine card, maintenance schedule and machine number, across " + count(PM.length, "machine")],
+        ["Space in front of the electrical panels clear", i22open ? "Not yet (issue I-22)" : "Clear", "Clear at all times", i22open ? "off" : "ok", "Ontario Electrical Safety Code: 1 metre kept clear", { page: "corridor" }],
+        ["Open issues in the register", open.length, "Fewer each month", "none", "The trend shows after a month of records", { page: "issues" }],
+      ]],
+      ["Machine life and capital planning", [
+        ["Fix, rebuild or replace plan reviewed", "Not started", "Every year", "off", "Condition, age and parts for each machine, over three years"],
+      ]],
+      ["Member skill and accountability", [
+        ["Members signed off on the machines they use", "Not recorded yet", "Every member, before using a machine alone", "none", "Sign-off records aren't in the program yet"],
+        ["Fixed causes that worked", checked.length ? worked + " of " + checked.length : (A ? "None checked yet" : "Loading"), "All", checked.length ? (worked === checked.length ? "ok" : "off") : "none", "Each corrective action is checked 30 days after it's done", { go: "jobs" }],
+      ]],
+      ["Decisions based on data", [
+        ["Machines reporting running hours", "0 of " + PM.length, "The main machines (to choose)", "off", "Needs vibration or panel sensors; see the sample section below"],
+      ]],
+    ];
+    const KST = { ok: ["s-ok", "On target"], off: ["s-crit", "Off target"], none: ["s-none", "Not measured yet"], sample: ["s-sample", "Sample"] };
+    const all = KP.flatMap(g => g[1]), tally = k => all.filter(r => r[3] === k).length;
+    h += '<h2 class="dh">Goals and targets</h2><p class="note dsub">The program\'s goals, each with its measures: the number now, a proposed target, and whether it\'s on target. The targets are proposals until the leadership sets them.</p>';
+    h += '<div class="ktally">' + ["ok", "off", "none", "sample"].map(k => '<span class="kt"><span class="dot ' + KST[k][0] + '"></span>' + KST[k][1] + ' <b>' + tally(k) + '</b></span>').join("") + '</div>';
+    h += '<div class="kgoals">' + KP.map(g => '<section class="dcard kgoal"><h3>' + esc(g[0]) + '</h3><ul class="klist">' + g[1].map(r => {
+      const link = r[5] ? (r[5].page ? ' data-page="' + r[5].page + '"' : ' data-go="' + r[5].go + '"') : '';
+      const tag = link ? 'button type="button"' : 'div';
+      return '<li><' + tag + ' class="krow k-' + r[3] + '"' + link + '><span class="kname">' + esc(r[0]) + '<span class="note">' + esc(r[4]) + '</span></span><span class="know"><span class="kl">Now</span>' + esc(String(r[1])) + '</span><span class="ktgt"><span class="kl">' + (r[3] === "sample" ? "Target" : "Proposed target") + '</span>' + esc(r[2]) + '</span><span class="kst"><span class="dot ' + KST[r[3]][0] + '"></span>' + KST[r[3]][1] + '</span></' + (link ? 'button' : 'div') + '></li>';
+    }).join("") + '</ul></section>').join("") + '</div>';
+    h += '<p class="note">Goals, tactics and measures are recommendations in the program: <button type="button" class="mlinkbtn" data-page="goals">Program goals</button>.</p>';
+    // How complete the records are.
     const powered = MACHINES.filter(m => corridorFor(m.id).length || CORRIDOR.noSwitch.includes(m.id));
     const devs = Object.keys(D);
     h += '<h2 class="dh">How complete the records are</h2><div class="dgridc">';
